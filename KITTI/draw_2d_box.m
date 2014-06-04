@@ -15,7 +15,8 @@ if ~strcmp(object.type,'DontCare')
   rectangle('Position',pos,'EdgeColor','b');
 
   % draw label
-  label_text = sprintf('%s\n%1.1f rad',object.type,object.alpha*180/pi);
+  label_text = sprintf('%s(%.1f, %.1f, %.1f, %.1f)',object.type, ...
+      object.t(1), object.t(2), object.t(3), object.alpha*180/pi);
   x = (object.x1+object.x2)/2;
   y = object.y1;
   text(x,max(y-5,40),label_text,'color',occ_col{object.occlusion+1},...

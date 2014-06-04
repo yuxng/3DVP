@@ -2,6 +2,7 @@
 function show_annotations
 
 opt = globals();
+pad_size = 100;
 
 % load PASCAL3D+ cad models
 cls = 'car';
@@ -24,9 +25,14 @@ nimages = length(dir(fullfile(image_dir, '*.png')));
 
 % main loop
 figure(1);
+cmap = colormap(jet);
 for img_idx = 1:nimages-1
-  % show image  
+  % show image
+  subplot(2, 1, 1);
   I = imread(sprintf('%s/%06d.png',image_dir, img_idx));
+  [h, w, ~] = size(I);
+  mask = ones(h, w, 3);
+  mask = padarray(mask, [pad_size pad_size 0]);
   imshow(I);
   hold on;
 
@@ -35,10 +41,13 @@ for img_idx = 1:nimages-1
   
   % load labels
   objects = readLabels(label_dir,img_idx);
+  
+  % sort objects from large distance to small distance
+  index = sort_objects(objects);
  
   % for all annotated objects do
-  for obj_idx=1:numel(objects)
-   
+  for i = 1:numel(index)
+    obj_idx = index(i);
     % plot 2D bounding box
     object = objects(obj_idx);
     draw_2d_box(object);
@@ -48,17 +57,33 @@ for img_idx = 1:nimages-1
         x3d = compute_3d_points(cads(cad_index), object);
         x2d = projectToImage(x3d, P);
         face = cads(cad_index).faces;
+        index_color = 1 + floor((i-1) * size(cmap,1) / numel(index));
         
-        patch('vertices', x2d', 'faces', face, ...
-            'FaceColor', 'blue', 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+        x2d = x2d';
+        patch('vertices', x2d, 'faces', face, ...
+            'FaceColor', cmap(index_color,:), 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+        
+        x2d = x2d + pad_size;
+        vertices = [x2d(face(:,1),2) x2d(face(:,1),1) ...
+                    x2d(face(:,2),2) x2d(face(:,2),1) ...
+                    x2d(face(:,3),2) x2d(face(:,3),1)];
+
+        BW = mesh_test(vertices, h+2*pad_size, w+2*pad_size);
+        
+        for j = 1:3
+            tmp = mask(:,:,j);
+            tmp(BW) = cmap(index_color,j);
+            mask(:,:,j) = tmp;
+        end
     end
-    
-    % plot 3D bounding box
-%     [corners,face_idx] = computeBox3D(objects(obj_idx),P);
-%     orientation = computeOrientation3D(objects(obj_idx),P);
-%     drawBox3D(h, objects(obj_idx),corners,face_idx,orientation);
     
   end
   hold off;
+  
+  subplot(2,1,2);
+  mask = mask(pad_size+1:h+pad_size, pad_size+1:w+pad_size,:);
+  imshow(uint8(255*mask));
+  axis off;  
+  axis equal;
   pause;
 end
