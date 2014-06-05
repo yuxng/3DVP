@@ -14,9 +14,19 @@ if ~strcmp(object.type,'DontCare')
             'LineWidth',3,'LineStyle',trun_style{trc});
   rectangle('Position',pos,'EdgeColor','b');
 
+  % convert azimuth
+  alpha = object.alpha*180/pi;
+  if alpha < 0
+      alpha = alpha + 360;
+  end
+  alpha = alpha - 90;
+  if alpha < 0
+      alpha = alpha + 360;
+  end  
+  
   % draw label
   label_text = sprintf('%s(%.1f, %.1f, %.1f, %.1f)',object.type, ...
-      object.t(1), object.t(2), object.t(3), object.alpha*180/pi);
+      object.t(1), object.t(2), object.t(3), alpha);
   x = (object.x1+object.x2)/2;
   y = object.y1;
   text(x,max(y-5,40),label_text,'color',occ_col{object.occlusion+1},...
