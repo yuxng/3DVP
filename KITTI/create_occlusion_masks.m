@@ -36,7 +36,7 @@ if issave == 0
     cmap = colormap(jet);
 end
 count = 0;
-for img_idx = 1:nimages-1
+for img_idx = 0:nimages-1
   fprintf('image %06d\n', img_idx);
   % show image
   I = imread(sprintf('%s/%06d.png',image_dir, img_idx));
