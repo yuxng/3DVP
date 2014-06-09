@@ -378,7 +378,7 @@ void gd(double C, double J, data X, double **w, double **lb, char *logdir, char 
   if (converged)
     printf("\nTermination criteria reached after %d iterations.\n", t);
   else
-    printf("\nMax iteration count reached.\n", t);
+    printf("\nMax iteration count reached.\n");
 
   free(perm);
   free(W);
