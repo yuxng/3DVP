@@ -1,0 +1,103 @@
+#  
+#  Brian Curless
+#  
+#  Computer Graphics Laboratory
+#  Stanford University
+#  
+#  ---------------------------------------------------------------------
+#  
+#  Copyright (1997-2001) The Board of Trustees of the Leland Stanford Junior
+#  University. Except for commercial resale, lease, license or other
+#  commercial transactions, permission is hereby given to use, copy,
+#  modify this software for academic purposes only.  No part of this
+#  software or any derivatives thereof may be used in the production of
+#  computer models for resale or for use in a commercial
+#  product. STANFORD MAKES NO REPRESENTATIONS OR WARRANTIES OF ANY KIND
+#  CONCERNING THIS SOFTWARE.  No support is implied or provided.
+#  
+
+ifndef OPTIMIZER
+	OPTIMIZER = -O
+endif
+
+# Get OS uname
+UNAME := $(shell uname)
+
+ifeq ($(UNAME), IRIX)
+
+        # Set optimizer flags to allow it to run on Indys...
+        ifeq ($(OPTIMIZER), -O) 
+	     OPTIMIZER = -O -mips3
+        endif  #OPTIMIZER
+
+	CC = cc
+	CXX = CC
+
+	CFLAGS = -D_BOOL -woff3262 -woff1174
+	CXXFLAGS = -D_BOOL -woff3262 -woff1174
+
+	INCLS = -I. -I$(ROOT)/include
+
+	LIBPATHS = -L. -L$(ROOT)/lib
+
+else
+
+	# Get processor
+	MACHINE := $(shell uname -m)
+
+	# Set special optimizer flags...
+	ifeq ($(OPTIMIZER),-O) 
+	     OPTIMIZER = -O6 -funroll-loops -fomit-frame-pointer -ffast-math
+	     ifeq ($(MACHINE),i686) 
+		OPTIMIZER := $(OPTIMIZER) -march=i686 -malign-double 
+	     endif
+	endif
+
+	CC = gcc
+	CXX = g++
+
+	CFLAGS = -DLINUX -D_BOOL -Wno-unused \
+		-Wmissing-declarations
+	CXXFLAGS = -DLINUX -D_BOOL -Wno-unused -fno-for-scope
+
+	INCLS = -I. -I$(ROOT)/include -I/usr/include/tcl8.4
+
+	LIBPATHS = -L. -L$(ROOT)/lib
+
+endif
+
+SRCS = $(CXXREGFILES) $(CXXLIBFILES) $(CXXFILES) $(CFILES) $(CXXSRCS) $(CSRCS)
+
+# C++ object files
+CXXOBJS = $(CXXREGFILES:.cc=.o) $(CXXSRCS:.cc=.o) $(CXXFILES:.cc=.o)
+CXXLIBOBJS = $(CXXLIBFILES:.cc=.o)
+
+COBJS = $(CFILES:.c=.o) $(CSRCS:.c=.o)
+
+OBJS = $(CXXOBJS) $(COBJS)
+
+CFLAGS := $(INCLS) -DFUNCPROTO -DHAVE_UNISTD_H $(CFLAGS)
+CXXFLAGS := $(INCLS) -DFUNCPROTO -DHAVE_UNISTD_H $(CXXFLAGS)
+CC := $(CC) $(OPTIMIZER)
+CXX := $(CXX) $(OPTIMIZER)
+
+
+default: all
+
+all: $(TARGETS)
+
+install: clobber depend all
+
+clean:
+	-/bin/rm -f *.o *~ core
+
+clobber:
+	-/bin/rm -f *.o *~ core makedep $(TARGETS)
+
+depend:
+	echo > makedep
+	gccmakedep -fmakedep -- $(CFLAGS) -- $(SRCS)
+	-rm makedep.bak
+
+-include makedep
+

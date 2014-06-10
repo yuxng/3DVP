@@ -1,0 +1,112 @@
+
+iv2ply -h | [-a] [(- | infile.iv) [outfile.ply]]
+
+  Converts an Inventor file to ply format.
+  Formerly: ivtoply
+
+
+ply2asc < in.ply > out.ply
+
+  Converts any ply file to ascii ply file.
+
+  Formerly: ply2ascii
+
+
+ply2bin < in.ply > out.ply
+
+  Converts any ply file to binary ply file.
+
+  Formerly: ply2binary
+
+
+ply2iv < in.ply > out.ply
+
+  Converts ply to Inventor file.
+
+  Formerly: plytoiv
+
+
+ply2verts in.ply out
+
+  Converts ply file to an ascii list of vertices.
+
+
+plyaddinfo in.ply
+
+  Adds obj_info lines to the header of a ply file.
+
+
+plyarea < in.ply
+
+  Computes the surface area of a *triangle* mesh.
+
+
+plybbox < in.ply
+ 
+  Computes the bounding box for a ply file.
+  
+  Change: now uses pipes.
+
+
+plybound < in.ply > out.ply
+
+  Scales and translates a ply file to fit ina bounding box.
+
+
+plycomps < in.ply
+
+  Indicates the number of connected components in a ply file.  Also
+  can be used select and write out components with enough vertices in
+  them.
+
+
+plycrunch < in.ply > out.ply
+
+  Performs Rossignac and Borrel decimation.  If no tolarance parameter
+  is provided, then voxel size is set to twice the average edge length.
+
+
+plyflip < in.ply > out.ply
+
+  Flips the normals and/or ordering of vertices in a ply file.
+
+
+plyhead in.ply
+
+  Prints out the header of a ply file.
+
+
+plynormals < in.ply > out.ply
+
+  Computes normals for a triangle mesh.
+
+
+plyremove  < in.ply > out.ply
+
+  Removes properties and elements from a ply file.
+
+
+plyshared < in.ply > out.ply
+
+  Collapses close vertices into single vertices.
+
+
+plyunshared < in.ply > out.ply
+
+  Duplicate vertices so that each vertex is referenced by exactly one
+  face.
+
+
+plyxform < in.ply > out.ply
+
+  Perform scale, translate, rotate on a ply file.
+
+
+crunch.tcl
+
+  Calls plycrunch 3 times to create four levels of mesh resolutions.
+
+
+plyvolume -h | [-p nx ny nz d] (- | file1.ply [file2.ply [...]])
+
+  Computes the signed volume (and area) of the given ply files.

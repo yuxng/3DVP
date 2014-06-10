@@ -1,0 +1,12 @@
+*.o
+loadbalance
+matrix2quat
+permute
+plycull
+plycullmaxx
+plymerge
+pvrip1
+pvrip2
+pvripsplit
+vripsplit
+vripsubvollist

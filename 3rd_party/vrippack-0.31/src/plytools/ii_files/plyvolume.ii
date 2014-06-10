@@ -1,0 +1,13 @@
+CMDLINE=CC -DEFAULT:abi=n32:isa=mips4:proc=r5k -DEFAULT:abi=n32:isa=mips4:proc=r5k -DEFAULT:abi=n32:isa=mips4:proc=r5k -O -mips3 -I. -I../../include -DFUNCPROTO -DHAVE_UNISTD_H -woff3262 -woff1174 -woff1356 -c -n32 plyvolume.cc -o plyvolume.o
+PWD=/tmp_mnt/projects/grail20/curless/pkg/vrip_release/vrippack-0.2/src/plytools
+----
+__uninitialized_copy_aux__3stdGP5Vec3fN2112__false_type
+_M_insert_aux__Q2_3std53vector__pt__39_5Vec3fQ2_3std23allocator__pt__7_5Vec3fGP5Vec3fRC5Vec3f
+_S_refill__Q2_3std45__default_alloc_template__pt__13_XCbL10XCiL10SGUi
+_S_chunk_alloc__Q2_3std45__default_alloc_template__pt__13_XCbL10XCiL10SGUiRi
+_S_free_list__Q2_3std45__default_alloc_template__pt__13_XCbL10XCiL10
+_S_start_free__Q2_3std45__default_alloc_template__pt__13_XCbL10XCiL10
+_S_end_free__Q2_3std45__default_alloc_template__pt__13_XCbL10XCiL10
+_S_heap_size__Q2_3std45__default_alloc_template__pt__13_XCbL10XCiL10
+_S_oom_malloc__Q2_3std37__malloc_alloc_template__pt__7_XCiL10SGUi
+__malloc_alloc_oom_handler__Q2_3std37__malloc_alloc_template__pt__7_XCiL10

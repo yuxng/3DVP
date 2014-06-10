@@ -1,0 +1,186 @@
+	     A Roadmap to the VRIP source code
+
+			Brian Curless
+
+		Computer Graphics Laboratory
+		    Stanford Univeristy
+
+			March 2, 1997
+
+
+
+-------------------------------
+Setting up the TCL/TK interface
+-------------------------------
+
+vripMain.cc
+    - Sets up the TCL application
+
+vripInit.cc
+    - Does the application intialization, including TCL command
+      creation and sourcing ${VRIP_DIR}/vrip.tcl and ${HOME}/.vriprc
+
+
+------------
+TCL commands
+------------
+
+vripRangeCmds.cc
+    - TCL commands that actually read in a range image or surface and
+      update the volume.
+
+vripGridCmds.cc
+    - TCL commands for creating, querying, down-sampling, and
+      transposing the voxel grid.
+
+vripFileCmds.cc
+    - TCL commands for file I/O of the voxel grid
+
+vripGUICmds.cc
+    - TCL commands for running pieces of the GUI, i.e., the slice
+      viewer and the "render" viewer.  The render viewer shows the
+      vertex weights that were resampled when creating the depth map.
+
+vripPlyCmds.cc
+    - TCL commands for writing out depth maps, and processing range
+      images to see how they will tesselate before being scanned into
+      the volume
+
+vripFillCmds.cc
+    - TCL commands for filling the voxel grid (constant value,
+      ellipse, cylinder, cube)
+
+vripMiscCmds.cc
+    - TCL commands for viewing/changing global parameters and
+      generating timing results
+
+
+--------------
+The voxel grid
+--------------
+
+OccGrid.cc
+    - The uncompressed volumetric grid and associated operations
+      (creating, destroying, reading, writing, transposing, ...)
+
+OccGridRLE.cc
+    - The RLE volumetric grid and associated operations (creating,
+      destroying, reading, writing, transposing, ...)
+
+OccGridNormRLE.cc
+    - The RLE volumetric grid with normals and associated operations
+      (creating, destroying, reading, writing, transposing, ...)
+
+
+--------------------------------------------------------
+Range images and surfaces (meshes) and the PLY interface
+--------------------------------------------------------
+
+Mesh.cc
+    - The triangle mesh data structures and associated routines,
+      including weighting (confidence) assigment per vertex
+
+rangePly.cc
+    - Routines for reading in a ply range image and creating a
+      tesselated range surface.
+
+plyio.cc
+    - Routines for reading and writing a ply triangle mesh
+
+
+----------------------------
+Resampling the range surface
+----------------------------
+
+DepthMap.cc
+    - The depth map and associated operations (creating, destroying,
+      writing, tree creation and evaluation)
+
+DepthMapAux.cc
+    - Routines that operate on the depth map
+
+softRenderGeom.cc
+    - Routines for resampling range surfaces using Homan Igehy's
+      triangle rasterizer
+
+renderGeom.cc
+    - Routines for resampling range surfaces using graphics hardware
+      for triangle rasterizing (not in use)
+
+
+------------------------------
+Volume and depth map traversal
+------------------------------
+
+configure.cc
+    - Routines for computing the shear, transposing the volume, and
+      computing the maximum screen size of the sheared volume
+
+scan.cc
+    - Routines for running through the uncompressed volume and
+      updating voxels based on the current depth map.  Uses
+      orthographic transformation.
+
+scanRLE.cc
+    - Routines for running through the RLE volume and updating voxels
+      based on the current depth map.  Uses orthographic
+      transformation.
+
+scanLinePerspRLE.cc
+    - Routines for running through the RLE volume and updating voxels
+      based on the current depth map.  Uses line perspective
+      transformation.
+
+scanNormRLE.cc
+    - Routines for running through the uncompressed volume and
+      updating voxels based on the current depth map.  Uses
+      orthographic transformation.
+
+resample.cc 
+    - Routines for resampling the depth map.
+
+occFunc.cc
+    - Routines for deciding what "occupancy value" to put in a voxel.
+
+
+-----------------
+Memory management
+-----------------
+
+ChunkLink.cc
+    - Linked list of blocks of memory
+
+ChunkAllocator.cc
+    - Routines for allocating and streaming through the chunks of
+      allocated memory.
+
+
+-------------
+Miscellaneous
+-------------
+
+vripGlobals.cc
+    - Global variables.
+
+vripAux.cc
+    - Some auxiliary routines for managing the voxel grids
+
+linePersp.cc
+    - Routines for managing the line perspective transformation
+
+BBox3f.cc
+    - Routines for axis aligned bounding boxes in 3D
+
+
+--------------
+Other programs
+--------------
+
+vriphead.cc
+    - Reads the header from an RLE voxel grid file and displays
+      information about size, resolution, etc.
+
+cysiltoply.cc
+    - Reads in a Cyberware color silhouette and converts it to a range
+      image.  This program should be moved to another directory.
+

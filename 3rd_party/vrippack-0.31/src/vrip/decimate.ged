@@ -1,0 +1,26 @@
+#!/usr/graphics/bin/lymb
+
+ply_modeller new: areader
+        filename= model_sil.ply      /* Read PLY file */
+;
+decimate new: _decimate
+        data_in= areader
+        reduction= 0.9		/* Reduce 90% */
+        iterations=2
+        sub_iterations=2
+        angle=20
+        threshold= 0.0001
+        threshold_increment=.0001
+        max_threshold= 0.01
+        preserve_edges_on!
+        aspect_ratio= 0.1      /* 10:1 aspect ratio */
+        debugon!
+;
+
+ply_writer new: _ply
+        data_in= _decimate
+	binary_on!
+        write_data: `model_sil_dec.ply'     /* Write PLY file */
+;
+
+parser exit!;

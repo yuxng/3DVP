@@ -1,0 +1,20 @@
+Version 0.31
+============
+Cleaned up the makefiles under src to use one set of compiler flags,
+src/compile-flags.  
+
+Added compatibility with Cygwin.  Unfortunately, Tcl will not "exec"
+through symbolic links, so the executables had to be copied over
+directly into bin.  If one recompiles those executables, then they
+must be copied over again.
+
+Makefile checks for i686 flag before using -march=i686 and
+-malign-double.
+
+
+Version 0.3
+===========
+
+Updated for compatibility with newer compilers and newer versions of
+Tcl/Tk.
+

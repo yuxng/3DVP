@@ -1,0 +1,31 @@
+#! /bin/tcsh -f
+
+ply2asc -h
+ply2bboxcube -h
+ply2bin -h
+ply2crunchset -h
+ply2verts -h
+plyaddinfo -h
+plyarea -h
+plybbox -h
+plybound -h
+plycomps -h
+plyconfcrop -h
+plycrunch -h
+plydice -h
+plyflip -h
+plyhead -h
+plymirror -h
+plynormals -h
+plyremove -h
+plys2set -h
+plysetlevel -h
+plysets2conf -h
+plyshared -h
+plystrip -h
+plysubdiv -h
+plysubtract -h
+plyunshared -h
+plyvolume -h
+plyxform -h
+xyz2ply -h
