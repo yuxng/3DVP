@@ -11,8 +11,8 @@
 #define WIDTH 200
 #define HEIGHT 200
 #define BUFFERSIZE 256
-#define AZIMUTH_NUM 8
-#define ELEVATION_NUM 1
+#define AZIMUTH_NUM 24
+#define ELEVATION_NUM 6
 
 /* global variables */
 char Filebase[BUFFERSIZE];
@@ -161,7 +161,7 @@ void display(void)
   int *flag;
   GLint viewport[4];
   GLdouble mvmatrix[16], projmatrix[16], temp[16], quater[4];
-  GLdouble I[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+  GLdouble I[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -3, 1};
   GLdouble x, y, z, threshold_dis = 0.0005;
   GLdouble *data;
   GLdouble a = 0, e = 0, d = 3;
@@ -191,13 +191,10 @@ void display(void)
   for(aind = 0; aind < AZIMUTH_NUM; aind++)
   {
     a = aind * (360.0 / AZIMUTH_NUM);
-printf("a = %f\n", a);
+
     for(eind = 0; eind < ELEVATION_NUM; eind++)
     {
-/*
       e = -90 + eind * (180.0 / ELEVATION_NUM);
-*/
-      e = 30;
 
       glClearColor(1.0, 1.0, 1.0, 0.0);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -210,9 +207,8 @@ printf("a = %f\n", a);
 
       glMatrixMode(GL_MODELVIEW);
       glLoadIdentity();
-      glTranslatef(0.0, 0.0, -d);
-      glRotatef(e-90.0, 1.0, 0.0, 0.0);
-      glRotatef(-a, 0.0, 0.0, 1.0);
+      glRotatef(a, 0.0, 0.0, 1.0);
+      glRotatef(-e+90.0, 1.0, 0.0, 0.0);
       glGetDoublev(GL_MODELVIEW_MATRIX, temp);
       matrix2quaternion(temp, quater);
 
@@ -261,7 +257,7 @@ printf("a = %f\n", a);
           }
         }
       }
-      printf("%d points before filtering\n", num);
+      printf("a = %.2f, e = %.2f %d points before filtering\n", a, e, num);
 
       /* filter 3D points */
       flag = (int*)malloc(sizeof(int)*num);
