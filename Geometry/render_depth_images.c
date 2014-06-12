@@ -7,11 +7,11 @@
 #include <string.h>
 #include <time.h>
 
-#define WIDTH 500
-#define HEIGHT 500
+#define WIDTH 200
+#define HEIGHT 200
 #define BUFFERSIZE 256
-#define AZIMUTH_NUM 24
-#define ELEVATION_NUM 12
+#define AZIMUTH_NUM 8
+#define ELEVATION_NUM 4
 
 /* global variables */
 char Filebase[BUFFERSIZE];
@@ -103,10 +103,17 @@ int load_off_file(int* pnv, GLfloat** pvertices, int* pnf, GLuint** pfaces, char
 /* drawing function */
 void display(void)
 {
-  FILE *fp;
+  FILE *fp, *fp_conf, *fp_all;
   char filename[BUFFERSIZE];
+  char *pch;
   int i, j, aind, eind;
-  GLdouble a = 0, e = 0, d = 2;
+  int num, num_filtered, count, threshold_num = 20;
+  int *flag;
+  GLint viewport[4];
+  GLdouble mvmatrix[16], projmatrix[16];
+  GLdouble x, y, z, threshold_dis = 0.0005;
+  GLdouble *data;
+  GLdouble a = 0, e = 0, d = 3;
   GLfloat *depth;
 
   depth = (GLfloat*)malloc(sizeof(GLfloat)*WIDTH*HEIGHT);
@@ -122,6 +129,14 @@ void display(void)
   glEnableClientState(GL_VERTEX_ARRAY);
   glVertexPointer(3, GL_FLOAT, 0, Vertices);
 
+  /* open conf file */
+  sprintf(filename, "%s.conf", Filebase);
+  fp_conf = fopen(filename, "w");
+
+  /* open all point file */
+  sprintf(filename, "%s_all.txt", Filebase);
+  fp_all = fopen(filename, "w");  
+
   for(aind = 0; aind < AZIMUTH_NUM; aind++)
   {
     a = aind * (360.0 / AZIMUTH_NUM);
@@ -134,7 +149,8 @@ void display(void)
 
       glMatrixMode(GL_PROJECTION);
       glLoadIdentity();
-      gluPerspective(30.0, 1.0, d-0.5, d+0.5);
+      /* gluPerspective(30.0, 1.0, d-0.5, d+0.5); */
+      glOrtho(-0.5, 0.5, -0.5, 0.5, d-0.5, d+0.5);
       glViewport(0, 0, WIDTH, HEIGHT);
 
       glMatrixMode(GL_MODELVIEW);
@@ -156,23 +172,122 @@ void display(void)
       glDrawElements(GL_TRIANGLES, 3*Nface, GL_UNSIGNED_INT, Faces);
       glDisable(GL_POLYGON_OFFSET_FILL);
 
+      /* get the matrices */
+      glGetIntegerv(GL_VIEWPORT, viewport);
+      glGetDoublev(GL_MODELVIEW_MATRIX, mvmatrix);
+      glGetDoublev(GL_PROJECTION_MATRIX, projmatrix);
+
       /* read depth buffer */
       glReadPixels(1, 1, WIDTH, HEIGHT, GL_DEPTH_COMPONENT, GL_FLOAT, depth);
 
-      sprintf(filename, "%s_a%02d_e%02d.txt", Filebase, aind, eind);
-      fp = fopen(filename, "w");
-      for(j = 0; j < HEIGHT; j++)
+      /* get 3D points */
+      num = 0;
+      data = NULL;
+      for(j = HEIGHT-1; j >= 0; j--)
       {
         for(i = 0; i < WIDTH; i++)
-          fprintf(fp, "%f ", depth[j*WIDTH+i]);
-        fprintf(fp, "\n");
+        {
+          if(depth[j*WIDTH+i] < 1 && depth[j*WIDTH+i] > 0)
+          {
+            num++;
+            data = (GLdouble*)realloc(data, sizeof(GLdouble)*num*3);
+            gluUnProject((GLdouble)i, (GLdouble)j, depth[j*WIDTH+i], mvmatrix, projmatrix, viewport, &x, &y, &z);
+            data[(num-1)*3] = x;
+            data[(num-1)*3+1] = y;
+            data[(num-1)*3+2] = z;
+          }
+        }
       }
+
+      /* filter 3D points */
+      flag = (int*)malloc(sizeof(int)*num);
+      num_filtered = 0;
+      for(i = 0; i < num; i++)
+      {
+        count = 0;
+        for(j = 0; j < num; j++)
+        {
+          if((data[i*3]-data[j*3])*(data[i*3]-data[j*3]) + (data[i*3+1]-data[j*3+1])*(data[i*3+1]-data[j*3+1]) + (data[i*3+2]-data[j*3+2])*(data[i*3+2]-data[j*3+2]) < threshold_dis)
+            count++;
+          if(count > threshold_num)
+            break;
+        }
+        if(count > threshold_num)
+        {
+          flag[i] = 1;
+          num_filtered++;
+        }
+        else
+          flag[i] = 0;
+      }
+
+      sprintf(filename, "%s_a%03d_e%03d.ply", Filebase, (int)a, (int)e);
+      fp = fopen(filename, "w");
+
+      /* write to conf file */
+      pch = strrchr(filename, '/');
+      fprintf(fp_conf, "bmesh %s 0 0 0 0 1 0 0\n", pch+1);
+
+      /* write ply header */
+      fprintf(fp, "ply\n");
+      fprintf(fp, "format ascii 1.0\n");
+      fprintf(fp, "obj_info num_cols %d\n", WIDTH);
+      fprintf(fp, "obj_info num_rows %d\n", HEIGHT);
+      fprintf(fp, "element vertex %d\n", num_filtered);
+      fprintf(fp, "property float x\n");
+      fprintf(fp, "property float y\n");
+      fprintf(fp, "property float z\n");
+      fprintf(fp, "element range_grid %d\n", WIDTH*HEIGHT);
+      fprintf(fp, "property list uchar int vertex_indices\n");
+      fprintf(fp, "end_header\n");
+
+      /* write 3D points */
+      for(i = 0; i < num; i++)
+      {
+        if(flag[i])
+        {
+          x = data[i*3];
+          y = data[i*3+1];
+          z = data[i*3+2];
+          fprintf(fp, "%f %f %f\n", x, y, z);
+          fprintf(fp_all, "%f %f %f\n", x, y, z);
+        }
+      }
+	
+      /* write range grid */
+      num = 0;
+      num_filtered = 0;
+      for(j = HEIGHT-1; j >= 0; j--)
+      {
+        for(i = 0; i < WIDTH; i++)
+        {
+          if(depth[j*WIDTH+i] < 1 && depth[j*WIDTH+i] > 0)
+          {
+            num++;
+            if(flag[num-1])
+            {
+              fprintf(fp, "1 %d\n", num_filtered);
+              num_filtered++;
+            }
+            else
+              fprintf(fp, "0\n");
+          }
+          else
+            fprintf(fp, "0\n");
+        }
+      }
+
       fclose(fp);
+      free(data);
+      free(flag);
 
       glFlush();
     }
   }
+
   free(depth);
+  fclose(fp_conf);
+  fclose(fp_all);
   exit(0);
 }
 
