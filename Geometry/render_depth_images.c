@@ -4,6 +4,7 @@
 #include <GL/glut.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include <string.h>
 #include <time.h>
 
@@ -11,7 +12,7 @@
 #define HEIGHT 200
 #define BUFFERSIZE 256
 #define AZIMUTH_NUM 8
-#define ELEVATION_NUM 4
+#define ELEVATION_NUM 1
 
 /* global variables */
 char Filebase[BUFFERSIZE];
@@ -100,6 +101,55 @@ int load_off_file(int* pnv, GLfloat** pvertices, int* pnf, GLuint** pfaces, char
   return 0;
 }
 
+/* convert rotation matrix to quaternion */
+void matrix2quaternion(GLdouble *mat, GLdouble *quater)
+{
+  GLdouble T, S, W, X, Y, Z;
+
+  T = 1 + mat[0] + mat[5] + mat[10];
+
+  if(T > 0.00000001)
+  {
+    S = sqrt(T) * 2;
+    X = ( mat[9] - mat[6] ) / S;
+    Y = ( mat[2] - mat[8] ) / S;
+    Z = ( mat[4] - mat[1] ) / S;
+    W = 0.25 * S;
+  }
+  else
+  {
+    if ( mat[0] > mat[5] && mat[0] > mat[10] )  
+    {	// Column 0: 
+      S  = sqrt( 1.0 + mat[0] - mat[5] - mat[10] ) * 2;
+      X = 0.25 * S;
+      Y = (mat[4] + mat[1] ) / S;
+      Z = (mat[2] + mat[8] ) / S;
+      W = (mat[9] - mat[6] ) / S;
+	
+    } else if ( mat[5] > mat[10] )
+    {	// Column 1: 
+      S  = sqrt( 1.0 + mat[5] - mat[0] - mat[10] ) * 2;
+      X = (mat[4] + mat[1] ) / S;
+      Y = 0.25 * S;
+      Z = (mat[9] + mat[6] ) / S;
+      W = (mat[2] - mat[8] ) / S;
+
+    } else
+    {	// Column 2:
+      S  = sqrt( 1.0 + mat[10] - mat[0] - mat[5] ) * 2;
+      X = (mat[2] + mat[8] ) / S;
+      Y = (mat[9] + mat[6] ) / S;
+      Z = 0.25 * S;
+      W = (mat[4] - mat[1] ) / S;
+    }
+  }
+
+  quater[0] = X;
+  quater[1] = Y;
+  quater[2] = Z;
+  quater[3] = W;
+}
+
 /* drawing function */
 void display(void)
 {
@@ -110,7 +160,8 @@ void display(void)
   int num, num_filtered, count, threshold_num = 20;
   int *flag;
   GLint viewport[4];
-  GLdouble mvmatrix[16], projmatrix[16];
+  GLdouble mvmatrix[16], projmatrix[16], temp[16], quater[4];
+  GLdouble I[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
   GLdouble x, y, z, threshold_dis = 0.0005;
   GLdouble *data;
   GLdouble a = 0, e = 0, d = 3;
@@ -140,9 +191,13 @@ void display(void)
   for(aind = 0; aind < AZIMUTH_NUM; aind++)
   {
     a = aind * (360.0 / AZIMUTH_NUM);
-    for(eind = 0; eind < ELEVATION_NUM+1; eind++)
+printf("a = %f\n", a);
+    for(eind = 0; eind < ELEVATION_NUM; eind++)
     {
+/*
       e = -90 + eind * (180.0 / ELEVATION_NUM);
+*/
+      e = 30;
 
       glClearColor(1.0, 1.0, 1.0, 0.0);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -152,6 +207,14 @@ void display(void)
       /* gluPerspective(30.0, 1.0, d-0.5, d+0.5); */
       glOrtho(-0.5, 0.5, -0.5, 0.5, d-0.5, d+0.5);
       glViewport(0, 0, WIDTH, HEIGHT);
+
+      glMatrixMode(GL_MODELVIEW);
+      glLoadIdentity();
+      glTranslatef(0.0, 0.0, -d);
+      glRotatef(e-90.0, 1.0, 0.0, 0.0);
+      glRotatef(-a, 0.0, 0.0, 1.0);
+      glGetDoublev(GL_MODELVIEW_MATRIX, temp);
+      matrix2quaternion(temp, quater);
 
       glMatrixMode(GL_MODELVIEW);
       glLoadIdentity();
@@ -191,13 +254,14 @@ void display(void)
           {
             num++;
             data = (GLdouble*)realloc(data, sizeof(GLdouble)*num*3);
-            gluUnProject((GLdouble)i, (GLdouble)j, depth[j*WIDTH+i], mvmatrix, projmatrix, viewport, &x, &y, &z);
+            gluUnProject((GLdouble)i, (GLdouble)j, depth[j*WIDTH+i], I, projmatrix, viewport, &x, &y, &z);
             data[(num-1)*3] = x;
             data[(num-1)*3+1] = y;
             data[(num-1)*3+2] = z;
           }
         }
       }
+      printf("%d points before filtering\n", num);
 
       /* filter 3D points */
       flag = (int*)malloc(sizeof(int)*num);
@@ -226,7 +290,7 @@ void display(void)
 
       /* write to conf file */
       pch = strrchr(filename, '/');
-      fprintf(fp_conf, "bmesh %s 0 0 0 0 1 0 0\n", pch+1);
+      fprintf(fp_conf, "bmesh %s 0 0 0 %f %f %f %f\n", pch+1, quater[0], quater[1], quater[2], quater[3]);
 
       /* write ply header */
       fprintf(fp, "ply\n");
@@ -304,7 +368,7 @@ int main(int argc, char** argv)
   glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
   glutInitWindowSize(WIDTH, HEIGHT);
   glutInitWindowPosition(100, 100);
-  glutCreateWindow("anchor_depth_test");
+  glutCreateWindow("render_depth_images");
 
   /* filename of the off file */
   sprintf(filename, "%s/%02d.off", argv[1], atoi(argv[2]));
