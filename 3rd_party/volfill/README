@@ -1,0 +1,81 @@
+Volfill 
+Version 1.0
+=======
+
+Kurt Berglund
+kberg@cs.stanford.edu
+Summer 2002
+
+Introduction
+============
+Volfill is a program for filling holes in volumetric data sets.  The 
+program was written to read in and output .vri files, but there is nothing 
+preventing this program from working with other file formats.
+
+The volfill program fills in holes using a technique called volumetric 
+diffusion. The program was designed to be run on large data sets (such as 
+the David), and because of this, uses run length encoding to store the 
+volumetric data. In order to speed up processing, two criteria are used to 
+decide on whether data should be blended. One measures distance from an 
+active edge (d2) and the other measures the distance from a newly created 
+edge (d1). Each voxel stores its corresponding d1 and d2 value. D2 is set 
+to zero when a voxel has an opposite signed neighbor as well as an empty 
+neighbor. D1 is set to zero when a voxel has an opposite signed neighbor 
+and is newly created data. For other voxels, their d1 and d2 values are 
+the minimum value of all of their neighbors plus one. 
+
+Compilation
+===========
+To compile the program simply type make in the same directory as the 
+source code and makefile.  The makefile and program were written for 
+Linux.
+
+Running the Program
+===================
+The usage for volfill is 
+
+volfill input.vri output.vri ... 'optional parameters'
+Where optional parameters are 
+
+-g for graphical display 
+-n 'iterations' to specify the number of iterations to blur 
+-d1 'd1 distance' to specify the d1 distance 
+-d2 'd2 distance' to specify the d2 distance 
+-p to propgate d2 distances to max before blurring 
+
+Graphical Mode Use
+==================
+Volfill also comes with a graphical display that can be used to visualize 
+a slice of the voxel grid. It is activated with the -g command line option. 
+OpenGL and glut is required to use the graphical mode. If you would like to 
+compile the program without these libraries, simply comment out the glut 
+function calls in main.cc and in fb.cc. 
+
+When in the graphical mode, the following keys are used to perform actions 
+	'b' to blur the voxel grid one time 
+	'l' to perform n blurs (where n is a command line parameter, or default) 
+	'w' to output the grid to a file 
+	'a' to move up one slice in the grid 
+	's' to move down one slice in the grid 
+	'm' to output n ppm files 
+	'1' visualization of the voxel data values 
+	'2' visualization of the d1 values 
+	'3' visualization of the d2 values 
+	'4' visualization of all values 
+
+Copyright
+============
+VolPack is covered by the following copyright notice:
+
+    Copyright (c) 1994 The Board of Trustees of The Leland Stanford
+    Junior University.  All rights reserved.
+
+    Permission to use, copy, modify and distribute this software and its
+    documentation for any purpose is hereby granted without fee, provided
+    that the above copyright notice and this permission notice appear in
+    all copies of this software and that you do not sell the software.
+    Commercial licensing is available by contacting the author.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
+    WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
