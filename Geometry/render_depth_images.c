@@ -102,17 +102,57 @@ int load_off_file(int* pnv, GLfloat** pvertices, int* pnf, GLuint** pfaces, char
 }
 
 
+/* compare the depth value to its neighborhoods */
+int is_good_point(GLfloat *depth, int i, int j, GLdouble threshold)
+{
+  int flag;
+  GLdouble d, dn;
+
+  flag = 1;
+  d = depth[j*WIDTH+i];
+
+  if(i >= 1)
+  {
+    dn = depth[j*WIDTH+i-1];
+    if(fabs(d - dn) > threshold)
+      flag = 0;
+  }
+
+  if(i+1 < WIDTH)
+  {
+    dn = depth[j*WIDTH+i+1];
+    if(fabs(d - dn) > threshold)
+      flag = 0;
+  }
+
+  if(j >= 1)
+  {
+    dn = depth[(j-1)*WIDTH+i];
+    if(fabs(d - dn) > threshold)
+      flag = 0;
+  }
+
+  if(j+1 < HEIGHT)
+  {
+    dn = depth[(j+1)*WIDTH+i];
+    if(fabs(d - dn) > threshold)
+      flag = 0;
+  }
+
+  return flag;
+}
+
+
 /* drawing function */
 void display(void)
 {
   FILE *fp;
   char filename[BUFFERSIZE];
   int i, j, aind, eind;
-  int num, num_filtered, count, threshold_num = 10;
-  int *flag;
+  int num, flag;
   GLint viewport[4];
   GLdouble mvmatrix[16], projmatrix[16];
-  GLdouble x, y, z, threshold_dis = 0.00001;
+  GLdouble x, y, z, threshold = 0.01;
   GLdouble *data;
   GLdouble a = 0, e = 0, d = 3;
   GLfloat *depth;
@@ -184,6 +224,9 @@ void display(void)
         {
           if(depth[j*WIDTH+i] < 1 && depth[j*WIDTH+i] > 0)
           {
+            flag = is_good_point(depth, i, j, threshold);
+            if(flag == 0)
+              continue;
             num++;
             data = (GLdouble*)realloc(data, sizeof(GLdouble)*num*3);
             gluUnProject((GLdouble)i, (GLdouble)j, depth[j*WIDTH+i], mvmatrix, projmatrix, viewport, &x, &y, &z);
@@ -199,53 +242,25 @@ void display(void)
     }
   }
 
-  /* filter 3D points */
-  printf("filtering points...\n");
-  flag = (int*)malloc(sizeof(int)*num);
-  num_filtered = 0;
-  for(i = 0; i < num; i++)
-  {
-    count = 0;
-    for(j = 0; j < num; j++)
-    {
-      if((data[i*3]-data[j*3])*(data[i*3]-data[j*3]) + (data[i*3+1]-data[j*3+1])*(data[i*3+1]-data[j*3+1]) + (data[i*3+2]-data[j*3+2])*(data[i*3+2]-data[j*3+2]) < threshold_dis)
-        count++;
-      if(count > threshold_num)
-        break;
-    }
-    if(count > threshold_num)
-    {
-      flag[i] = 1;
-      num_filtered++;
-    }
-    else
-      flag[i] = 0;
-  }
-  printf("Done. %d points keeped\n", num_filtered);
-
   /* open  file */
   sprintf(filename, "%s_surf.off", Filebase);
   fp = fopen(filename, "w");  
 
   /* write off header */
   fprintf(fp, "OFF\n");
-  fprintf(fp, "%d 0 0\n", num_filtered);
+  fprintf(fp, "%d 0 0\n", num);
 
   /* write 3D points */
   for(i = 0; i < num; i++)
   {
-    if(flag[i])
-    {
-      x = data[i*3];
-      y = data[i*3+1];
-      z = data[i*3+2];
-      fprintf(fp, "%f %f %f\n", x, y, z);
-    }
+    x = data[i*3];
+    y = data[i*3+1];
+    z = data[i*3+2];
+    fprintf(fp, "%f %f %f\n", x, y, z);
   }
 
   fclose(fp);
   free(data);
-  free(flag);
   free(depth);
   exit(0);
 }
