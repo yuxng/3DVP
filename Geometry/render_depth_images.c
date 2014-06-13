@@ -11,7 +11,7 @@
 #define WIDTH 200
 #define HEIGHT 200
 #define BUFFERSIZE 256
-#define AZIMUTH_NUM 24
+#define AZIMUTH_NUM 8
 #define ELEVATION_NUM 6
 
 /* global variables */
@@ -101,68 +101,18 @@ int load_off_file(int* pnv, GLfloat** pvertices, int* pnf, GLuint** pfaces, char
   return 0;
 }
 
-/* convert rotation matrix to quaternion */
-void matrix2quaternion(GLdouble *mat, GLdouble *quater)
-{
-  GLdouble T, S, W, X, Y, Z;
-
-  T = 1 + mat[0] + mat[5] + mat[10];
-
-  if(T > 0.00000001)
-  {
-    S = sqrt(T) * 2;
-    X = ( mat[9] - mat[6] ) / S;
-    Y = ( mat[2] - mat[8] ) / S;
-    Z = ( mat[4] - mat[1] ) / S;
-    W = 0.25 * S;
-  }
-  else
-  {
-    if ( mat[0] > mat[5] && mat[0] > mat[10] )  
-    {	// Column 0: 
-      S  = sqrt( 1.0 + mat[0] - mat[5] - mat[10] ) * 2;
-      X = 0.25 * S;
-      Y = (mat[4] + mat[1] ) / S;
-      Z = (mat[2] + mat[8] ) / S;
-      W = (mat[9] - mat[6] ) / S;
-	
-    } else if ( mat[5] > mat[10] )
-    {	// Column 1: 
-      S  = sqrt( 1.0 + mat[5] - mat[0] - mat[10] ) * 2;
-      X = (mat[4] + mat[1] ) / S;
-      Y = 0.25 * S;
-      Z = (mat[9] + mat[6] ) / S;
-      W = (mat[2] - mat[8] ) / S;
-
-    } else
-    {	// Column 2:
-      S  = sqrt( 1.0 + mat[10] - mat[0] - mat[5] ) * 2;
-      X = (mat[2] + mat[8] ) / S;
-      Y = (mat[9] + mat[6] ) / S;
-      Z = 0.25 * S;
-      W = (mat[4] - mat[1] ) / S;
-    }
-  }
-
-  quater[0] = X;
-  quater[1] = Y;
-  quater[2] = Z;
-  quater[3] = W;
-}
 
 /* drawing function */
 void display(void)
 {
-  FILE *fp, *fp_conf, *fp_all;
+  FILE *fp;
   char filename[BUFFERSIZE];
-  char *pch;
   int i, j, aind, eind;
-  int num, num_filtered, count, threshold_num = 20;
+  int num, num_filtered, count, threshold_num = 10;
   int *flag;
   GLint viewport[4];
-  GLdouble mvmatrix[16], projmatrix[16], temp[16], quater[4];
-  GLdouble I[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -3, 1};
-  GLdouble x, y, z, threshold_dis = 0.0005;
+  GLdouble mvmatrix[16], projmatrix[16];
+  GLdouble x, y, z, threshold_dis = 0.00001;
   GLdouble *data;
   GLdouble a = 0, e = 0, d = 3;
   GLfloat *depth;
@@ -180,19 +130,14 @@ void display(void)
   glEnableClientState(GL_VERTEX_ARRAY);
   glVertexPointer(3, GL_FLOAT, 0, Vertices);
 
-  /* open conf file */
-  sprintf(filename, "%s.conf", Filebase);
-  fp_conf = fopen(filename, "w");
-
-  /* open all point file */
-  sprintf(filename, "%s_all.txt", Filebase);
-  fp_all = fopen(filename, "w");  
-
+  /* render CAD model */
+  data = NULL;
+  num = 0;  
   for(aind = 0; aind < AZIMUTH_NUM; aind++)
   {
     a = aind * (360.0 / AZIMUTH_NUM);
 
-    for(eind = 0; eind < ELEVATION_NUM; eind++)
+    for(eind = 0; eind < ELEVATION_NUM+1; eind++)
     {
       e = -90 + eind * (180.0 / ELEVATION_NUM);
 
@@ -204,13 +149,6 @@ void display(void)
       /* gluPerspective(30.0, 1.0, d-0.5, d+0.5); */
       glOrtho(-0.5, 0.5, -0.5, 0.5, d-0.5, d+0.5);
       glViewport(0, 0, WIDTH, HEIGHT);
-
-      glMatrixMode(GL_MODELVIEW);
-      glLoadIdentity();
-      glRotatef(a, 0.0, 0.0, 1.0);
-      glRotatef(-e+90.0, 1.0, 0.0, 0.0);
-      glGetDoublev(GL_MODELVIEW_MATRIX, temp);
-      matrix2quaternion(temp, quater);
 
       glMatrixMode(GL_MODELVIEW);
       glLoadIdentity();
@@ -240,8 +178,6 @@ void display(void)
       glReadPixels(1, 1, WIDTH, HEIGHT, GL_DEPTH_COMPONENT, GL_FLOAT, depth);
 
       /* get 3D points */
-      num = 0;
-      data = NULL;
       for(j = HEIGHT-1; j >= 0; j--)
       {
         for(i = 0; i < WIDTH; i++)
@@ -250,104 +186,67 @@ void display(void)
           {
             num++;
             data = (GLdouble*)realloc(data, sizeof(GLdouble)*num*3);
-            gluUnProject((GLdouble)i, (GLdouble)j, depth[j*WIDTH+i], I, projmatrix, viewport, &x, &y, &z);
+            gluUnProject((GLdouble)i, (GLdouble)j, depth[j*WIDTH+i], mvmatrix, projmatrix, viewport, &x, &y, &z);
             data[(num-1)*3] = x;
             data[(num-1)*3+1] = y;
             data[(num-1)*3+2] = z;
           }
         }
       }
-      printf("a = %.2f, e = %.2f %d points before filtering\n", a, e, num);
-
-      /* filter 3D points */
-      flag = (int*)malloc(sizeof(int)*num);
-      num_filtered = 0;
-      for(i = 0; i < num; i++)
-      {
-        count = 0;
-        for(j = 0; j < num; j++)
-        {
-          if((data[i*3]-data[j*3])*(data[i*3]-data[j*3]) + (data[i*3+1]-data[j*3+1])*(data[i*3+1]-data[j*3+1]) + (data[i*3+2]-data[j*3+2])*(data[i*3+2]-data[j*3+2]) < threshold_dis)
-            count++;
-          if(count > threshold_num)
-            break;
-        }
-        if(count > threshold_num)
-        {
-          flag[i] = 1;
-          num_filtered++;
-        }
-        else
-          flag[i] = 0;
-      }
-
-      sprintf(filename, "%s_a%03d_e%03d.ply", Filebase, (int)a, (int)e);
-      fp = fopen(filename, "w");
-
-      /* write to conf file */
-      pch = strrchr(filename, '/');
-      fprintf(fp_conf, "bmesh %s 0 0 0 %f %f %f %f\n", pch+1, quater[0], quater[1], quater[2], quater[3]);
-
-      /* write ply header */
-      fprintf(fp, "ply\n");
-      fprintf(fp, "format ascii 1.0\n");
-      fprintf(fp, "obj_info num_cols %d\n", WIDTH);
-      fprintf(fp, "obj_info num_rows %d\n", HEIGHT);
-      fprintf(fp, "element vertex %d\n", num_filtered);
-      fprintf(fp, "property float x\n");
-      fprintf(fp, "property float y\n");
-      fprintf(fp, "property float z\n");
-      fprintf(fp, "element range_grid %d\n", WIDTH*HEIGHT);
-      fprintf(fp, "property list uchar int vertex_indices\n");
-      fprintf(fp, "end_header\n");
-
-      /* write 3D points */
-      for(i = 0; i < num; i++)
-      {
-        if(flag[i])
-        {
-          x = data[i*3];
-          y = data[i*3+1];
-          z = data[i*3+2];
-          fprintf(fp, "%f %f %f\n", x, y, z);
-          fprintf(fp_all, "%f %f %f\n", x, y, z);
-        }
-      }
-	
-      /* write range grid */
-      num = 0;
-      num_filtered = 0;
-      for(j = HEIGHT-1; j >= 0; j--)
-      {
-        for(i = 0; i < WIDTH; i++)
-        {
-          if(depth[j*WIDTH+i] < 1 && depth[j*WIDTH+i] > 0)
-          {
-            num++;
-            if(flag[num-1])
-            {
-              fprintf(fp, "1 %d\n", num_filtered);
-              num_filtered++;
-            }
-            else
-              fprintf(fp, "0\n");
-          }
-          else
-            fprintf(fp, "0\n");
-        }
-      }
-
-      fclose(fp);
-      free(data);
-      free(flag);
+      printf("a = %.2f, e = %.2f, %d points in total\n", a, e, num);
 
       glFlush();
     }
   }
 
+  /* filter 3D points */
+  printf("filtering points...\n");
+  flag = (int*)malloc(sizeof(int)*num);
+  num_filtered = 0;
+  for(i = 0; i < num; i++)
+  {
+    count = 0;
+    for(j = 0; j < num; j++)
+    {
+      if((data[i*3]-data[j*3])*(data[i*3]-data[j*3]) + (data[i*3+1]-data[j*3+1])*(data[i*3+1]-data[j*3+1]) + (data[i*3+2]-data[j*3+2])*(data[i*3+2]-data[j*3+2]) < threshold_dis)
+        count++;
+      if(count > threshold_num)
+        break;
+    }
+    if(count > threshold_num)
+    {
+      flag[i] = 1;
+      num_filtered++;
+    }
+    else
+      flag[i] = 0;
+  }
+  printf("Done. %d points keeped\n", num_filtered);
+
+  /* open  file */
+  sprintf(filename, "%s_surf.off", Filebase);
+  fp = fopen(filename, "w");  
+
+  /* write off header */
+  fprintf(fp, "OFF\n");
+  fprintf(fp, "%d 0 0\n", num_filtered);
+
+  /* write 3D points */
+  for(i = 0; i < num; i++)
+  {
+    if(flag[i])
+    {
+      x = data[i*3];
+      y = data[i*3+1];
+      z = data[i*3+2];
+      fprintf(fp, "%f %f %f\n", x, y, z);
+    }
+  }
+
+  fclose(fp);
+  free(data);
+  free(flag);
   free(depth);
-  fclose(fp_conf);
-  fclose(fp_all);
   exit(0);
 }
 
