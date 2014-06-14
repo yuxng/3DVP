@@ -1,7 +1,7 @@
 % compute the 3D point locations of a CAD model
-function x3d = compute_3d_points(cad, object)
+function x3d = compute_3d_points(vertices, object)
 
-x3d = cad.vertices';
+x3d = vertices';
 
 % rotation matrix to transform coordinate systems
 Rx = [1 0 0; 0 0 -1; 0 1 0];

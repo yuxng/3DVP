@@ -13,7 +13,7 @@ vnum = 8;
 
 % load PASCAL3D+ cad models
 cls = 'car';
-filename = sprintf(opt.path_cad, cls);
+filename = sprintf('../Geometry/%s.mat', cls);
 object = load(filename);
 cads = object.(cls);
 cads([7, 8, 10]) = [];
@@ -73,7 +73,7 @@ for img_idx = 0:nimages-1
     
     if strcmp(object.type, 'Car') == 1
         cad_index = find_closest_cad(cads, object);
-        x3d = compute_3d_points(cads(cad_index), object);
+        x3d = compute_3d_points(cads(cad_index).vertices, object);
         x2d = projectToImage(x3d, P);
         face = cads(cad_index).faces;
         x2d = x2d';
@@ -83,11 +83,11 @@ for img_idx = 0:nimages-1
             continue;
         end
         
-        if issave == 0 && flag == 0
-            index_color = 1 + floor((i-1) * size(cmap,1) / numel(index));
-            patch('vertices', x2d, 'faces', face, ...
-                'FaceColor', cmap(index_color,:), 'FaceAlpha', 0.2, 'EdgeColor', 'none');
-        end
+%         if issave == 0 && flag == 0
+%             index_color = 1 + floor((i-1) * size(cmap,1) / numel(index));
+%             patch('vertices', x2d, 'faces', face, ...
+%                 'FaceColor', cmap(index_color,:), 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+%         end
         
         x2d = x2d + pad_size;
         vertices = [x2d(face(:,1),2) x2d(face(:,1),1) ...
