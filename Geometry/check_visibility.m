@@ -36,17 +36,21 @@ for k = 1:size(ind,1)
         for t = 1:steps
             P = src + t*step_size*(dst - src);
             index = floor((P + [0.5 0.5 0.5]) * N) + 1;
+            % out of the scope of the grid
             if index(1) <= 0 || index(1) > N || index(2) <= 0 || index(2) > N || ...
                 index(3) <= 0 || index(3) > N
                 break;
             end
+            % meet a non-empty voxel
             if (index(1) ~= x || index(2) ~= y || index(3) ~= z) && grid(index(1), index(2), index(3)) ~= 0
                 is_occluded(i) = 1;
                 break;
             end
         end
     end
-    if sum(is_occluded) ~= num_corner
+    if sum(is_occluded) == num_corner
+        visibility(x, y, z) = 0;
+    else
         visibility(x, y, z) = 1;
     end
 end

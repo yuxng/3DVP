@@ -83,11 +83,11 @@ for img_idx = 0:nimages-1
             continue;
         end
         
-%         if issave == 0 && flag == 0
-%             index_color = 1 + floor((i-1) * size(cmap,1) / numel(index));
-%             patch('vertices', x2d, 'faces', face, ...
-%                 'FaceColor', cmap(index_color,:), 'FaceAlpha', 0.2, 'EdgeColor', 'none');
-%         end
+        if issave == 0 && flag == 0
+            index_color = 1 + floor((i-1) * size(cmap,1) / numel(index));
+            patch('vertices', x2d, 'faces', face, ...
+                'FaceColor', cmap(index_color,:), 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+        end
         
         x2d = x2d + pad_size;
         vertices = [x2d(face(:,1),2) x2d(face(:,1),1) ...
@@ -107,14 +107,11 @@ for img_idx = 0:nimages-1
   end
   
   % create occlusion patterns
+  if issave == 0
+    index_plot = mplot + 1;
+  end
   for i = 1:num
       if isempty(BWs{i}) == 1
-          if issave == 0
-            subplot(nplot, mplot, i+mplot);
-            title('');
-            cla;
-            axis off;
-          end
           continue;
       end
       
@@ -127,6 +124,7 @@ for img_idx = 0:nimages-1
       % compute occlusion percentage
       occ = numel(find(pattern == 2)) / numel(find(pattern > 0));
       
+      % 2D occlusion mask
       im = 255*ones(size(pattern,1), size(pattern,2), 3);
       color = [0 255 0];
       for j = 1:3
@@ -140,22 +138,28 @@ for img_idx = 0:nimages-1
         tmp(pattern == 2) = color(j);
         im(:,:,j) = tmp;
       end
-      
       im = uint8(im);
+      
+      % 3D occlusion mask
+      azimuth = objects(i).alpha*180/pi;
+      if azimuth < 0
+          azimuth = azimuth + 360;
+      end
+      azimuth = azimuth - 90;
+      if azimuth < 0
+          azimuth = azimuth + 360;
+      end
+      distance = norm(objects(i).t);
+      elevation = asind(objects(i).t(2)/distance);
+      cad_index = find_closest_cad(cads, objects(i));
+      visibility = check_visibility(cads(cad_index), azimuth, elevation);
+      
       % save occlusion pattern images
       if issave == 1 && isempty(find(pattern == 2, 1)) == 0
           count = count + 1;
           
           % partition the azimuth
-          alpha = objects(i).alpha*180/pi;
-          if alpha < 0
-              alpha = alpha + 360;
-          end
-          alpha = alpha - 90;
-          if alpha < 0
-              alpha = alpha + 360;
-          end
-          index_view = find_interval(alpha, vnum);
+          index_view = find_interval(azimuth, vnum);
           
           filename = sprintf('../Results/occlusion_patterns/view%d/%06d_%02d.jpg', index_view, img_idx, i);
           scale = 100 / size(im,2);
@@ -164,16 +168,24 @@ for img_idx = 0:nimages-1
       end
       
       if issave == 0
-          subplot(nplot, mplot, i+mplot);
+          subplot(nplot, mplot, index_plot);
+          index_plot = index_plot + 1;
           imshow(uint8(im));
           axis off;  
           axis equal;
           title(sprintf('object %d: occ=%.2f', i, occ));
+          
+          subplot(nplot, mplot, index_plot);
+          cla;
+          index_plot = index_plot + 1;
+          draw_cad(cads(cad_index), visibility);
+          view(azimuth, elevation);
+          axis on;
       end
   end
       
   if issave == 0
-      for i = num+1+mplot:nplot*mplot
+      for i = index_plot:nplot*mplot
           subplot(nplot, mplot, i);
           title('');
           cla;

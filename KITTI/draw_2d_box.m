@@ -22,11 +22,16 @@ if ~strcmp(object.type,'DontCare')
   alpha = alpha - 90;
   if alpha < 0
       alpha = alpha + 360;
-  end  
+  end
+  
+  % compute elevation
+  d = norm(object.t);
+  e = asind(object.t(2)/d);
   
   % draw label
-  label_text = sprintf('%s(%.1f, %.1f, %.1f, %.1f)',object.type, ...
-      object.t(1), object.t(2), object.t(3), alpha);
+  label_text = sprintf('%s(%.1f, %.1f, %.1f, %.1f, %.1f)',object.type, ...
+      object.t(1), object.t(2), object.t(3), alpha, e);
+  disp(label_text);
   x = (object.x1+object.x2)/2;
   y = object.y1;
   text(x,max(y-5,40),label_text,'color',occ_col{object.occlusion+1},...
