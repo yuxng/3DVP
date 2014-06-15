@@ -6,13 +6,14 @@ end
 
 L3 = cad.grid;
 if isempty(visibility) == 0
-    L3(L3 == 1) = 2;
+    L3(L3 == 1) = 2;  % self-occluded
 else
     L3(L3 == 1) = 127;
 end
-L3(L3 == 0) = 1;
+L3(L3 == 0) = 1;  % empty voxel
 
 if isempty(visibility) == 0
-    L3(visibility == 1) = 127;
+    L3(visibility == 1) = 3;  % visiblie
+    L3(visibility == 2) = 4;  % occluded by other objects
 end
 drawLabeledVoxel(L3);

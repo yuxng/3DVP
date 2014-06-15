@@ -1,5 +1,5 @@
 % check the visibility of voxels
-function visibility = check_visibility(cad, azimuth, elevation)
+function [visibility_grid, visibility_ind] = check_visibility(cad, azimuth, elevation)
 
 N = cad.grid_size;
 grid = cad.grid;
@@ -15,13 +15,15 @@ C(2) = -distance*cos(elevation)*cos(azimuth);
 C(3) = distance*sin(elevation);
 
 % visibility flag
-visibility = zeros(N, N, N);
+num = size(ind, 1);
+visibility_ind = zeros(num, 1);
+visibility_grid = zeros(N, N, N);
 step_size = 1/(10*N);
 corner = [0 0 0; 0 0 1; 0 1 0; 0 1 1; 1 0 0; 1 0 1; 1 1 0; 1 1 1];
 num_corner = size(corner, 1);
 
 % for each voxel
-for k = 1:size(ind,1)
+for k = 1:num
     x = ind(k,1);
     y = ind(k,2);
     z = ind(k,3);         
@@ -49,8 +51,10 @@ for k = 1:size(ind,1)
         end
     end
     if sum(is_occluded) == num_corner
-        visibility(x, y, z) = 0;
+        visibility_grid(x, y, z) = 0;
+        visibility_ind(k) = 0;
     else
-        visibility(x, y, z) = 1;
+        visibility_grid(x, y, z) = 1;
+        visibility_ind(k) = 1;
     end
 end

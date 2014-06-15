@@ -110,6 +110,7 @@ for img_idx = 0:nimages-1
   if issave == 0
     index_plot = mplot + 1;
   end
+  index_object = index;
   for i = 1:num
       if isempty(BWs{i}) == 1
           continue;
@@ -152,7 +153,29 @@ for img_idx = 0:nimages-1
       distance = norm(objects(i).t);
       elevation = asind(objects(i).t(2)/distance);
       cad_index = find_closest_cad(cads, objects(i));
-      visibility = check_visibility(cads(cad_index), azimuth, elevation);
+      [visibility_grid, visibility_ind] = check_visibility(cads(cad_index), azimuth, elevation);
+      
+      % check the occlusion status of visible voxels
+      index = find(visibility_ind == 1);
+      x3d = compute_3d_points(cads(cad_index).x3d(index,:), objects(i));
+      x2d = projectToImage(x3d, P);
+      x2d = x2d' + pad_size;
+      occludee = find(index_object == i);
+      for j = 1:numel(index)
+          x = round(x2d(j,1));
+          y = round(x2d(j,2));
+          ind = cads(cad_index).ind(index(j),:);
+          if x > pad_size && x <= size(mask,2)-pad_size && y > pad_size && y <= size(mask,1)-pad_size
+              if mask(y,x) > 0 && mask(y,x) ~= i % occluded by other objects
+                  occluder = find(index_object == mask(y,x));
+                  if occluder > occludee
+                    visibility_grid(ind(1), ind(2), ind(3)) = 2;
+                  end
+              end
+          else
+              visibility_grid(ind(1), ind(2), ind(3)) = 2;
+          end
+      end
       
       % save occlusion pattern images
       if issave == 1 && isempty(find(pattern == 2, 1)) == 0
@@ -178,7 +201,7 @@ for img_idx = 0:nimages-1
           subplot(nplot, mplot, index_plot);
           cla;
           index_plot = index_plot + 1;
-          draw_cad(cads(cad_index), visibility);
+          draw_cad(cads(cad_index), visibility_grid);
           view(azimuth, elevation);
           axis on;
       end
