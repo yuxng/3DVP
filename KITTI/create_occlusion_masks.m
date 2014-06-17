@@ -229,3 +229,8 @@ for img_idx = 0:nimages-1
       pause;
   end
 end
+
+if issave == 2
+    grid = unique(grid, 'rows');
+    save occlusion_patterns.mat grid;
+end
