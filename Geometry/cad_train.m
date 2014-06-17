@@ -4,7 +4,7 @@ function cad_train(cls)
 grid_size = 50;
 switch cls
     case 'car'
-        N = 10;
+        N = 7;
 end
 
 cad(N).vertices = [];

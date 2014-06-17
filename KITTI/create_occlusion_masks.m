@@ -1,5 +1,5 @@
 % create occlusion masks for occluded objects
-function create_occlusion_masks(issave)
+function grid = create_occlusion_masks(issave)
 
 if nargin < 1
     issave = 0;
@@ -16,7 +16,11 @@ cls = 'car';
 filename = sprintf('../Geometry/%s.mat', cls);
 object = load(filename);
 cads = object.(cls);
-cads([7, 8, 10]) = [];
+
+% load mean model
+filename = sprintf('../Geometry/%s_mean.mat', cls);
+object = load(filename);
+cad_mean = object.(cls);
 
 root_dir = opt.path_kitti_root;
 data_set = 'training';
@@ -152,19 +156,18 @@ for img_idx = 0:nimages-1
       end
       distance = norm(objects(i).t);
       elevation = asind(objects(i).t(2)/distance);
-      cad_index = find_closest_cad(cads, objects(i));
-      [visibility_grid, visibility_ind] = check_visibility(cads(cad_index), azimuth, elevation);
+      [visibility_grid, visibility_ind] = check_visibility(cad_mean, azimuth, elevation);
       
       % check the occlusion status of visible voxels
       index = find(visibility_ind == 1);
-      x3d = compute_3d_points(cads(cad_index).x3d(index,:), objects(i));
+      x3d = compute_3d_points(cad_mean.x3d(index,:), objects(i));
       x2d = projectToImage(x3d, P);
       x2d = x2d' + pad_size;
       occludee = find(index_object == i);
       for j = 1:numel(index)
           x = round(x2d(j,1));
           y = round(x2d(j,2));
-          ind = cads(cad_index).ind(index(j),:);
+          ind = cad_mean.ind(index(j),:);
           if x > pad_size && x <= size(mask,2)-pad_size && y > pad_size && y <= size(mask,1)-pad_size
               if mask(y,x) > 0 && mask(y,x) ~= i % occluded by other objects
                   occluder = find(index_object == mask(y,x));
@@ -178,16 +181,19 @@ for img_idx = 0:nimages-1
       end
       
       % save occlusion pattern images
-      if issave == 1 && isempty(find(pattern == 2, 1)) == 0
-          count = count + 1;
-          
+      if issave ~= 0 && isempty(find(pattern == 2, 1)) == 0          
           % partition the azimuth
-          index_view = find_interval(azimuth, vnum);
-          
-          filename = sprintf('../Results/occlusion_patterns/view%d/%06d_%02d.jpg', index_view, img_idx, i);
-          scale = 100 / size(im,2);
-          im = imresize(im, scale);
-          imwrite(im, filename);
+          if issave == 1
+              index_view = find_interval(azimuth, vnum);
+              filename = sprintf('../Results/occlusion_patterns/view%d/%06d_%02d.jpg', index_view, img_idx, i);
+              scale = 100 / size(im,2);
+              im = imresize(im, scale);
+              imwrite(im, filename);
+          elseif issave == 2
+              count = count + 1;
+              tmp = visibility_grid == 2;
+              grid(count,:) = reshape(tmp, 1, numel(tmp));
+          end
       end
       
       if issave == 0
@@ -201,7 +207,7 @@ for img_idx = 0:nimages-1
           subplot(nplot, mplot, index_plot);
           cla;
           index_plot = index_plot + 1;
-          draw_cad(cads(cad_index), visibility_grid);
+          draw_cad(cad_mean, visibility_grid);
           view(azimuth, elevation);
           axis on;
       end
