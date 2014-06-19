@@ -1,4 +1,4 @@
-function cluster_3d_occlusion_patterns
+function idx = cluster_3d_occlusion_patterns
 
 % try to load similarity scores
 if exist('similarity.mat', 'file') ~= 0
@@ -35,13 +35,13 @@ else
     end
     p = median(s(:,3));
     
-    save('similarity.mat', 's', 'p');
+    save('similarity.mat', 's', 'p', '-v7.3');
     fprintf('done\n');
 end
 
 % clustering
 fprintf('Start AP clustering\n');
-[idx, netsim, dpsim, expref] = apclusterSparse(s, p, 'plot');
+[idx, netsim, dpsim, expref] = apclustermex(s, p);
 
 fprintf('Number of clusters: %d\n', length(unique(idx)));
 fprintf('Fitness (net similarity): %f\n', netsim);
