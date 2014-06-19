@@ -25,4 +25,5 @@ else
     view(v1,v2);
 end
 axis equal;
+axis tight;
 % ========================================
