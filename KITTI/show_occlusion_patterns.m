@@ -1,9 +1,15 @@
-function show_occlusion_patterns
+function show_occlusion_patterns(idx)
 
 % load occlusion patterns
 object = load('occlusion_patterns.mat');
 grid = object.grid;
 N = size(grid, 1);
+
+if nargin < 1
+    idx = 1:N;
+else
+    idx = unique(idx);
+end
 
 % load the mean CAD model
 cls = 'car';
@@ -26,13 +32,13 @@ for i = 1:vnum
 end
 
 figure;
-for i = 5000:N
+for i = 1:numel(idx)
     if i ~= 1 && mod(i-1, 16) == 0
         pause;
     end
     ind = mod(i-1, 16)+1;
     
-    pattern = grid(i,:);
+    pattern = grid(idx(i),:);
     % find the azimuth to show the pattern
     for j = 1:vnum
         num_occluded = sum(visibility_grid{j} & pattern);

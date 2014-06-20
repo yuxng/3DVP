@@ -13,30 +13,32 @@ else
     grid = object.grid;
     N = size(grid, 1);
 
-    % compute the similarity matrix
+    % compute the intersection and union for voxels
     tmp = double(grid);
-    num = sum(tmp, 2);
-    scores = tmp*tmp';
-    fprintf('finish matrix production\n');
-    for i = 1:N
-        if num(i) ~= 0
-            scores(i,:) = scores(i,:) / num(i);
-        end
-    end
+    intersection = tmp*tmp';
+    fprintf('finish matrix production for intersection\n');
     
-    index = find(scores ~= 0);
-    [x, y] = ind2sub(size(scores), index);
-    M = numel(x);
+    tmp = 1 - tmp;
+    union = tmp*tmp';
+    fprintf('finish matrix production for union\n');
+    
+    scores = (intersection + union) / size(grid,2);
+    
+    M = N*N-N;
     s = zeros(M,3); % Make ALL N^2-N similarities
-    for i = 1:M
-        s(i,1) = x(i);
-        s(i,2) = y(i);
-        s(i,3) = scores(x(i), y(i));
+    j = 1;
+    for i = 1:N
+        for k = [1:i-1,i+1:N]
+            s(j,1) = i;
+            s(j,2) = k;
+            s(j,3) = scores(i,k);
+            j = j+1;
+        end
     end
     p = median(s(:,3));
     
     save('similarity.mat', 's', 'p', '-v7.3');
-    fprintf('done\n');
+    fprintf('save similarity scores\n');
 end
 
 % clustering
