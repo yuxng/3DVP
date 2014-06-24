@@ -4,6 +4,13 @@ function data = prepare_clustering_data
 min_occlusion = 0.05;
 max_occlusion = 0.95;
 
+% load mean model
+cls = 'car';
+filename = sprintf('../Geometry/%s_mean.mat', cls);
+object = load(filename);
+cad = object.(cls);
+index = cad.grid == 1;
+
 % annotations
 path_ann = 'Annotations';
 files = dir(fullfile(path_ann, '*.mat'));
@@ -32,7 +39,7 @@ for i = 1:N
             elevation(count) = object.elevation;
             distance(count) = object.distance;
             occ_per(count) = object.occ_per;
-            grid(count,:) = reshape(object.grid, 1, numel(object.grid));
+            grid(:,count) = object.grid(index);
         end
     end
 end
