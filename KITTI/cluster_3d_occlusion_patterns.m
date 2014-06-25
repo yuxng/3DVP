@@ -5,25 +5,15 @@ if exist('similarity.mat', 'file') ~= 0
     fprintf('load similarity scores from file\n');
     object = load('similarity.mat');
     s = object.s;
-    p = object.p;
 else
     fprintf('computing similarity scores...\n');
-    % load occlusion patterns
-    object = load('occlusion_patterns.mat');
-    grid = object.grid;
-    N = size(grid, 1);
-
-    % compute the intersection and union for voxels
-    tmp = double(grid);
-    intersection = tmp*tmp';
-    fprintf('finish matrix production for intersection\n');
+    % load data
+    object = load('data.mat');
+    data = object.data;
     
-    tmp = 1 - tmp;
-    union = tmp*tmp';
-    fprintf('finish matrix production for union\n');
+    scores = compute_similarity(data.grid);
     
-    scores = (intersection + union) / size(grid,2);
-    
+    N = size(scores, 1);
     M = N*N-N;
     s = zeros(M,3); % Make ALL N^2-N similarities
     j = 1;
@@ -34,12 +24,13 @@ else
             s(j,3) = scores(i,k);
             j = j+1;
         end
-    end
-    p = median(s(:,3));
+    end 
     
-    save('similarity.mat', 's', 'p', '-v7.3');
+    save('similarity.mat', 's', '-v7.3');
     fprintf('save similarity scores\n');
 end
+
+p = median(s(:,3));
 
 % clustering
 fprintf('Start AP clustering\n');
@@ -47,3 +38,5 @@ fprintf('Start AP clustering\n');
 
 fprintf('Number of clusters: %d\n', length(unique(idx)));
 fprintf('Fitness (net similarity): %f\n', netsim);
+
+save('results.mat', 'p', 'idx');
