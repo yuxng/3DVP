@@ -22,7 +22,7 @@ for i = 1:N
     
     for j = 1:numel(objects)
         object = objects(j);
-        if strcmp(object.type, 'Car') == 1 && object.occ_per > 0.9
+        if strcmp(object.type, 'Car') == 1 && object.occ_per > 0.05 && object.occ_per < 0.95 
             subplot(4, 4, ind_plot);
             draw_cad(cad, object.grid);
             view(object.azimuth, object.elevation);

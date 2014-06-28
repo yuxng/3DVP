@@ -17,6 +17,11 @@ index = cad.grid == 1;
 centers = unique(idx);
 N = numel(centers);
 
+% sort centers according to azimuth
+azimuth = data.azimuth(centers);
+[~, order] = sort(azimuth);
+centers = centers(order);
+
 figure;
 ind_plot = 1;
 for i = 1:N

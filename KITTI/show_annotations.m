@@ -54,7 +54,7 @@ for img_idx = 1:nimages-1
     
     if strcmp(object.type, 'Car') == 1
         cad_index = find_closest_cad(cads, object);
-        x3d = compute_3d_points(cads(cad_index), object);
+        x3d = compute_3d_points(cads(cad_index).vertices, object);
         x2d = projectToImage(x3d, P);
         face = cads(cad_index).faces;
         index_color = 1 + floor((i-1) * size(cmap,1) / numel(index));

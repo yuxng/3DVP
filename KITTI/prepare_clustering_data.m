@@ -1,9 +1,5 @@
 function data = prepare_clustering_data
 
-% parameters
-min_occlusion = 0.05;
-max_occlusion = 0.95;
-
 % load mean model
 cls = 'car';
 filename = sprintf('../Geometry/%s_mean.mat', cls);
@@ -17,6 +13,8 @@ files = dir(fullfile(path_ann, '*.mat'));
 N = numel(files);
 
 count = 0;
+imgname = [];
+bbox = [];
 azimuth = [];
 elevation = [];
 distance = [];
@@ -32,9 +30,10 @@ for i = 1:N
     
     for j = 1:numel(objects)
         object = objects(j);
-        if strcmp(object.type, 'Car') == 1 && object.occ_per > min_occlusion ...
-                && object.occ_per < max_occlusion
+        if strcmp(object.type, 'Car') == 1 && isempty(object.grid) == 0
             count = count + 1;
+            imgname{count} = record.filename;
+            bbox(:,count) = [object.x1; object.y1; object.x2; object.y2];
             azimuth(count) = object.azimuth;
             elevation(count) = object.elevation;
             distance(count) = object.distance;
@@ -44,8 +43,8 @@ for i = 1:N
     end
 end
 
-data.min_occlusion = min_occlusion;
-data.max_occlusion = max_occlusion;
+data.imgname = imgname;
+data.bbox = bbox;
 data.azimuth = azimuth;
 data.elevation = elevation;
 data.distance = distance;

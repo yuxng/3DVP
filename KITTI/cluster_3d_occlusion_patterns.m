@@ -39,4 +39,9 @@ fprintf('Start AP clustering\n');
 fprintf('Number of clusters: %d\n', length(unique(idx)));
 fprintf('Fitness (net similarity): %f\n', netsim);
 
-save('results.mat', 'p', 'idx');
+% save results
+object = load('data.mat');
+data = object.data;
+data.idx = idx;
+data.p = p;
+save('data.mat', 'data');
