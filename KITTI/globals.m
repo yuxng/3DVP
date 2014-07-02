@@ -1,16 +1,16 @@
 function opt = globals()
 
-path_pascal3d = '/home/ma/yxiang/Projects/PASCAL3D+_release1.1';
+path_pascal3d = '/net/acadia/workplace/yuxiang/Projects/PASCAL3D+_release1.1';
 if exist(path_pascal3d, 'dir') == 0
     path_pascal3d = '/home/yuxiang/Projects/Pose_Dataset/PASCAL3D+_release1.1';
 end
 
-path_kitti = '/home/ma/yxiang/Projects/KITTI';
+path_kitti = '/net/acadia/workplace/yuxiang/Projects/KITTI';
 if exist(path_kitti, 'dir') == 0
     path_kitti = '/home/yuxiang/Projects/KITTI_Dataset';
 end
 
-path_slm = '/home/ma/yxiang/Projects/SLM';
+path_slm = '/net/acadia/workplace/yuxiang/Projects/SLM';
 if exist(path_slm, 'dir') == 0
     path_slm = '/home/yuxiang/Projects/SLM';
 end

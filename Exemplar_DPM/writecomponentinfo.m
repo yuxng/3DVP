@@ -10,7 +10,12 @@ comp = cell(n, 1);
 % we assume that rule i (i is odd) and i+1 are symmetric
 % mirrors of each other, so
 % skip every other component rule
-for i = 1:2:n
+if isfield(model, 'symmetric') && model.symmetric == 0
+    irange = 1:n;
+else
+    irange = 1:2:n;
+end
+for i = irange
   % component offset block
   bl = model.rules{model.start}(i).offset.blocklabel;
   comp{i}(end+1) = bl-1;

@@ -20,55 +20,39 @@ globals;
 cachesize = 24000;
 maxneg = 200;
 
-% train root filters using warped positives & random negatives
+% train root filter using warped positives & random negatives
 try
-  load([cachedir cls '_' num2str(cid) '_lrsplit1']);
+  load([cachedir cls '_' num2str(cid) '_wrap']);
 catch
   initrand();
   model = initmodel(cls, pos, note, 'N');
+  model.symmetric = 0;
   model = train(cls, model, pos, neg, 1, 1, 1, 1, ...
-                      cachesize, true, 0.7, false, 'lrsplit1');
-  save([cachedir cls '_' num2str(cid) '_lrsplit1'], 'models');
+                      cachesize, true, 0.7, false, 'wrap');
+  save([cachedir cls '_' num2str(cid) '_wrap'], 'model');
 end
 
-% train root left vs. right facing root filters using latent detections
-% and hard negatives
-try
-  load([cachedir cls '_lrsplit2']);
-catch
-  initrand();
-  for i = 1:n
-    models{i} = lrmodel(models{i});
-    models{i} = train(cls, models{i}, spos{i}, neg(1:maxneg), 0, 0, 4, 3, ...
-                      cachesize, true, 0.7, false, ['lrsplit2_' num2str(i)]);
-  end
-  save([cachedir cls '_lrsplit2'], 'models');
-end
-
-% merge models and train using latent detections & hard negatives
+% train root filter using latent detections & hard negatives
 try 
-  load([cachedir cls '_mix']);
+  load([cachedir cls '_' num2str(cid) '_latent']);
 catch
   initrand();
-  model = mergemodels(models);
   model = train(cls, model, pos, neg(1:maxneg), 0, 0, 1, 5, ...
-                cachesize, true, 0.7, false, 'mix');
-  save([cachedir cls '_mix'], 'model');
+                cachesize, true, 0.7, false, 'latent');
+  save([cachedir cls '_' num2str(cid) '_latent'], 'model');
 end
 
-% add parts and update models using latent detections & hard negatives.
+% add parts and update model using latent detections & hard negatives.
 try 
-  load([cachedir cls '_parts']);
+  load([cachedir cls '_' num2str(cid) '_parts']);
 catch
   initrand();
-  for i = 1:2:2*n
-    model = model_addparts(model, model.start, i, i, 8, [6 6]);
-  end
+  model = model_addparts(model, model.start, 1, 1, 8, [6 6]);
   model = train(cls, model, pos, neg(1:maxneg), 0, 0, 8, 10, ...
                 cachesize, true, 0.7, false, 'parts_1');
   model = train(cls, model, pos, neg, 0, 0, 1, 5, ...
                 cachesize, true, 0.7, true, 'parts_2');
-  save([cachedir cls '_parts'], 'model');
+  save([cachedir cls '_' num2str(cid) '_parts'], 'model');
 end
 
-save([cachedir cls '_final'], 'model');
+save([cachedir cls '_' num2str(cid) '_final'], 'model');

@@ -1,8 +1,8 @@
-function kitti_test(cls)
+function kitti_test(cls, cid)
 
 % matlabpool open
 
-model_name = sprintf('data/%s_half.mat', cls);
+model_name = sprintf('data/%s_%d_final.mat', cls, cid);
 object = load(model_name);
 model = object.model;
 model.thresh = min(-1.1, model.thresh);
@@ -32,7 +32,7 @@ for i = 1:N
     dets{i} = det;
 end
 
-filename = sprintf('data/%s_test.mat', cls);
+filename = sprintf('data/%s_%d_test.mat', cls, cid);
 save(filename, 'dets');
 
 % matlabpool close

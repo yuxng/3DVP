@@ -15,7 +15,7 @@ else
 end
 
 % directory for caching models, intermediate data, and results
-cachedir = ['data/' VOCyear '/'];
+cachedir = 'data/';
 
 if exist(cachedir) == 0
   unix(['mkdir -p ' cachedir]);
@@ -25,7 +25,7 @@ if exist(cachedir) == 0
 end
 
 % directory for LARGE temporary files created during training
-tmpdir = ['data/' VOCyear '/'];
+tmpdir = 'data/';
 
 if exist(tmpdir) == 0
   unix(['mkdir -p ' tmpdir]);
