@@ -37,7 +37,7 @@ cleantmpdir = true;
 % directory with PASCAL VOC development kit and dataset
 VOCpaths = {'/net/acadia/workplace/yuxiang/Projects/PASCAL3D+_release1.1/PASCAL', ...
     '/home/yuxiang/Projects/Pose_Dataset/PASCAL3D+_release1.1/PASCAL', ...
-    '/scail/scratch/u/yuxiang/PASCAL3D+_release1.1'};
+    '/scail/scratch/u/yuxiang/PASCAL3D+_release1.1/PASCAL'};
 for i = 1:numel(VOCpaths)
     if exist(VOCpaths{i}, 'dir')
         VOCdevkit = [ VOCpaths{i} '/VOCdevkit/'];

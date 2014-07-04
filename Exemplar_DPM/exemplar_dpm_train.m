@@ -1,5 +1,7 @@
 function exemplar_dpm_train
 
+matlabpool open;
+
 cls = 'car';
 
 % Main function to train exemplar DPM for occlusion patterns
@@ -26,3 +28,5 @@ for i = 1:num
 %     pause(1);
     kitti_train(cls, data, centers(i), '');
 end
+
+matlabpool close;
