@@ -214,7 +214,7 @@ for t = 1:iter
     % compute threshold for high recall
     P = find((labels == 1) .* unique);
     pos_vals = sort(vals(P));
-    model.thresh = pos_vals(ceil(length(pos_vals)*0.05));
+    model.thresh = pos_vals(ceil(max(length(pos_vals)*0.05, 1)));
     pos_sv = numel(find(pos_vals < 1));
 
     % cache model
