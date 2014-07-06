@@ -47,7 +47,11 @@ try
   load([cachedir cls '_' num2str(cid) '_parts']);
 catch
   initrand();
-  model = model_addparts(model, model.start, 1, 1, 8, [6 6]);
+  if min(model.filters(1).size) > 3
+    model = model_addparts(model, model.start, 1, 1, 8, [6 6]);
+  else
+    model = model_addparts(model, model.start, 1, 1, 8, [3 3]);
+  end
   model = train(cls, model, pos, neg(1:maxneg), 0, 0, 8, 10, ...
                 cachesize, true, 0.7, false, 'parts_1');
   model = train(cls, model, pos, neg, 0, 0, 1, 5, ...
