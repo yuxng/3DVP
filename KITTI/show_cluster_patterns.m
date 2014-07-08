@@ -1,4 +1,4 @@
-function show_cluster_patterns(idx)
+function show_cluster_patterns(cid)
 
 opt = globals;
 
@@ -11,6 +11,7 @@ image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 % load data
 object = load('data.mat');
 data = object.data;
+idx = data.idx;
 
 % load the mean CAD model
 cls = 'car';
@@ -20,7 +21,11 @@ cad = object.(cls);
 index = cad.grid == 1;
 
 % cluster centers
-centers = unique(idx);
+if nargin < 1
+    centers = unique(idx);
+else
+    centers = cid;
+end
 N = numel(centers);
 
 figure;
@@ -45,6 +50,8 @@ for i = 1:N
     subplot(4, 8, ind_plot);
     ind_plot = ind_plot + 1;
     imshow(I1);
+    til = sprintf('w:%d, h:%d', size(I1,2), size(I1,1));
+    title(til);
     
     % show several members
     member = find(idx == ind);
@@ -68,7 +75,9 @@ for i = 1:N
         I1 = imcrop(I, rect);
         subplot(4, 8, ind_plot);
         ind_plot = ind_plot + 1;
-        imshow(I1);        
+        imshow(I1);
+        til = sprintf('w:%d, h:%d', size(I1,2), size(I1,1));
+        title(til);        
     end
     pause;
 end

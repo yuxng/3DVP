@@ -1,10 +1,11 @@
-function show_cluster_centers(idx)
+function show_cluster_centers
 
 opt = globals;
 
 % load data
 object = load('data.mat');
 data = object.data;
+idx = data.idx;
 
 % load the mean CAD model
 cls = 'car';
@@ -33,7 +34,17 @@ for i = 1:N
     subplot(4, 4, ind_plot);
     ind_plot = ind_plot + 1;
     draw_cad(cad, visibility_grid);
-    view(data.azimuth(ind), data.elevation(ind));    
+    view(data.azimuth(ind), data.elevation(ind));
+    title(num2str(ind));
+    
+    % show exemplar DPM
+    filename = sprintf('../Exemplar_DPM/kitti_train/%s_%d_final.mat', cls, ind);
+    if exist(filename, 'file')
+        object = load(filename);
+        model = object.model;
+        visualizemodel(model, 4, 4, ind_plot);
+        ind_plot = ind_plot + 3;
+    end
     
     if ind_plot > 16
         ind_plot = 1;

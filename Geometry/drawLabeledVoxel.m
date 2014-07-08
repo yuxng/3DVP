@@ -12,6 +12,7 @@ end
 
 tL3  = L3 - 1;
 tL3(tL3==0) = NaN;
+colormap('default');
 cmap = colormap;
 PATCH_3Darray(tL3+1, cmap, 'col');
 
