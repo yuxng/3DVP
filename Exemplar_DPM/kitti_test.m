@@ -30,7 +30,7 @@ catch
     N = numel(ids);
     parfor i = 1:N
         fprintf('%s: center %d: %d/%d\n', cls, cid, i, N);
-        img_idx = ids_val(i);
+        img_idx = ids(i);
         file_img = sprintf('%s/%06d.png', image_dir, img_idx);
         im = imread(file_img);
         [dets, boxes] = imgdetect(im, model, model.thresh);
