@@ -8,7 +8,7 @@ function [det, all] = process(image, model, thresh)
 globals;
 
 if nargin < 3
-  thresh = model.thresh
+  thresh = model.thresh;
 end
 
 [det, all] = imgdetect(image, model, thresh);
