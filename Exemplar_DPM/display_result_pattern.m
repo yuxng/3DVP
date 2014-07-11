@@ -1,13 +1,13 @@
-function display_result_kitti
+function display_result_pattern
 
 cls = 'car';
+cid = 52;
 threshold = -0.95;
 
 % read detection results
-filename = sprintf('kitti_train/%s_test.mat', cls);
+filename = sprintf('kitti_train/%s_%d_test.mat', cls, cid);
 object = load(filename);
-dets = object.dets;
-fprintf('load detection done\n');
+dets = object.boxes1;
 
 % read ids of validation images
 object = load('kitti_ids.mat');
@@ -32,8 +32,8 @@ for i = 1:N
         continue;
     end
     
-    if max(det(:,6)) < threshold
-        fprintf('maximum score %.2f is smaller than threshold\n', max(det(:,6)));
+    if max(det(:,5)) < threshold
+        fprintf('maximum score %.2f is smaller than threshold\n', max(det(:,5)));
         continue;
     end
     num = size(det, 1);
@@ -45,15 +45,19 @@ for i = 1:N
     imshow(I);
     hold on;
 
+    til = sprintf('%d', i);
     for k = 1:num
-        if det(k,6) > threshold
+        if det(k,5) > threshold
             % get predicted bounding box
             bbox_pr = det(k,1:4);
             bbox_draw = [bbox_pr(1), bbox_pr(2), bbox_pr(3)-bbox_pr(1), bbox_pr(4)-bbox_pr(2)];
             rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth',2);
             text(bbox_pr(1), bbox_pr(2), num2str(k), 'FontSize', 16, 'BackgroundColor', 'r');
+
+            til = sprintf('%s, s%d=%.2f', til, k, det(k,5));
         end
     end
+    title(til);
     subplot(4, 2, ind_plot);
     hold off;
     ind_plot = ind_plot + 1;
