@@ -1,7 +1,7 @@
 function display_result_kitti
 
 cls = 'car';
-threshold = -0.95;
+threshold = -0.9;
 
 % read detection results
 filename = sprintf('kitti_train/%s_test.mat', cls);
@@ -49,9 +49,13 @@ for i = 1:N
         if det(k,6) > threshold
             % get predicted bounding box
             bbox_pr = det(k,1:4);
-            bbox_draw = [bbox_pr(1), bbox_pr(2), bbox_pr(3)-bbox_pr(1), bbox_pr(4)-bbox_pr(2)];
-            rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth',2);
-            text(bbox_pr(1), bbox_pr(2), num2str(k), 'FontSize', 16, 'BackgroundColor', 'r');
+%             bbox_draw = [bbox_pr(1), bbox_pr(2), bbox_pr(3)-bbox_pr(1), bbox_pr(4)-bbox_pr(2)];
+%             rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);
+            x = [bbox_pr(1) bbox_pr(3) bbox_pr(3) bbox_pr(1)];
+            y = [bbox_pr(2) bbox_pr(2) bbox_pr(4) bbox_pr(4)];
+            patch(x, y, 'g', 'FaceAlpha', 0.1, 'EdgeAlpha', 0);
+            
+%             text(bbox_pr(1), bbox_pr(2), num2str(k), 'FontSize', 16, 'BackgroundColor', 'r');
         end
     end
     subplot(4, 2, ind_plot);

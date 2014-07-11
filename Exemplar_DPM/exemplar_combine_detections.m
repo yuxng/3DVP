@@ -1,7 +1,7 @@
 function dets = exemplar_combine_detections
 
 cls = 'car';
-threshold = -0.95;
+threshold = -inf;
 
 % load data
 object = load('../KITTI/data.mat');
@@ -27,7 +27,7 @@ for i = 1:N
 end
 
 filename = sprintf('kitti_train/%s_test.mat', cls);
-save(filename, 'dets');
+save(filename, 'dets', '-v7.3');
 
 
 function boxes_new = process_boxes(boxes, cid, threshold)

@@ -1,5 +1,7 @@
 % compute recall and viewpoint accuracy
-function [recall, precision, ap] = compute_recall_precision_kitti(cls)
+function [recall, precision, ap] = compute_recall_precision_kitti
+
+cls = 'car';
 
 % read ids of validation images
 object = load('kitti_ids.mat');
@@ -7,7 +9,7 @@ ids = object.ids_val;
 M = numel(ids);
 
 % open prediction file
-filename = sprintf('data/%s_test.mat', cls);
+filename = sprintf('kitti_train/%s_test.mat', cls);
 object = load(filename);
 dets_all = object.dets;
 
@@ -42,7 +44,12 @@ for i = 1:M
     det = zeros(count(i), 1);
     
     % get predicted bounding box
-    dets = dets_all{i};
+    dets = dets_all{img_idx + 1};
+    if isempty(dets) == 0
+        I = nms(dets, 0.5);
+        dets = dets(I, :);    
+    end
+    
     num(i) = size(dets, 1);
     % for each predicted bounding box
     for j = 1:num(i)
