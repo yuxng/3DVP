@@ -35,9 +35,27 @@ end
 cleantmpdir = true;
 
 % directory with PASCAL VOC development kit and dataset
-VOCdevkit = '/home/ma/yxiang/Projects/PASCAL3D+_release1.1/PASCAL/VOCdevkit/';
+VOCpaths = {'/net/acadia/workplace/yuxiang/Projects/PASCAL3D+_release1.1/PASCAL', ...
+    '/home/yuxiang/Projects/Pose_Dataset/PASCAL3D+_release1.1/PASCAL', ...
+    '/scail/scratch/u/yuxiang/PASCAL3D+_release1.1/PASCAL', ...
+    '/afs/cs.stanford.edu/group/cvgl/rawdata/PASCAL3D+_release1.1/PASCAL'};
+for i = 1:numel(VOCpaths)
+    if exist(VOCpaths{i}, 'dir')
+        VOCdevkit = [ VOCpaths{i} '/VOCdevkit/'];
+        break;
+    end
+end
 
 % directory with KITTI development kit and dataset
-KITTIroot = '/home/ma/yxiang/Projects/KITTI/data_object_image_2';
-KITTIdevkit = '/home/ma/yxiang/Projects/KITTI/devkit/matlab';
+KITTIpaths = {'/net/acadia/workplace/yuxiang/Projects/KITTI', ...
+    '/home/yuxiang/Projects/KITTI_Dataset', ...
+    '/scail/scratch/u/yuxiang/KITTI_Dataset', ...
+    '/afs/cs.stanford.edu/group/cvgl/rawdata/KITTI_Dataset'};
+for i = 1:numel(KITTIpaths)
+    if exist(KITTIpaths{i}, 'dir')
+        KITTIroot = [KITTIpaths{i} '/data_object_image_2'];
+        KITTIdevkit = [KITTIpaths{i} '/devkit/matlab'];
+        break;
+    end
+end
 addpath(KITTIdevkit);

@@ -94,9 +94,9 @@ ap = VOCap(recall, precision);
 fprintf('AP = %.4f\n', ap);
 
 % draw recall-precision and accuracy curve
-figure;
+figure(1);
 hold on;
-plot(recall, precision, 'g', 'LineWidth',3);
+plot(recall, precision, 'r', 'LineWidth',3);
 xlabel('Recall');
 ylabel('Precision');
 tit = sprintf('Average Precision = %.1f', 100*ap);
