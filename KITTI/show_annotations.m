@@ -44,6 +44,9 @@ for img_idx = 1:nimages-1
   
   % sort objects from large distance to small distance
   index = sort_objects(objects);
+  
+  V = [];
+  F = [];
  
   % for all annotated objects do
   for i = 1:numel(index)
@@ -57,8 +60,15 @@ for img_idx = 1:nimages-1
         x3d = compute_3d_points(cads(cad_index).vertices, object);
         x2d = projectToImage(x3d, P);
         face = cads(cad_index).faces;
-        index_color = 1 + floor((i-1) * size(cmap,1) / numel(index));
         
+        tmp = face'-1+size(V,2);
+        F = [F tmp];        
+        
+        tmp = x3d;
+        tmp(3,:) = tmp(3,:) * -1;
+        V = [V tmp];
+        
+        index_color = 1 + floor((i-1) * size(cmap,1) / numel(index));
         x2d = x2d';
         patch('vertices', x2d, 'faces', face, ...
             'FaceColor', cmap(index_color,:), 'FaceAlpha', 0.2, 'EdgeColor', 'none');
@@ -85,5 +95,10 @@ for img_idx = 1:nimages-1
   imshow(uint8(255*mask));
   axis off;  
   axis equal;
+  
+  if isempty(V) == 0
+      pause(1);
+    render_cad_model(V, F);
+  end
   pause;
 end
