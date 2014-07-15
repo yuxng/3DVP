@@ -250,10 +250,17 @@ void display(void)
                          0, 721.5377, 0, 0,
                          -609.5593, -172.8540, near+far, -1,
                          0, 0, near*far, 0};
+  GLfloat global_ambient[] = { 0.5, 0.5, 0.5, 1.0 };
+  GLfloat position0[] = { -1.0, 1.0, -1.0, 0.0 };  /* directional light */
+  GLfloat position1[] = { 1.0, 1.0, -1.0, 0.0 };  /* directional light */
 
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
-  glLightModeli(GL_LIGHT_MODEL_AMBIENT, GL_TRUE);
+  glEnable(GL_LIGHT1);
+  glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
+  glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+  glLightfv(GL_LIGHT0, GL_POSITION, position0);
+  glLightfv(GL_LIGHT1, GL_POSITION, position1);
   glEnable(GL_DEPTH_TEST);
 
   /* vertice array */

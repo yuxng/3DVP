@@ -98,7 +98,7 @@ for img_idx = 1:nimages-1
   
   if isempty(V) == 0
       pause(1);
-    render_cad_model(V, F);
+      render_cad_model(V, F);
   end
   pause;
 end
