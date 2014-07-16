@@ -13,5 +13,5 @@ CameraVertex(5,:) = [ 1 -1  -2.5];
 CameraVertex = ([R_c2w T_c2w]*[(CameraVertex');ones(1,5)])';
 IndSetCamera = {[1 2 3 1] [1 4 2 1] [1 5 4 1] [1 5 3 1] [2 3 5 4 2]};
 for iter_indset = 1:length(IndSetCamera)
-    patch('Faces', IndSetCamera{iter_indset}, 'Vertices', CameraVertex, 'FaceColor', 'b', 'FaceAlpha', 1);
+    patch('Faces', IndSetCamera{iter_indset}, 'Vertices', CameraVertex, 'FaceColor', 'r', 'FaceAlpha', 1);
 end
