@@ -1,7 +1,7 @@
 function draw_camera(C)
 
 theta = atan2(C(1), -C(2));
-R = angle2dcm(theta, 0*pi/180, -90*pi/180);
+R = rotation_matrix(theta, 0*pi/180, -90*pi/180);
 R_c2w = inv(R);
 T_c2w = C;
 CameraVertex = zeros(5,3);
