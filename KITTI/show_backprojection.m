@@ -34,6 +34,7 @@ nimages = length(dir(fullfile(image_dir, '*.png')));
 % main loop
 figure(1);
 for img_idx = 1:nimages-1
+  disp(img_idx);
   % show image
   subplot(2, 1, 1);
   I = imread(sprintf('%s/%06d.png',image_dir, img_idx));
@@ -88,12 +89,12 @@ for img_idx = 1:nimages-1
         % backprojection
         X = pinv(P) * c;
         X = X ./ X(4);
+        if X(3) < 0
+            X = -1 * X;
+        end        
         % transform to velodyne space
         X = Pv2c\X;
         X(4) = [];
-        if X(3) > C(3)
-            X = -1 * X;
-        end
         % compute the ray
         X = X - C;
         % normalization
@@ -117,7 +118,7 @@ for img_idx = 1:nimages-1
             x, [], [], [], [], lb, ub, [], options);
         disp(x);
         disp([object.l object.h object.w object.ry]);
-        T = [T C + x(5) .* X];
+        T = [T C+x(5).*X];
     end
   end
   hold off;
@@ -133,7 +134,7 @@ for img_idx = 1:nimages-1
       zlabel('z');
       
       for i = 1:size(T,2)
-        plot3([C(1) T(1,i)], [C(2) T(2,i)], [C(3) T(3,i)]);
+        plot3([C(1) T(1,i)], [C(2) T(2,i)], [C(3) T(3,i)], 'g');
       end
 
       % draw the camera
