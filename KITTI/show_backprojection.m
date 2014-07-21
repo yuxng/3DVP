@@ -78,14 +78,29 @@ for img_idx = 1:nimages-1
     if strcmp(object.type, 'Car') == 1
         cad_index = find_closest_cad(cads, object);
         x3d = compute_3d_points(cads(cad_index).vertices, object);
+        if object.truncation == 0
+            width = object.x2 - object.x1;
+            height = object.y2 - object.y1;
+        else
+            x2d = projectToImage(x3d, P);
+            width = max(x2d(1,:)) - min(x2d(1,:));
+            height = max(x2d(2,:)) - min(x2d(2,:));
+        end
         face = cads(cad_index).faces;
         
         tmp = face + size(Vgt,2);
         Fgt = [Fgt; tmp];        
         Vgt = [Vgt x3d];
         
-        % get the bounding box center
-        c = [(object.x1 + object.x2)/2; (object.y1+object.y2)/2; 1];
+        if object.truncation == 0
+            % get the bounding box center
+            c = [(object.x1 + object.x2)/2; (object.y1+object.y2)/2; 1];
+        else
+            % use the object center instead of bounding box center
+            x3d = compute_3d_points_noscaling([0 0 0], object);
+            x2d = projectToImage(x3d, P);
+            c = [x2d; 1];
+        end
         % backprojection
         X = pinv(P) * c;
         X = X ./ X(4);
@@ -113,8 +128,7 @@ for img_idx = 1:nimages-1
         ub = [max(data.l) max(data.h) max(data.w) x(4)+15*pi/180 max(data.distance)];
         % optimize
         options = optimset('Algorithm', 'interior-point');
-        x = fmincon(@(x)compute_error_distance(x, vertices, C, X, P, Pv2c, ...
-            object.x2-object.x1, object.y2-object.y1),...
+        x = fmincon(@(x)compute_error_distance(x, vertices, C, X, P, Pv2c, width, height),...
             x, [], [], [], [], lb, ub, [], options);
         disp(x);
         disp([object.l object.h object.w object.ry]);

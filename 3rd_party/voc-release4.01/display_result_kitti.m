@@ -42,8 +42,6 @@ for i = 1:N
         bbox_draw = [bbox_pr(1), bbox_pr(2), bbox_pr(3)-bbox_pr(1), bbox_pr(4)-bbox_pr(2)];
         rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth',2);
         text(bbox_pr(1), bbox_pr(2), num2str(k), 'FontSize', 16, 'BackgroundColor', 'r');
-        
-
         til = sprintf('%s, s%d=%.2f', til, k, det(k,6));        
     end
     title(til);
