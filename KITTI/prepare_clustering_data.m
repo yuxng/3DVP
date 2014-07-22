@@ -22,8 +22,10 @@ azimuth = [];
 elevation = [];
 distance = [];
 occ_per = [];
+truncation = [];
+pattern = [];
 grid = [];
-for i = 1:N
+for i = 1:N %3740
     % load annotation
     filename = fullfile(path_ann, files(i).name);
     disp(filename);
@@ -44,6 +46,8 @@ for i = 1:N
             elevation(count) = object.elevation;
             distance(count) = object.distance;
             occ_per(count) = object.occ_per;
+            truncation(count) = object.truncation;
+            pattern{count} = object.pattern;
             grid(:,count) = object.grid(index);
         end
     end
@@ -58,4 +62,6 @@ data.azimuth = azimuth;
 data.elevation = elevation;
 data.distance = distance;
 data.occ_per = occ_per;
+data.truncation = truncation;
+data.pattern = pattern;
 data.grid = grid;

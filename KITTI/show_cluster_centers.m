@@ -35,7 +35,8 @@ for i = 1:N
     ind_plot = ind_plot + 1;
     draw_cad(cad, visibility_grid);
     view(data.azimuth(ind), data.elevation(ind));
-    title(num2str(ind));
+    til = sprintf('%d: truncation %.2f', ind, data.truncation(ind));
+    title(til);
     
     % show exemplar DPM
     filename = sprintf('../Exemplar_DPM/kitti_train/%s_%d_final.mat', cls, ind);
