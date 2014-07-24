@@ -111,9 +111,9 @@ for i = 1:N
             
             cid = det(k,5);
             pattern = data.pattern{cid};
+            index = find(pattern == 1);            
             % check if truncated pattern
-            if data.truncation(cid) > 0
-                index = find(pattern == 1);
+            if data.truncation(cid) > 0 && isempty(index) == 0
                 [y, x] = ind2sub(size(pattern), index);
                 cx = size(pattern, 2)/2;
                 cy = size(pattern, 1)/2;

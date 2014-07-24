@@ -1,5 +1,11 @@
 function data = prepare_clustering_data
 
+% KITTI path
+opt = globals();
+root_dir = opt.path_kitti_root;
+data_set = 'training';
+calib_dir = fullfile(root_dir,[data_set '/calib']);
+
 % load mean model
 cls = 'car';
 filename = sprintf('../Geometry/%s_mean.mat', cls);
@@ -25,7 +31,20 @@ occ_per = [];
 truncation = [];
 pattern = [];
 grid = [];
-for i = 1:N %3740
+translation = [];
+for i = 1:N%3740
+    img_idx = i - 1;
+    
+    % load the velo_to_cam matrix
+    R0_rect = readCalibration(calib_dir, img_idx, 4);
+    tmp = R0_rect';
+    tmp = tmp(1:9);
+    tmp = reshape(tmp, 3, 3);
+    tmp = tmp';
+    Pv2c = readCalibration(calib_dir, img_idx, 5);
+    Pv2c = tmp * Pv2c;
+    Pv2c = [Pv2c; 0 0 0 1];    
+    
     % load annotation
     filename = fullfile(path_ann, files(i).name);
     disp(filename);
@@ -48,7 +67,12 @@ for i = 1:N %3740
             occ_per(count) = object.occ_per;
             truncation(count) = object.truncation;
             pattern{count} = object.pattern;
-            grid(:,count) = object.grid(index);
+            grid(:,count) = object.grid(index);            
+            % transform to velodyne space
+            X = [object.t'; 1];
+            X = Pv2c\X;
+            X(4) = [];
+            translation(:,count) = X;
         end
     end
 end
@@ -65,3 +89,4 @@ data.occ_per = occ_per;
 data.truncation = truncation;
 data.pattern = pattern;
 data.grid = grid;
+data.translation = translation;
