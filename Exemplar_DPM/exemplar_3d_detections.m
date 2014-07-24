@@ -1,9 +1,12 @@
 function dets_3d = exemplar_3d_detections
 
+matlabpool open;
+
 addpath(genpath('../KITTI'));
 opt = my_globals();
 cls = 'car';
 threshold = -1;
+threshold_nms = 0.95;
 
 % load data
 object = load('../KITTI/data.mat');
@@ -45,12 +48,17 @@ dets = object.dets;
 N = numel(dets);
 
 dets_3d = cell(1,N);
-for i = 1:N
+parfor i = 1:N
     tic;
     det = dets{i};
     
+    % thresholding and nms
     flag = det(:,6) > threshold;
     det = det(flag,:);
+    if isempty(det) == 0
+        I = nms(det, threshold_nms);
+        det = det(I, :);    
+    end    
     
     num = size(det, 1);
     T = zeros(3, num);
@@ -205,3 +213,5 @@ end
 
 filename = sprintf('kitti_train/%s_test_3d.mat', cls);
 save(filename, 'dets_3d', '-v7.3');
+
+matlabpool close;
