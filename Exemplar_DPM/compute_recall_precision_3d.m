@@ -1,5 +1,5 @@
 % compute recall and viewpoint accuracy
-function [recall, precision, ap] = compute_recall_precision_kitti
+function [recall, precision, ap] = compute_recall_precision_3d(dets_3d)
 
 cls = 'car';
 
@@ -7,11 +7,6 @@ cls = 'car';
 object = load('kitti_ids.mat');
 ids = object.ids_val;
 M = numel(ids);
-
-% open prediction file
-filename = sprintf('kitti_train/%s_test.mat', cls);
-object = load(filename);
-dets_all = object.dets;
 
 % KITTI path
 globals;
@@ -44,7 +39,14 @@ for i = 1:M
     det = zeros(count(i), 1);
     
     % get predicted bounding box
-    dets = dets_all{img_idx + 1};    
+    det_3d = dets_3d{img_idx + 1};
+    n = numel(det_3d);
+    dets = zeros(n, 6);
+    for j = 1:n
+        dets(j,:) = [det_3d(j).x1 det_3d(j).y1 det_3d(j).x2 det_3d(j).y2 ...
+            det_3d(j).cid det_3d(j).score];
+    end
+    
     if isempty(dets) == 0
         I = nms(dets, 0.5);
         dets = dets(I, :);    
