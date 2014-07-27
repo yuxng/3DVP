@@ -1,7 +1,5 @@
 function dets_greedy = exemplar_greedy_occlusion_reasoning(dets_3d)
 
-matlabpool open;
-
 addpath(genpath('../KITTI'));
 
 % KITTI path
@@ -13,7 +11,7 @@ image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 
 M = numel(dets_3d);
 dets_greedy = cell(1, M);
-parfor id = 1:M
+for id = 1:M
     fprintf('%d', id);
     % read image
     img_idx = id - 1;  
@@ -173,5 +171,3 @@ end
 
 filename = 'kitti_train/car_test_greedy.mat';
 save(filename, 'dets_greedy', '-v7.3');
-
-matlabpool close;
