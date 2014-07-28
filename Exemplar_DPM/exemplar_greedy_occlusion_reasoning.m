@@ -1,4 +1,6 @@
-function dets_greedy = exemplar_greedy_occlusion_reasoning(dets_3d)
+function dets_greedy = exemplar_greedy_occlusion_reasoning
+
+matlabpool open;
 
 addpath(genpath('../KITTI'));
 
@@ -9,19 +11,25 @@ data_set = 'training';
 cam = 2;
 image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 
-M = numel(dets_3d);
+% read ids of validation images
+object = load('kitti_ids.mat');
+ids = [object.ids_train object.ids_val];
+M = numel(ids);
 dets_greedy = cell(1, M);
-for id = 1:M
-    fprintf('%d', id);
+
+parfor id = 1:M
     % read image
-    img_idx = id - 1;  
+    img_idx = ids(id);
+    fprintf('%d\n', img_idx);
     file_img = sprintf('%s/%06d.png',image_dir, img_idx);
     I = imread(file_img);  
     width = size(I, 2);
     height = size(I, 1);
 
     % get detection results
-    objects = dets_3d{img_idx + 1};
+    filename = sprintf('results/%06d_3d.mat', img_idx);
+    record = load(filename);
+    objects = record.objects;
     num = numel(objects);
     scores = zeros(1, num);
     distances = zeros(1, num);
@@ -171,3 +179,5 @@ end
 
 filename = 'kitti_train/car_test_greedy.mat';
 save(filename, 'dets_greedy', '-v7.3');
+
+matlabpool close;

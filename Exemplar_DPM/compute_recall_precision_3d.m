@@ -47,10 +47,10 @@ for i = 1:M
             det_3d(j).cid det_3d(j).score];
     end
     
-    if isempty(dets) == 0
-        I = nms(dets, 0.5);
-        dets = dets(I, :);    
-    end
+%     if isempty(dets) == 0
+%         I = nms(dets, 0.5);
+%         dets = dets(I, :);    
+%     end
     
     num(i) = size(dets, 1);
     % for each predicted bounding box
