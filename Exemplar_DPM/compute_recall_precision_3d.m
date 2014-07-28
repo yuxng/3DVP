@@ -105,9 +105,12 @@ fprintf('AP = %.4f\n', ap);
 % draw recall-precision and accuracy curve
 figure(1);
 hold on;
-plot(recall, precision, 'g', 'LineWidth',3);
-xlabel('Recall');
-ylabel('Precision');
+plot(recall, precision, 'b', 'LineWidth',3);
+h = xlabel('Recall');
+set(h, 'FontSize', 12);
+h = ylabel('Precision');
+set(h, 'FontSize', 12);
 tit = sprintf('Average Precision = %.1f', 100*ap);
-title(tit);
+h = title(tit);
+set(h, 'FontSize', 12);
 hold off;
