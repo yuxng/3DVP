@@ -1,7 +1,7 @@
 function display_result_kitti_one
 
 cls = 'car';
-threshold = -0.95;
+threshold = -0.9;
 
 % read detection results
 filename = sprintf('kitti_train/%s_test.mat', cls);
@@ -36,10 +36,10 @@ for i = 1:N
         continue;
     end
     
-%     if isempty(det) == 0
-%         I = nms(det, 0.5);
-%         det = det(I, :);    
-%     end    
+    if isempty(det) == 0
+        I = nms(det, 0.5);
+        det = det(I, :);    
+    end    
     
     num = size(det, 1);
     
@@ -47,10 +47,10 @@ for i = 1:N
     I = imread(file_img);
     
     imshow(I);
-    hold on;
+    hold on;    
 
     for k = 1:num
-        if det(k,6) > threshold
+        if det(k,6) > threshold || k < 5
             % get predicted bounding box
             bbox_pr = det(k,1:4);
             bbox_draw = [bbox_pr(1), bbox_pr(2), bbox_pr(3)-bbox_pr(1), bbox_pr(4)-bbox_pr(2)];

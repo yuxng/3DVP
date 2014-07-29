@@ -1,7 +1,7 @@
 function display_result_3d(dets_3d)
 
 addpath(genpath('../KITTI'));
-threshold = -0.95;
+threshold = -inf;
 
 % read ids of validation images
 object = load('kitti_ids.mat');
@@ -27,10 +27,22 @@ calib_dir = fullfile(root_dir,[data_set '/calib']);
 
 figure;
 ind_plot = 1;
-for i = 16:N
+for i = 1:N
     img_idx = ids(i);    
     objects = dets_3d{img_idx + 1};
     num = numel(objects);
+    
+    % construct detections
+    dets = zeros(num, 6);    
+    for k = 1:num
+        dets(k,:) = [objects(k).x1 objects(k).y1 objects(k).x2 objects(k).y2 ...
+                k objects(k).score];            
+    end
+    if isempty(dets) == 0
+        I = nms(dets, 0.5);
+        dets = dets(I, :);    
+    end
+    num = size(dets, 1);
     
     % load the velo_to_cam matrix
     R0_rect = readCalibration(calib_dir, img_idx, 4);
@@ -51,10 +63,11 @@ for i = 16:N
     file_img = sprintf('%s/%06d.png',image_dir, img_idx);
     I = imread(file_img);
     for k = 1:num
-        if objects(k).score > threshold
+        if dets(k,6) > threshold
             % get predicted bounding box
-            bbox = [objects(k).x1 objects(k).y1 objects(k).x2 objects(k).y2];       
-            im = create_mask_image(objects(k).pattern);
+            bbox = dets(k,1:4);
+            ind = dets(k,5);
+            im = create_mask_image(objects(ind).pattern);
             h = size(im, 1);
             w = size(im, 2);
             x = max(1, floor(bbox(1)));
@@ -71,9 +84,9 @@ for i = 16:N
 
     til = sprintf('%d', i);
     for k = 1:num
-        if objects(k).score > threshold
+        if dets(k,6) > threshold
             % get predicted bounding box
-            bbox = [objects(k).x1 objects(k).y1 objects(k).x2 objects(k).y2];
+            bbox = dets(k,1:4);
             bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
             rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);            
             text(bbox(1), bbox(2), num2str(k), 'FontSize', 16, 'BackgroundColor', 'r');
@@ -88,7 +101,8 @@ for i = 16:N
     Vpr = [];
     Fpr = [];
     for k = 1:num
-        object = objects(k);
+        ind = dets(k,5);
+        object = objects(ind);
         if strcmp(object.type, 'Car') == 1 && object.score > threshold
             cad_index = find_closest_cad(cads, object);
             x3d = compute_3d_points(cads(cad_index).vertices, object);
@@ -126,7 +140,7 @@ for i = 16:N
 
         axis tight;
         title('3D Estimation');
-        view(30, 30);
+        view(250, 20);
         hold off;
     end
     ind_plot = ind_plot + 1;
@@ -175,7 +189,7 @@ for i = 16:N
 
         axis tight;
         title('3D Ground Truth');
-        view(30, 30);
+        view(250, 20);
         hold off;
     else
         cla;
