@@ -1,7 +1,7 @@
-function display_result_kitti
+function display_result_kitti_one
 
 cls = 'car';
-threshold = -0.9;
+threshold = -0.95;
 
 % read detection results
 filename = sprintf('kitti_train/%s_test.mat', cls);
@@ -22,7 +22,6 @@ cam = 2;
 image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 
 figure;
-ind_plot = 1;
 for i = 1:N
     img_idx = ids(i);    
     det = dets{img_idx + 1};
@@ -36,12 +35,17 @@ for i = 1:N
         fprintf('maximum score %.2f is smaller than threshold\n', max(det(:,6)));
         continue;
     end
+    
+%     if isempty(det) == 0
+%         I = nms(det, 0.5);
+%         det = det(I, :);    
+%     end    
+    
     num = size(det, 1);
     
     file_img = sprintf('%s/%06d.png',image_dir, img_idx);
     I = imread(file_img);
     
-    subplot(4, 2, ind_plot);
     imshow(I);
     hold on;
 
@@ -58,11 +62,6 @@ for i = 1:N
 %             text(bbox_pr(1), bbox_pr(2), num2str(k), 'FontSize', 16, 'BackgroundColor', 'r');
         end
     end
-    subplot(4, 2, ind_plot);
     hold off;
-    ind_plot = ind_plot + 1;
-    if ind_plot > 8
-        ind_plot = 1;
-        pause;
-    end
+    pause;
 end

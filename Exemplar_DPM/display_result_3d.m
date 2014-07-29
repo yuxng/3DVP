@@ -1,6 +1,7 @@
 function display_result_3d(dets_3d)
 
 addpath(genpath('../KITTI'));
+threshold = -0.95;
 
 % read ids of validation images
 object = load('kitti_ids.mat');
@@ -26,7 +27,7 @@ calib_dir = fullfile(root_dir,[data_set '/calib']);
 
 figure;
 ind_plot = 1;
-for i = 1:N
+for i = 16:N
     img_idx = ids(i);    
     objects = dets_3d{img_idx + 1};
     num = numel(objects);
@@ -50,17 +51,19 @@ for i = 1:N
     file_img = sprintf('%s/%06d.png',image_dir, img_idx);
     I = imread(file_img);
     for k = 1:num
-        % get predicted bounding box
-        bbox = [objects(k).x1 objects(k).y1 objects(k).x2 objects(k).y2];       
-        im = create_mask_image(objects(k).pattern);
-        h = size(im, 1);
-        w = size(im, 2);
-        x = max(1, floor(bbox(1)));
-        y = max(1, floor(bbox(2)));
-        Isub = I(y:y+h-1, x:x+w-1, :);
-        index = im == 255;
-        im(index) = Isub(index);
-        I(y:y+h-1, x:x+w-1, :) = uint8(0.1*Isub + 0.9*im);        
+        if objects(k).score > threshold
+            % get predicted bounding box
+            bbox = [objects(k).x1 objects(k).y1 objects(k).x2 objects(k).y2];       
+            im = create_mask_image(objects(k).pattern);
+            h = size(im, 1);
+            w = size(im, 2);
+            x = max(1, floor(bbox(1)));
+            y = max(1, floor(bbox(2)));
+            Isub = I(y:y+h-1, x:x+w-1, :);
+            index = im == 255;
+            im(index) = Isub(index);
+            I(y:y+h-1, x:x+w-1, :) = uint8(0.1*Isub + 0.9*im);
+        end
     end    
     
     imshow(I);
@@ -68,12 +71,14 @@ for i = 1:N
 
     til = sprintf('%d', i);
     for k = 1:num
-        % get predicted bounding box
-        bbox = [objects(k).x1 objects(k).y1 objects(k).x2 objects(k).y2];
-        bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
-        rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);            
-        text(bbox(1), bbox(2), num2str(k), 'FontSize', 16, 'BackgroundColor', 'r');
-        til = sprintf('%s, s%d=%.2f', til, k, objects(k).score);       
+        if objects(k).score > threshold
+            % get predicted bounding box
+            bbox = [objects(k).x1 objects(k).y1 objects(k).x2 objects(k).y2];
+            bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
+            rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);            
+            text(bbox(1), bbox(2), num2str(k), 'FontSize', 16, 'BackgroundColor', 'r');
+            til = sprintf('%s, s%d=%.2f', til, k, objects(k).score);
+        end
     end
     title(til);
     hold off;
@@ -84,7 +89,7 @@ for i = 1:N
     Fpr = [];
     for k = 1:num
         object = objects(k);
-        if strcmp(object.type, 'Car') == 1
+        if strcmp(object.type, 'Car') == 1 && object.score > threshold
             cad_index = find_closest_cad(cads, object);
             x3d = compute_3d_points(cads(cad_index).vertices, object);
             face = cads(cad_index).faces;
@@ -109,13 +114,14 @@ for i = 1:N
 
         % draw the ground plane
         h = 1.73;
-        s = max(max(abs(Vpr(1:2,:))));
+        sx = max(abs(Vpr(1,:)));
+        sy = 3*max(abs(Vpr(2,:)));
         c = [mean(Vpr(1:2,:), 2); 0]';
         plane_vertex = zeros(4,3);
-        plane_vertex(1,:) = c + [-s -s -h];
-        plane_vertex(2,:) = c + [s -s -h];
-        plane_vertex(3,:) = c + [s s -h];
-        plane_vertex(4,:) = c + [-s s -h];
+        plane_vertex(1,:) = c + [-sx -sy -h];
+        plane_vertex(2,:) = c + [sx -sy -h];
+        plane_vertex(3,:) = c + [sx sy -h];
+        plane_vertex(4,:) = c + [-sx sy -h];
         patch('Faces', [1 2 3 4], 'Vertices', plane_vertex, 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.5);
 
         axis tight;
@@ -157,13 +163,14 @@ for i = 1:N
 
         % draw the ground plane
         h = 1.73;
-        s = max(max(abs(Vgt(1:2,:))));
+        sx = max(abs(Vgt(1,:)));
+        sy = 3*max(abs(Vgt(2,:)));
         c = [mean(Vgt(1:2,:), 2); 0]';
         plane_vertex = zeros(4,3);
-        plane_vertex(1,:) = c + [-s -s -h];
-        plane_vertex(2,:) = c + [s -s -h];
-        plane_vertex(3,:) = c + [s s -h];
-        plane_vertex(4,:) = c + [-s s -h];
+        plane_vertex(1,:) = c + [-sx -sy -h];
+        plane_vertex(2,:) = c + [sx -sy -h];
+        plane_vertex(3,:) = c + [sx sy -h];
+        plane_vertex(4,:) = c + [-sx sy -h];
         patch('Faces', [1 2 3 4], 'Vertices', plane_vertex, 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.5);
 
         axis tight;
