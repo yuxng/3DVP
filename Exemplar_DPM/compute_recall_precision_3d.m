@@ -20,6 +20,7 @@ energy = [];
 correct = [];
 correct_easy = [];
 correct_moderate = [];
+correct_view = [];
 count = zeros(M,1);
 count_easy = zeros(M,1);
 count_moderate = zeros(M,1);
@@ -36,11 +37,21 @@ for i = 1:M
     bbox = zeros(n, 4);
     occlusion = zeros(n, 1);
     truncation = zeros(n, 1);
+    view_gt = zeros(n, 1);
     for j = 1:n
         bbox(j,:) = [objects(clsinds(j)).x1 objects(clsinds(j)).y1 ...
             objects(clsinds(j)).x2 objects(clsinds(j)).y2];
         occlusion(j) = objects(clsinds(j)).occlusion;
         truncation(j) = objects(clsinds(j)).truncation;
+        azimuth = objects(clsinds(j)).alpha*180/pi;
+        if azimuth < 0
+            azimuth = azimuth + 360;
+        end
+        azimuth = azimuth - 90;
+        if azimuth < 0
+            azimuth = azimuth + 360;
+        end
+        view_gt(j) = azimuth;
     end
     count(i) = size(bbox, 1);
     count_easy(i) = sum(occlusion == 0 & truncation < 0.15);
@@ -53,7 +64,7 @@ for i = 1:M
     dets = zeros(n, 6);
     for j = 1:n
         dets(j,:) = [det_3d(j).x1 det_3d(j).y1 det_3d(j).x2 det_3d(j).y2 ...
-            det_3d(j).cid det_3d(j).score];
+            det_3d(j).alpha det_3d(j).score];
     end
     
 %     if isempty(dets) == 0
@@ -67,6 +78,15 @@ for i = 1:M
         num_pr = num_pr + 1;
         energy(num_pr) = dets(j, 6);        
         bbox_pr = dets(j, 1:4);
+        azimuth = dets(j, 5)*180/pi;
+        if azimuth < 0
+            azimuth = azimuth + 360;
+        end
+        azimuth = azimuth - 90;
+        if azimuth < 0
+            azimuth = azimuth + 360;
+        end
+        view_pr = azimuth;
         
         % compute box overlap
         if isempty(bbox) == 0
@@ -75,6 +95,15 @@ for i = 1:M
             if maxo >= 0.5 && det(index) == 0
                 correct(num_pr) = 1;
                 det(index) = 1;
+                
+                amax = max(view_gt(index), view_pr);
+                amin = min(view_gt(index), view_pr);
+                diff = min(amax - amin, 360 - amax + amin);
+                if diff < 15
+                    correct_view(num_pr) = 1;
+                else
+                    correct_view(num_pr) = 0;
+                end
                 
                 if occlusion(index) == 0 && truncation(index) < 0.15
                     correct_easy(num_pr) = 1;
@@ -89,11 +118,13 @@ for i = 1:M
                 end                
             else
                 correct(num_pr) = 0;
+                correct_view(num_pr) = 0;
                 correct_easy(num_pr) = 0;
                 correct_moderate(num_pr) = 0;
             end
         else
             correct(num_pr) = 0;
+            correct_view(num_pr) = 0;
             correct_easy(num_pr) = 0;
             correct_moderate(num_pr) = 0;
         end
@@ -102,16 +133,19 @@ end
 
 [threshold, index] = sort(energy, 'descend');
 correct = correct(index);
+correct_view = correct_view(index);
 correct_easy = correct_easy(index);
 correct_moderate = correct_moderate(index);
 n = numel(threshold);
 recall = zeros(n,1);
 precision = zeros(n,1);
+accuracy = zeros(n,1);
 recall_easy = zeros(n,1);
 precision_easy = zeros(n,1);
 recall_moderate = zeros(n,1);
 precision_moderate = zeros(n,1);
 num_correct = 0;
+num_correct_view = 0;
 num_correct_easy = 0;
 num_correct_moderate = 0;
 num_positive = 0;
@@ -121,11 +155,17 @@ for i = 1:n
     % compute precision and recall for all
     num_positive = num_positive + 1;
     num_correct = num_correct + correct(i);
+    num_correct_view = num_correct_view + correct_view(i);
     if num_positive ~= 0
         precision(i) = num_correct / num_positive;
     else
         precision(i) = 0;
     end
+    if num_positive ~= 0
+        accuracy(i) = num_correct_view / num_positive;
+    else
+        accuracy(i) = 0;
+    end    
     recall(i) = num_correct / sum(count);
     
     % compute precision and recall for easy
@@ -155,6 +195,9 @@ end
 
 ap = VOCap(recall, precision);
 fprintf('AP_all = %.4f\n', ap);
+
+aa = VOCap(recall, accuracy);
+fprintf('AA = %.4f\n', aa);
 
 ap_easy = VOCap(recall_easy, precision_easy);
 fprintf('AP_easy = %.4f\n', ap_easy);
