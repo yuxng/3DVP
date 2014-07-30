@@ -21,6 +21,7 @@ correct = [];
 correct_easy = [];
 correct_moderate = [];
 correct_view = [];
+error = [];
 count = zeros(M,1);
 count_easy = zeros(M,1);
 count_moderate = zeros(M,1);
@@ -38,6 +39,7 @@ for i = 1:M
     occlusion = zeros(n, 1);
     truncation = zeros(n, 1);
     view_gt = zeros(n, 1);
+    translation = zeros(n, 3);
     for j = 1:n
         bbox(j,:) = [objects(clsinds(j)).x1 objects(clsinds(j)).y1 ...
             objects(clsinds(j)).x2 objects(clsinds(j)).y2];
@@ -52,6 +54,7 @@ for i = 1:M
             azimuth = azimuth + 360;
         end
         view_gt(j) = azimuth;
+        translation(j,:) = objects(clsinds(j)).t;
     end
     count(i) = size(bbox, 1);
     count_easy(i) = sum(occlusion == 0 & truncation < 0.15);
@@ -61,10 +64,10 @@ for i = 1:M
     % get predicted bounding box
     det_3d = dets_3d{img_idx + 1};
     n = numel(det_3d);
-    dets = zeros(n, 6);
+    dets = zeros(n, 9);
     for j = 1:n
         dets(j,:) = [det_3d(j).x1 det_3d(j).y1 det_3d(j).x2 det_3d(j).y2 ...
-            det_3d(j).alpha det_3d(j).score];
+            det_3d(j).alpha det_3d(j).score det_3d(j).t(1) det_3d(j).t(2) det_3d(j).t(3)];
     end
     
 %     if isempty(dets) == 0
@@ -78,6 +81,7 @@ for i = 1:M
         num_pr = num_pr + 1;
         energy(num_pr) = dets(j, 6);        
         bbox_pr = dets(j, 1:4);
+        t = dets(j, 7:9);
         azimuth = dets(j, 5)*180/pi;
         if azimuth < 0
             azimuth = azimuth + 360;
@@ -115,18 +119,22 @@ for i = 1:M
                     correct_moderate(num_pr) = 1;
                 else
                     correct_moderate(num_pr) = -1;
-                end                
+                end
+                
+                error(num_pr) = norm(t - translation(index,:));
             else
                 correct(num_pr) = 0;
                 correct_view(num_pr) = 0;
                 correct_easy(num_pr) = 0;
                 correct_moderate(num_pr) = 0;
+                error(num_pr) = -1;
             end
         else
             correct(num_pr) = 0;
             correct_view(num_pr) = 0;
             correct_easy(num_pr) = 0;
             correct_moderate(num_pr) = 0;
+            error(num_pr) = -1;
         end
     end
 end
@@ -136,6 +144,7 @@ correct = correct(index);
 correct_view = correct_view(index);
 correct_easy = correct_easy(index);
 correct_moderate = correct_moderate(index);
+error = error(index);
 n = numel(threshold);
 recall = zeros(n,1);
 precision = zeros(n,1);
@@ -204,6 +213,15 @@ fprintf('AP_easy = %.4f\n', ap_easy);
 
 ap_moderate = VOCap(recall_moderate, precision_moderate);
 fprintf('AP_moderate = %.4f\n', ap_moderate);
+
+fprintf('Total number of objects %d\n', sum(count));
+fprintf('Number of detected objects %d\n', sum(correct));
+fprintf('Mean distance error %f\n', mean(error(correct == 1)));
+index = error ~= -1;
+error = error(index);
+r1 = numel(find(error < 1)) / numel(error);
+r2 = numel(find(error < 2)) / numel(error);
+fprintf('%f smaller than 1m, %f smaller than 2m\n', r1, r2);
 
 % draw recall-precision and accuracy curve
 figure(1);
