@@ -3,7 +3,7 @@ function show_cluster_centers
 opt = globals;
 
 % load data
-object = load('data.mat');
+object = load('data_trainval.mat');
 data = object.data;
 idx = data.idx;
 
@@ -39,7 +39,7 @@ for i = 1:N
     title(til);
     
     % show exemplar DPM
-    filename = sprintf('../Exemplar_DPM/kitti_train/%s_%d_final.mat', cls, ind);
+    filename = sprintf('../Exemplar_DPM/kitti_test/%s_%d_final.mat', cls, ind);
     if exist(filename, 'file')
         object = load(filename);
         model = object.model;

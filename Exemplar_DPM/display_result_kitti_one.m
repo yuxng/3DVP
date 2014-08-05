@@ -4,20 +4,20 @@ cls = 'car';
 threshold = -0.9;
 
 % read detection results
-filename = sprintf('kitti_train/%s_test.mat', cls);
+filename = sprintf('kitti_test/%s_test.mat', cls);
 object = load(filename);
 dets = object.dets;
 fprintf('load detection done\n');
 
 % read ids of validation images
 object = load('kitti_ids.mat');
-ids = object.ids_val;
+ids = object.ids_test;
 N = numel(ids);
 
 % KITTI path
 globals;
 root_dir = KITTIroot;
-data_set = 'training';
+data_set = 'testing';
 cam = 2;
 image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 
@@ -50,7 +50,7 @@ for i = 1:N
     hold on;    
 
     for k = 1:num
-        if det(k,6) > threshold || k < 5
+        if det(k,6) > threshold %|| k < 5
             % get predicted bounding box
             bbox_pr = det(k,1:4);
             bbox_draw = [bbox_pr(1), bbox_pr(2), bbox_pr(3)-bbox_pr(1), bbox_pr(4)-bbox_pr(2)];
@@ -59,7 +59,7 @@ for i = 1:N
 %             y = [bbox_pr(2) bbox_pr(2) bbox_pr(4) bbox_pr(4)];
 %             patch(x, y, 'g', 'FaceAlpha', 0.1, 'EdgeAlpha', 0);
             
-%             text(bbox_pr(1), bbox_pr(2), num2str(k), 'FontSize', 16, 'BackgroundColor', 'r');
+            text(bbox_pr(1), bbox_pr(2), num2str(det(k,5)), 'FontSize', 16, 'BackgroundColor', 'r');
         end
     end
     hold off;

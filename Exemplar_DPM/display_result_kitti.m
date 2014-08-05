@@ -4,20 +4,20 @@ cls = 'car';
 threshold = -0.9;
 
 % read detection results
-filename = sprintf('kitti_train/%s_test.mat', cls);
+filename = sprintf('kitti_test/%s_test.mat', cls);
 object = load(filename);
 dets = object.dets;
 fprintf('load detection done\n');
 
 % read ids of validation images
 object = load('kitti_ids.mat');
-ids = object.ids_val;
+ids = object.ids_test;
 N = numel(ids);
 
 % KITTI path
 globals;
 root_dir = KITTIroot;
-data_set = 'training';
+data_set = 'testing';
 cam = 2;
 image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 

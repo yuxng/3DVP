@@ -11,7 +11,7 @@ image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 
 index = cad.grid == 1;
 
-h = figure(1);
+h = figure;
 cla;
 
 ind_plot = 1;

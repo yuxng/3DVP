@@ -4,7 +4,7 @@ cls = 'car';
 threshold = -inf;
 
 % load data
-object = load('../KITTI/data.mat');
+object = load('../KITTI/data_trainval.mat');
 data = object.data;
 idx = data.idx;
 centers = double(unique(idx));
@@ -28,7 +28,7 @@ for i = 1:N
     rlen = rmax - rmin;
     lim = [rmin - 0.1*rlen rmax + 0.1*rlen];
     
-    filename = sprintf('kitti_train/%s_%d_test.mat', cls, cid);
+    filename = sprintf('kitti_test/%s_%d_test.mat', cls, cid);
     fprintf('load %s\n', filename);
     object = load(filename);
     boxes1 = object.boxes1;
@@ -40,7 +40,7 @@ for i = 1:N
     end
 end
 
-filename = sprintf('kitti_train/%s_test.mat', cls);
+filename = sprintf('kitti_test/%s_test.mat', cls);
 save(filename, 'dets', '-v7.3');
 
 
