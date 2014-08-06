@@ -1,4 +1,4 @@
-function dets = exemplar_combine_detections
+function exemplar_combine_detections
 
 cls = 'car';
 threshold = -inf;
@@ -14,6 +14,8 @@ N = numel(centers);
 dets = [];
 for i = 1:N
     cid = centers(i);
+    num = numel(find(idx == cid));
+    fprintf('cluster %d: %d training examples\n', cid, num);
     
     % compute the range of this cluster
     % compute the range of bounding box center, width and height
@@ -29,7 +31,6 @@ for i = 1:N
     lim = [rmin - 0.1*rlen rmax + 0.1*rlen];
     
     filename = sprintf('kitti_train/%s_%d_test.mat', cls, cid);
-    fprintf('load %s\n', filename);
     object = load(filename);
     boxes1 = object.boxes1;
     

@@ -46,12 +46,14 @@ for i = 1:M
     bbox = zeros(n, 4);
     occlusion = zeros(n, 1);
     truncation = zeros(n, 1);
+    height = zeros(n, 1);
     view_gt = zeros(n, 1);    
     for j = 1:n
         bbox(j,:) = [objects(clsinds(j)).x1 objects(clsinds(j)).y1 ...
             objects(clsinds(j)).x2 objects(clsinds(j)).y2];
         occlusion(j) = objects(clsinds(j)).occlusion;
         truncation(j) = objects(clsinds(j)).truncation;
+        height(j) = objects(clsinds(j)).y2 - objects(clsinds(j)).y1;
         azimuth = objects(clsinds(j)).alpha*180/pi;
         if azimuth < 0
             azimuth = azimuth + 360;
@@ -63,8 +65,8 @@ for i = 1:M
         view_gt(j) = azimuth;        
     end
     count(i) = size(bbox, 1);
-    count_easy(i) = sum(occlusion == 0 & truncation < 0.15);
-    count_moderate(i) = sum(occlusion < 2 & truncation < 0.3);    
+    count_easy(i) = sum(occlusion == 0 & truncation < 0.15 & height > 40);
+    count_moderate(i) = sum(occlusion < 2 & truncation < 0.3 & height > 25);
     det = zeros(count(i), 1);
     
     % get predicted bounding box
@@ -102,13 +104,13 @@ for i = 1:M
                     correct_view(num_pr) = 0;
                 end                
                 
-                if occlusion(index) == 0 && truncation(index) < 0.15
+                if occlusion(index) == 0 && truncation(index) < 0.15 && height(index) > 40
                     correct_easy(num_pr) = 1;
                 else
                     correct_easy(num_pr) = -1;
                 end
                 
-                if occlusion(index) < 2 && truncation(index) < 0.3
+                if occlusion(index) < 2 && truncation(index) < 0.3 && height(index) > 25
                     correct_moderate(num_pr) = 1;
                 else
                     correct_moderate(num_pr) = -1;
@@ -150,9 +152,12 @@ num_positive_easy = 0;
 num_positive_moderate = 0;
 for i = 1:n
     % compute precision and recall for all
-    num_positive = num_positive + 1;
-    num_correct = num_correct + correct(i);
-    num_correct_view = num_correct_view + correct_view(i);    
+    if correct(i) ~= -1
+        num_positive = num_positive + 1;
+        num_correct = num_correct + correct(i);
+        num_correct_view = num_correct_view + correct_view(i);            
+    end
+    
     if num_positive ~= 0
         precision(i) = num_correct / num_positive;
     else

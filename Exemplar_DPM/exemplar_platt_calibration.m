@@ -17,7 +17,7 @@ end
 
 % read ids of validation images
 object = load('kitti_ids.mat');
-ids = [object.ids_train object.ids_val];
+ids = object.ids_train;
 M = numel(ids);
 
 idx = data.idx;
@@ -37,9 +37,10 @@ for i = 1:N
     os = [];
     count = 0;
     for j = 1:M
-        bbox_pr = boxes{j};
+        id = ids(j);
+        bbox_pr = boxes{id+1};
         % find ground truth boxes
-        flag = ids_gt == j-1 & idx' == cid;
+        flag = ids_gt == id & idx' == cid;
         bbox_gt = data.bbox(:,flag == 1)';
         % compute overlap
         for k = 1:min(size(bbox_pr,1), 100)
