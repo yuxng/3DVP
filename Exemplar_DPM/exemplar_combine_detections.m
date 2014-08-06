@@ -4,7 +4,7 @@ cls = 'car';
 threshold = -inf;
 
 % load data
-object = load('../KITTI/data_trainval.mat');
+object = load('../KITTI/data.mat');
 data = object.data;
 idx = data.idx;
 centers = double(unique(idx));
@@ -28,11 +28,21 @@ for i = 1:N
     rlen = rmax - rmin;
     lim = [rmin - 0.1*rlen rmax + 0.1*rlen];
     
-    filename = sprintf('kitti_test/%s_%d_test.mat', cls, cid);
+    filename = sprintf('kitti_train/%s_%d_test.mat', cls, cid);
     fprintf('load %s\n', filename);
     object = load(filename);
     boxes1 = object.boxes1;
-    boxes_new = cellfun(@(x) process_boxes(x, cid, threshold, lim), boxes1, 'UniformOutput', false);
+    
+    % load the calibration weights
+    filename = sprintf('kitti_train/%s_%d_calib.mat', cls, cid);
+    if exist(filename, 'file') == 0
+        beta = [];
+    else
+        object = load(filename);
+        beta = object.beta;
+    end
+    
+    boxes_new = cellfun(@(x) process_boxes(x, cid, threshold, lim, beta), boxes1, 'UniformOutput', false);
     if i == 1
         dets = boxes_new;
     else
@@ -40,11 +50,11 @@ for i = 1:N
     end
 end
 
-filename = sprintf('kitti_test/%s_test.mat', cls);
+filename = sprintf('kitti_train/%s_test.mat', cls);
 save(filename, 'dets', '-v7.3');
 
 
-function boxes_new = process_boxes(boxes, cid, threshold, lim)
+function boxes_new = process_boxes(boxes, cid, threshold, lim, beta)
 
 if isempty(boxes) == 1
     boxes_new = [];
@@ -60,6 +70,12 @@ else
         boxes_new = [];
     else
         tmp = boxes(index,:);
-        boxes_new = [tmp(:,1:4) cid*ones(size(index)) tmp(:,5)];
+        scores = tmp(:,5);
+        if isempty(beta) == 1
+            s = scores;
+        else
+            s = 1./(1+exp(-beta(1)*(scores-beta(2))));
+        end
+        boxes_new = [tmp(:,1:4) cid*ones(size(index)) s];
     end
 end

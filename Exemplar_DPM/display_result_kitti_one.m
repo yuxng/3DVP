@@ -2,22 +2,35 @@ function display_result_kitti_one
 
 cls = 'car';
 threshold = -0.9;
+is_train = 0;
 
 % read detection results
-filename = sprintf('kitti_test/%s_test.mat', cls);
+if is_train
+    filename = sprintf('kitti_train/%s_test.mat', cls);
+else
+    filename = sprintf('kitti_test/%s_test.mat', cls);
+end
 object = load(filename);
 dets = object.dets;
 fprintf('load detection done\n');
 
 % read ids of validation images
 object = load('kitti_ids.mat');
-ids = object.ids_test;
+if is_train
+    ids = object.ids_val;
+else
+    ids = object.ids_test;
+end
 N = numel(ids);
 
 % KITTI path
 globals;
 root_dir = KITTIroot;
-data_set = 'testing';
+if is_train
+    data_set = 'training';
+else
+    data_set = 'testing';
+end
 cam = 2;
 image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 
