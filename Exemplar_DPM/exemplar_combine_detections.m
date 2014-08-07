@@ -2,9 +2,14 @@ function exemplar_combine_detections
 
 cls = 'car';
 threshold = -inf;
+is_train = 0;
 
 % load data
-object = load('../KITTI/data.mat');
+if is_train == 1
+    object = load('../KITTI/data.mat');
+else
+    object = load('../KITTI/data_trainval.mat');
+end
 data = object.data;
 idx = data.idx;
 centers = double(unique(idx));
@@ -30,12 +35,20 @@ for i = 1:N
     rlen = rmax - rmin;
     lim = [rmin - 0.1*rlen rmax + 0.1*rlen];
     
-    filename = sprintf('kitti_train/%s_%d_test.mat', cls, cid);
+    if is_train == 1
+        filename = sprintf('kitti_train/%s_%d_test.mat', cls, cid);
+    else
+        filename = sprintf('kitti_test/%s_%d_test.mat', cls, cid);
+    end
     object = load(filename);
     boxes1 = object.boxes1;
     
     % load the calibration weights
-    filename = sprintf('kitti_train/%s_%d_calib.mat', cls, cid);
+    if is_train == 1
+        filename = sprintf('kitti_train/%s_%d_calib.mat', cls, cid);
+    else
+        filename = sprintf('kitti_test/%s_%d_calib.mat', cls, cid);
+    end
     if exist(filename, 'file') == 0
         beta = [];
     else
@@ -44,14 +57,18 @@ for i = 1:N
     end
     
     boxes_new = cellfun(@(x) process_boxes(x, cid, threshold, lim, beta), boxes1, 'UniformOutput', false);
-    if i == 1
+    if isempty(dets) == 1
         dets = boxes_new;
     else
         dets = cellfun(@(x,y) [x; y], dets, boxes_new, 'UniformOutput', false);
     end
 end
 
-filename = sprintf('kitti_train/%s_test.mat', cls);
+if is_train == 1
+    filename = sprintf('kitti_train/%s_test.mat', cls);
+else
+    filename = sprintf('kitti_test/%s_test.mat', cls);
+end
 save(filename, 'dets', '-v7.3');
 
 

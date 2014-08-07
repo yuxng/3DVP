@@ -1,9 +1,14 @@
 function exemplar_platt_calibration
 
 cls = 'car';
+is_train = 0;
 
 % load data
-object = load('../KITTI/data.mat');
+if is_train == 1
+    object = load('../KITTI/data.mat');
+else
+    object = load('../KITTI/data_trainval.mat');
+end
 data = object.data;
 
 % convert image names to ids
@@ -17,7 +22,11 @@ end
 
 % read ids of validation images
 object = load('kitti_ids.mat');
-ids = object.ids_train;
+if is_train == 1
+    ids = object.ids_train;
+else
+    ids = [object.ids_train object.ids_val];
+end
 M = numel(ids);
 
 idx = data.idx;
@@ -29,7 +38,11 @@ for i = 1:N
     cid = centers(i);
     
     % load detection results
-    filename = sprintf('kitti_train/%s_%d_test.mat', cls, cid);
+    if is_train == 1
+        filename = sprintf('kitti_train/%s_%d_test.mat', cls, cid);
+    else
+        filename = sprintf('kitti_test/%s_%d_train.mat', cls, cid);
+    end
     object = load(filename);
     boxes = object.boxes1;
     
@@ -57,7 +70,11 @@ for i = 1:N
     
     % learn the sigmod function
     beta = exemplar_learn_sigmoid(scores, os);
-    filename = sprintf('kitti_train/%s_%d_calib.mat', cls, cid);
+    if is_train == 1
+        filename = sprintf('kitti_train/%s_%d_calib.mat', cls, cid);
+    else
+        filename = sprintf('kitti_test/%s_%d_calib.mat', cls, cid);
+    end
     disp(filename);
     save(filename, 'beta');    
 end
