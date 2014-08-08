@@ -3,10 +3,10 @@ function compute_recall_precision_kitti_cpp
 globals;
 pascal_init;
 
-command = './evaluate_object results_kitti_dpm';
+command = './evaluate_object results_kitti_train';
 system(command);
 
-filename = 'results_kitti_dpm/plot/car_detection.txt';
+filename = 'results_kitti_train/plot/car_detection.txt';
 data = load(filename);
 
 recall = data(:,1);
