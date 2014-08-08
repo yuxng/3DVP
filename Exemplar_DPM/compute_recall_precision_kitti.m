@@ -91,7 +91,7 @@ for i = 1:M
         if isempty(bbox) == 0
             o = boxoverlap(bbox, bbox_pr);
             [maxo, index] = max(o);
-            if maxo >= 0.5 && det(index) == 0
+            if maxo >= 0.7 && det(index) == 0
                 correct(num_pr) = 1;
                 det(index) = 1;
                 

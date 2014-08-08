@@ -2,7 +2,8 @@ function exemplar_combine_detections
 
 cls = 'car';
 threshold = -inf;
-is_train = 0;
+is_train = 1;
+is_calibration = 0;
 
 % load data
 if is_train == 1
@@ -44,16 +45,20 @@ for i = 1:N
     boxes1 = object.boxes1;
     
     % load the calibration weights
-    if is_train == 1
-        filename = sprintf('kitti_train/%s_%d_calib.mat', cls, cid);
+    if is_calibration == 1
+        if is_train == 1
+            filename = sprintf('kitti_train/%s_%d_calib.mat', cls, cid);
+        else
+            filename = sprintf('kitti_test/%s_%d_calib.mat', cls, cid);
+        end
+        if exist(filename, 'file') == 0
+            beta = [];
+        else
+            object = load(filename);
+            beta = object.beta;
+        end
     else
-        filename = sprintf('kitti_test/%s_%d_calib.mat', cls, cid);
-    end
-    if exist(filename, 'file') == 0
         beta = [];
-    else
-        object = load(filename);
-        beta = object.beta;
     end
     
     boxes_new = cellfun(@(x) process_boxes(x, cid, threshold, lim, beta), boxes1, 'UniformOutput', false);

@@ -1,20 +1,33 @@
 function exemplar_write_kitti_results
 
 cls = 'car';
+is_train = 1;
 
 % read detection results
-filename = sprintf('kitti_test/%s_test.mat', cls);
+if is_train == 1
+    filename = sprintf('kitti_train/%s_test.mat', cls);
+else
+    filename = sprintf('kitti_test/%s_test.mat', cls);
+end
 object = load(filename);
 dets = object.dets;
 fprintf('load detection done\n');
 
 % load clustering data
-object = load('../KITTI/data_trainval.mat');
+if is_train == 1
+    object = load('../KITTI/data.mat');
+else
+    object = load('../KITTI/data_trainval.mat');
+end
 data = object.data;
 
 % read ids of validation images
 object = load('kitti_ids.mat');
-ids = object.ids_test;
+if is_train == 1
+    ids = object.ids_val;
+else
+    ids = object.ids_test;
+end
 N = numel(ids);
 
 for i = 1:N
@@ -22,7 +35,11 @@ for i = 1:N
     det = dets{img_idx + 1};
     
     % result file
-    filename = sprintf('results_kitti/%06d.txt', img_idx);
+    if is_train == 1
+        filename = sprintf('results_kitti_train/%06d.txt', img_idx);
+    else
+        filename = sprintf('results_kitti_test/%06d.txt', img_idx);
+    end
     disp(filename);
     fid = fopen(filename, 'w');
     
