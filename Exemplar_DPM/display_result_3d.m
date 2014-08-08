@@ -1,4 +1,4 @@
-function display_result_3d(dets_3d)
+function display_result_3d
 
 addpath(genpath('../KITTI'));
 threshold = -inf;
@@ -29,7 +29,9 @@ figure;
 ind_plot = 1;
 for i = 1:N
     img_idx = ids(i);    
-    objects = dets_3d{img_idx + 1};
+    filename = sprintf('results_3d/%06d_3d.mat', img_idx);
+    record = load(filename);
+    objects = record.objects;
     num = numel(objects);
     
     % construct detections

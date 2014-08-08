@@ -1,7 +1,7 @@
 function exemplar_write_kitti_results
 
 cls = 'car';
-is_train = 1;
+is_train = 0;
 
 % read detection results
 if is_train == 1

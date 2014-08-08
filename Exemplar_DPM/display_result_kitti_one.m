@@ -1,7 +1,7 @@
 function display_result_kitti_one
 
 cls = 'car';
-threshold = 0.1;
+threshold = -0.9;
 is_train = 0;
 
 % read detection results
