@@ -9,7 +9,7 @@ ids = object.ids_val;
 M = numel(ids);
 
 % open prediction file
-filename = sprintf('data/%s_test.mat', cls);
+filename = sprintf('data/%s_test_16.mat', cls);
 object = load(filename);
 dets_all = object.dets;
 

@@ -3,7 +3,7 @@ function write_kitti_results
 cls = 'car';
 
 % read detection results
-filename = sprintf('data/%s_test.mat', cls);
+filename = sprintf('data/%s_test_16.mat', cls);
 object = load(filename);
 dets = object.dets;
 fprintf('load detection done\n');

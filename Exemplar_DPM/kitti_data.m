@@ -19,6 +19,7 @@ catch
   % get sub-directories
   cam = 2; % 2 = left color camera
   image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
+  label_dir = fullfile(root_dir, [data_set '/label_' num2str(cam)]);
   
   % get number of images for this dataset
   index = find(data.idx == cid);
@@ -55,19 +56,34 @@ catch
     end
   end
 
-  % negative examples from train (this seems enough!)
-  ids = textread(sprintf(VOCopts.imgsetpath, 'train'), '%s');
+  % negative examples from kitti
+  switch cls
+      case 'car'
+          str_pos = {'Car', 'Van', 'DontCare'};
+      otherwise
+          fprintf('undefined classes for negatives\n');
+  end
+  object = load('kitti_ids.mat');
+  ids = object.ids_train;
   neg = [];
   numneg = 0;
   for i = 1:length(ids);
     fprintf('%s: parsing negatives: %d/%d\n', cls, i, length(ids));
-    rec = PASreadrecord(sprintf(VOCopts.annopath, ids{i}));
-    clsinds = strmatch(cls, {rec.objects(:).class}, 'exact');
-    if length(clsinds) == 0
-      numneg = numneg+1;
-      neg(numneg).im = [VOCopts.datadir rec.imgname];
-      neg(numneg).flip = false;
+    numneg = numneg+1;
+    neg(numneg).im = sprintf('%s/%06d.png', image_dir, ids(i));
+    neg(numneg).flip = false;
+    
+    objects = readLabels(label_dir, ids(i));
+    n = numel(objects);
+    bbox = [];
+    count = 0;
+    for j = 1:n
+        if sum(strcmp(objects(j).type, str_pos)) > 0
+            count = count + 1;
+            bbox(count,:) = [objects(j).x1 objects(j).y1 objects(j).x2 objects(j).y2];
+        end
     end
+    neg(numneg).bbox = bbox;
   end
   
   save([cachedir cls '_train_' num2str(cid)], 'pos', 'neg');

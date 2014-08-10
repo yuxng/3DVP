@@ -1,5 +1,8 @@
 function idx = cluster_3d_occlusion_patterns
 
+data_file = 'data_trainval.mat';
+is_save = 0;
+
 % try to load similarity scores
 if exist('similarity.mat', 'file') ~= 0
     fprintf('load similarity scores from file\n');
@@ -8,7 +11,7 @@ if exist('similarity.mat', 'file') ~= 0
 else
     fprintf('computing similarity scores...\n');
     % load data
-    object = load('data.mat');
+    object = load(data_file);
     data = object.data;
     
     scores = compute_similarity(data.grid);
@@ -40,8 +43,10 @@ fprintf('Number of clusters: %d\n', length(unique(idx)));
 fprintf('Fitness (net similarity): %f\n', netsim);
 
 % save results
-object = load('data.mat');
-data = object.data;
-data.idx = idx;
-data.p = p;
-save('data.mat', 'data');
+if is_save == 1
+    object = load(data_file);
+    data = object.data;
+    data.idx = idx;
+    data.p = p;
+    save(data_file, 'data');
+end

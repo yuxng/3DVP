@@ -321,7 +321,9 @@ for i = 1:batchsize:numpos
     bbox = [pos(j).x1 pos(j).y1 pos(j).x2 pos(j).y2];
     % skip small examples
     if (bbox(3)-bbox(1)+1)*(bbox(4)-bbox(2)+1) < minsize
-      data{k} = [];
+      data{k}.bs = [];
+      data{k}.pyra = [];
+      data{k}.info = [];
       fprintf(' (too small)\n');
       continue;
     end
@@ -341,7 +343,7 @@ for i = 1:batchsize:numpos
   end
   % write feature vectors sequentially 
   for k = 1:thisbatchsize
-    if isempty(data{k})
+    if isempty(data{k}.bs)
       continue;
     end
     j = i+k-1;
@@ -371,11 +373,25 @@ for i = 1:batchsize:numneg
   thisbatchsize = batchsize - max(0, (i+batchsize-1) - numneg);
   data = {};
   parfor k = 1:thisbatchsize
-    j = inds(i+k-1);
-    fprintf('%s %s: iter %d/%d: hard negatives: %d/%d (%d)\n', procid(), name, t, negiter, i+k-1, numneg, j);
-    im = color(imreadx(neg(j)));
+    jj = inds(i+k-1);
+    fprintf('%s %s: iter %d/%d: hard negatives: %d/%d (%d)\n', procid(), name, t, negiter, i+k-1, numneg, jj);
+    im = color(imreadx(neg(jj)));
     pyra = featpyramid(im, model);
     [dets, bs, info] = gdetect(pyra, model, -1.002);
+    
+    if isfield(neg(jj), 'bbox') == 1 && isempty(neg(jj).bbox) == 0 && isempty(dets) == 0
+        n = size(dets, 1);
+        flag = zeros(1,n);
+        for ind = 1:n
+            o = boxoverlap(neg(jj).bbox, dets(ind,1:4));
+            if max(o) < 0.2
+                flag(ind) = 1;
+            end
+        end
+        bs = bs(flag == 1, :);
+        info = info(:, :, flag == 1);
+    end
+    
     data{k}.bs = bs;
     data{k}.pyra = pyra;
     data{k}.info = info;
@@ -419,8 +435,21 @@ for i = 1:numneg
   feat = features(double(im), model.sbin);  
   if size(feat,2) > rsize(2) && size(feat,1) > rsize(1)
     for j = 1:rndneg
-      x = random('unid', size(feat,2)-rsize(2)+1);
-      y = random('unid', size(feat,1)-rsize(1)+1);
+        
+      while(1)  
+        x = random('unid', size(feat,2)-rsize(2)+1);
+        y = random('unid', size(feat,1)-rsize(1)+1);
+        if isfield(neg(i), 'bbox') == 1 && isempty(neg(i).bbox) == 0
+            bbox = model.sbin * [x y x+rsize(2)-1 y+rsize(1)-1];
+            o = boxoverlap(neg(i).bbox, bbox);
+            if max(o) < 0.2
+                break;
+            end
+        else
+            break;
+        end
+      end
+      
       f = feat(y:y+rsize(1)-1, x:x+rsize(2)-1,:);
       dim = numel(f) + 3;
       fwrite(fid, [-1 (i-1)*rndneg+j 0 0 0 2 dim], 'int32');
