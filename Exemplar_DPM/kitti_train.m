@@ -25,9 +25,10 @@ try
   load([cachedir cls '_' num2str(cid) '_wrap']);
 catch
   initrand();
-  model = initmodel(cls, pos, note, 'N');
+  name = [cls '_' num2str(cid)];
+  model = initmodel(name, pos, note, 'N');
   model.symmetric = 0;
-  model = train(cls, model, pos, neg, 1, 1, 1, 1, ...
+  model = train(name, model, pos, neg, 1, 1, 1, 1, ...
                       cachesize, true, 0.7, false, 'wrap');
   save([cachedir cls '_' num2str(cid) '_wrap'], 'model');
 end
@@ -37,7 +38,8 @@ try
   load([cachedir cls '_' num2str(cid) '_latent']);
 catch
   initrand();
-  model = train(cls, model, pos, neg(1:maxneg), 0, 0, 1, 5, ...
+  name = [cls '_' num2str(cid)];
+  model = train(name, model, pos, neg(1:maxneg), 0, 0, 1, 5, ...
                 cachesize, true, 0.7, false, 'latent');
   save([cachedir cls '_' num2str(cid) '_latent'], 'model');
 end
@@ -52,9 +54,10 @@ catch
   else
     model = model_addparts(model, model.start, 1, 1, 8, [3 3]);
   end
-  model = train(cls, model, pos, neg(1:maxneg), 0, 0, 8, 10, ...
+  name = [cls '_' num2str(cid)];
+  model = train(name, model, pos, neg(1:maxneg), 0, 0, 8, 10, ...
                 cachesize, true, 0.7, false, 'parts_1');
-  model = train(cls, model, pos, neg, 0, 0, 1, 5, ...
+  model = train(name, model, pos, neg, 0, 0, 1, 5, ...
                 cachesize, true, 0.7, true, 'parts_2');
   save([cachedir cls '_' num2str(cid) '_parts'], 'model');
 end

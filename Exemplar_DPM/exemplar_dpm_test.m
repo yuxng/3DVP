@@ -1,4 +1,4 @@
-function exemplar_dpm_test
+function exemplar_dpm_test(index)
 
 matlabpool open;
 
@@ -15,7 +15,12 @@ centers = unique(data.idx);
 % train an exemplar DPM for each cluster
 cls = 'car';
 num = numel(centers);
-for i = 1:num
+
+if nargin < 1
+    index = 1:num;
+end
+
+for i = index
     fprintf('%d/%d: Test DPM for center %d\n', i, num, centers(i));
     kitti_test(cls, centers(i));
 end

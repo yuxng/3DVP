@@ -28,7 +28,7 @@ catch
   pos = [];
   numpos = 0;
   for i = 1:num_train
-    fprintf('%s: parsing positives: %d/%d\n', cls, i, num_train);
+    fprintf('%s %d: parsing positives: %d/%d\n', cls, cid, i, num_train);
     ind = index(i);
     numpos = numpos+1;
     pos(numpos).im = fullfile(image_dir, data.imgname{ind});
@@ -68,7 +68,7 @@ catch
   neg = [];
   numneg = 0;
   for i = 1:length(ids);
-    fprintf('%s: parsing negatives: %d/%d\n', cls, i, length(ids));
+    fprintf('%s %d: parsing negatives: %d/%d\n', cls, cid, i, length(ids));
     numneg = numneg+1;
     neg(numneg).im = sprintf('%s/%06d.png', image_dir, ids(i));
     neg(numneg).flip = false;

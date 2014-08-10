@@ -1,4 +1,4 @@
-function exemplar_dpm_train
+function exemplar_dpm_train(index)
 
 matlabpool open;
 
@@ -22,7 +22,11 @@ centers = unique(data.idx);
 % train an exemplar DPM for each cluster
 num = numel(centers);
 
-for i = 1:num
+if nargin < 1
+    index = 1:num;
+end
+
+for i = index
     fprintf('%d/%d: Train DPM for center %d\n', i, num, centers(i));
 %     exemplar_show_pattern(data, cad, centers(i));
 %     pause(1);
