@@ -1,4 +1,4 @@
-function demo_greedy(dets_3d)
+function demo_greedy
 
 addpath(genpath('../KITTI'));
 
@@ -25,7 +25,9 @@ for id = 1:M
     height = size(I, 1);
 
     % get detection results
-    objects = dets_3d{img_idx + 1};
+    filename = sprintf('results/%06d_3d.mat', img_idx);
+    record = load(filename);
+    objects = record.objects;
     num = numel(objects);
     scores = zeros(1, num);
     distances = zeros(1, num);

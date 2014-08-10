@@ -1,7 +1,7 @@
 function kitti_test(cls, cid)
 
 % load model
-model_name = sprintf('kitti_train/%s_%d_final.mat', cls, cid);
+model_name = sprintf('data/%s_%d_final.mat', cls, cid);
 object = load(model_name);
 model = object.model;
 model.thresh = min(-1, model.thresh);
@@ -21,7 +21,7 @@ ids_train = object.ids_train;
 ids_val = object.ids_val;
 ids = [ids_train ids_val];
 
-filename = sprintf('kitti_train/%s_%d_test.mat', cls, cid);
+filename = sprintf('data/%s_%d_test.mat', cls, cid);
 
 % run detector in each image
 try
