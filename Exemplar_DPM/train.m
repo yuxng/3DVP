@@ -366,7 +366,7 @@ numneg = length(neg);
 num = 0;
 scores = [];
 complete = 1;
-batchsize = 4;
+batchsize = 12;
 inds = circshift(1:numneg, [0 -negpos]);
 for i = 1:batchsize:numneg
   % do batches of detections in parallel
