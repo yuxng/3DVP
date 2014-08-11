@@ -17,7 +17,7 @@ object = load(filename);
 data = object.data;
 
 % cluster centers
-centers = unique(data.idx);
+centers = unique(data.idx2);
 
 % train an exemplar DPM for each cluster
 num = numel(centers);

@@ -2,6 +2,7 @@
 function compute_recall_precision_kitti
 
 cls = 'car';
+is_save = 0;
 
 % read ids of validation images
 object = load('kitti_ids.mat');
@@ -222,4 +223,6 @@ h = title(tit);
 set(h, 'FontSize', 12);
 hold off;
 
-save pr_exemplar.mat recall precision recall_easy precision_easy recall_moderate precision_moderate
+if is_save == 1
+    save pr_exemplar.mat recall precision recall_easy precision_easy recall_moderate precision_moderate
+end

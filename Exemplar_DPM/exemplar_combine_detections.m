@@ -21,9 +21,6 @@ dets = [];
 for i = 1:N
     cid = centers(i);
     num = numel(find(idx == cid));
-    if num < 30
-        continue;
-    end
     fprintf('cluster %d: %d training examples\n', cid, num);
     
     % compute the range of this cluster

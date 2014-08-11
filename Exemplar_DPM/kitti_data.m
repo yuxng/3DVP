@@ -22,7 +22,7 @@ catch
   label_dir = fullfile(root_dir, [data_set '/label_' num2str(cam)]);
   
   % get number of images for this dataset
-  index = find(data.idx == cid);
+  index = find(data.idx2 == cid);
   num_train = numel(index);
   
   pos = [];

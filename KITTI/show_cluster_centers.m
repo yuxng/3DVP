@@ -3,9 +3,9 @@ function show_cluster_centers
 opt = globals;
 
 % load data
-object = load('data_trainval.mat');
+object = load('data.mat');
 data = object.data;
-idx = data.idx;
+idx = data.idx2;
 
 % load the mean CAD model
 cls = 'car';
@@ -35,11 +35,12 @@ for i = 1:N
     ind_plot = ind_plot + 1;
     draw_cad(cad, visibility_grid);
     view(data.azimuth(ind), data.elevation(ind));
-    til = sprintf('%d: truncation %.2f', ind, data.truncation(ind));
+    num = numel(find(idx == ind));
+    til = sprintf('%d: trunc %.2f, %d examples', ind, data.truncation(ind), num);
     title(til);
     
     % show exemplar DPM
-    filename = sprintf('../Exemplar_DPM/kitti_test/%s_%d_final.mat', cls, ind);
+    filename = sprintf('../Exemplar_DPM/kitti_train/%s_%d_final.mat', cls, ind);
     if exist(filename, 'file')
         object = load(filename);
         model = object.model;
