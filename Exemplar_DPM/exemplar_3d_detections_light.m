@@ -6,6 +6,7 @@ addpath(genpath('../KITTI'));
 opt = my_globals();
 cls = 'car';
 threshold = -1;
+threshold_nms = 0.95;
 
 % load data
 object = load('../KITTI/data.mat');
@@ -44,9 +45,13 @@ parfor i = 1:N
     tic;
     det = dets{i};
     
-    % thresholding
+    % thresholding and nms
     flag = det(:,6) > threshold;
     det = det(flag,:);
+    if isempty(det) == 0
+        I = nms(det, threshold_nms);
+        det = det(I, :);    
+    end     
     
     num = size(det, 1);
     T = zeros(3, num);

@@ -27,10 +27,15 @@ parfor id = 1:M
     height = size(I, 1);
 
     % get detection results
-    filename = sprintf('results/%06d_3d.mat', img_idx);
+    filename = sprintf('results_3d/%06d_3d.mat', img_idx);
     record = load(filename);
     objects = record.objects;
     num = numel(objects);
+    
+    if num == 0
+        continue;
+    end
+    
     scores = zeros(1, num);
     distances = zeros(1, num);
     patterns = uint8(zeros(height, width, num));
@@ -48,20 +53,24 @@ parfor id = 1:M
                 i objects(i).score];            
     end
     
-    % AP clustering on bounding boxes
-    M = num*num-num;
-    s = zeros(M,3); % Make ALL N^2-N similarities
-    j = 1;
-    for i = 1:num
-        for k = [1:i-1,i+1:num]
-            s(j,1) = i;
-            s(j,2) = k;
-            s(j,3) = boxoverlap(dets(i,1:4), dets(k,1:4));
-            j = j+1;
+    if num == 1
+        idx = 1;
+    else
+        % AP clustering on bounding boxes
+        N = num*num-num;
+        s = zeros(N,3); % Make ALL N^2-N similarities
+        j = 1;
+        for i = 1:num
+            for k = [1:i-1,i+1:num]
+                s(j,1) = i;
+                s(j,2) = k;
+                s(j,3) = boxoverlap(dets(i,1:4), dets(k,1:4));
+                j = j+1;
+            end
         end
+        p = mean(3*s(:,3));
+        idx = apclustermex(s, p);
     end
-    p = mean(3*s(:,3));
-    idx = apclustermex(s, p);    
     
     % sort clusters
     cid = unique(idx);
