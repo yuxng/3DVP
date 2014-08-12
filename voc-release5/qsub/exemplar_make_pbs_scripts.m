@@ -19,7 +19,7 @@ for o_i = 1:num
   fprintf(fid, '#PBS -l walltime=48:00:00\n');
   fprintf(fid, '#PBS -q cvgl\n');
   
-  fprintf(fid,'cd /scail/scratch/u/yuxiang/SLM/Exemplar_DPM\n');
+  fprintf(fid,'cd /scail/scratch/u/yuxiang/SLM/voc-release5\n');
   fprintf(fid, ['matlab.new -nodesktop -nosplash -r "exemplar_dpm_train(' int2str(o_i) '); exit;"']);
   
   fclose(fid);
