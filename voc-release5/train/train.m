@@ -221,6 +221,7 @@ for t = 1:iter
     % We close and reopen the pool because long-running labs tend to consume
     % a large amount of memory due to fragementation.
     % pool_size = close_parallel_pool();
+    pool_size = try_get_matlabpool_size();
     
     %{{{ Optimize the convex slave problem
       % Set the current model in the fv_cache
