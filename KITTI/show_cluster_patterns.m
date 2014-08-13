@@ -11,7 +11,7 @@ image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 % load data
 object = load('data.mat');
 data = object.data;
-idx = data.idx_kmeans;
+idx = data.idx_ap2;
 
 % load the mean CAD model
 cls = 'car';

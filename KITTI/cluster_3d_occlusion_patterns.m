@@ -2,7 +2,7 @@ function cluster_3d_occlusion_patterns
 
 data_file = 'data.mat';
 is_save = 1;
-algorithm = 'kmeans';
+algorithm = 'ap';
 
 switch algorithm
     case 'ap'
@@ -50,7 +50,7 @@ switch algorithm
         if is_save == 1
             object = load(data_file);
             data = object.data;
-            data.idx = idx;
+            data.idx_ap = idx;
             save(data_file, 'data');
         end        
         

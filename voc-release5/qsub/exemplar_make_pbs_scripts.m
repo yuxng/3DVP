@@ -4,7 +4,7 @@ function exemplar_make_pbs_scripts
 filename = '../../KITTI/data.mat';
 object = load(filename);
 data = object.data;
-cids = unique(data.idx2);
+cids = unique(data.idx_ap2);
 num = numel(cids);
 
 for o_i = 1:num

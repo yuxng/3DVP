@@ -5,7 +5,7 @@ is_save = 1;
 data_file = 'data.mat';
 object = load(data_file);
 data = object.data;
-cid = unique(data.idx);
+cid = unique(data.idx_ap);
 
 fprintf('computing similarity scores...\n'); 
 grid = data.grid(:,cid);
@@ -24,7 +24,8 @@ for i = 1:N
     end
 end 
 
-p = (median(s(:,3)) + max(s(:,3))) / 2;
+% p = (median(s(:,3)) + max(s(:,3))) / 2;
+p = median(s(:,3));
 
 % clustering
 fprintf('Start AP clustering\n');
@@ -33,10 +34,9 @@ fprintf('Start AP clustering\n');
 fprintf('Number of clusters: %d\n', length(unique(idx)));
 fprintf('Fitness (net similarity): %f\n', netsim);
 
-p2 = p;
-idx2 = zeros(size(data.idx));
+idx2 = zeros(size(data.idx_ap));
 for i = 1:numel(idx2)
-    index = data.idx(i) == cid;
+    index = data.idx_ap(i) == cid;
     idx2(i) = cid(idx(index));
 end
 
@@ -44,7 +44,6 @@ end
 if is_save == 1
     object = load(data_file);
     data = object.data;
-    data.idx2 = idx2;
-    data.p2 = p2;
+    data.idx_ap2 = idx2;
     save(data_file, 'data');
 end

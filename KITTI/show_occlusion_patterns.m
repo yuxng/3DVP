@@ -14,7 +14,6 @@ cad = object.(cls);
 figure;
 ind_plot = 1;
 for i = 1:N
-    disp(i);
     % load annotation
     filename = fullfile(path_ann, files(i).name);
     object = load(filename);
