@@ -86,7 +86,7 @@ for img_idx = 0:nimages-1
     end
   end
   mask = mask(pad_size+1:h+pad_size, pad_size+1:w+pad_size);
-  mask = padarray(mask, [pad_size pad_size]);
+  mask = padarray(mask, [pad_size pad_size], -1);
   record.pad_size = pad_size;
   record.mask = mask;
   
@@ -114,9 +114,9 @@ for img_idx = 0:nimages-1
           continue;
       end
       
-      pattern = uint8(BWs{i});
-      pattern = 2*pattern;  % occluded
-      pattern(mask == i) = 1;  % visible
+      pattern = uint8(BWs{i});  % 1 visible
+      pattern(mask > 0 & mask ~= i & BWs{i}) = 2;  % occluded
+      pattern(mask == -1 & BWs{i}) = 3;  % truncated
       [x, y] = find(pattern > 0);
       pattern = pattern(min(x):max(x), min(y):max(y));
       objects(i).pattern = pattern;
@@ -124,6 +124,10 @@ for img_idx = 0:nimages-1
       % compute occlusion percentage
       occ = numel(find(pattern == 2)) / numel(find(pattern > 0));
       objects(i).occ_per = occ;
+      
+      % compute truncation percentage
+      trunc = numel(find(pattern == 3)) / numel(find(pattern > 0));
+      objects(i).trunc_per = trunc;
       
       % 3D occlusion mask
       [visibility_grid, visibility_ind] = check_visibility(cad_mean, azimuth, elevation);
@@ -146,7 +150,7 @@ for img_idx = 0:nimages-1
                   end
               end
           else
-              visibility_grid(ind(1), ind(2), ind(3)) = 2;
+              visibility_grid(ind(1), ind(2), ind(3)) = 3;  % truncated
           end
       end
       objects(i).grid = visibility_grid;
