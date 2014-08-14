@@ -13,7 +13,7 @@ data_set = 'training';
 
 % get sub-directories
 cam = 2; % 2 = left color camera
-image_dir = fullfile(root_dir,[data_set '/image_' num2str(cam)]); 
+image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]); 
 
 % get test image ids
 object = load('kitti_ids.mat');

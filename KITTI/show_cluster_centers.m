@@ -5,7 +5,7 @@ opt = globals;
 % load data
 object = load('data.mat');
 data = object.data;
-idx = data.idx2;
+idx = data.idx_ap2;
 
 % load the mean CAD model
 cls = 'car';
@@ -40,7 +40,7 @@ for i = 1:N
     title(til);
     
     % show exemplar DPM
-    filename = sprintf('../Exemplar_DPM/kitti_train/%s_%d_final.mat', cls, ind);
+    filename = sprintf('../voc-release5/KITTI/%s_%d_final.mat', cls, ind);
     if exist(filename, 'file')
         object = load(filename);
         model = object.model;

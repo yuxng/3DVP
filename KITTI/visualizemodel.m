@@ -3,6 +3,8 @@ function visualizemodel(model, nplot, mplot, ind_plot)
 % visualizemodel(model)
 % Visualize a model.
 
+addpath(genpath('../voc-release5/model'));
+
 components = 1:length(model.rules{model.start});
 layers = 1;
 
@@ -30,7 +32,11 @@ else
   root = model.symbols(model.rules{rhs(1)}(layer).rhs).filter;
 end
 for i = 2:length(rhs)
-  defs{end+1} = model.rules{rhs(i)}(layer).def.w;
+  if isfield(model.rules{rhs(i)}(layer).def, 'w')  
+    defs{end+1} = model.rules{rhs(i)}(layer).def.w;
+  else
+    defs{end+1} = model_get_block(model, model.rules{rhs(i)}(layer).def);
+  end
   anchors{end+1} = model.rules{model.start}(c).anchor{i};
   fi = model.symbols(model.rules{rhs(i)}(layer).rhs).filter;
   parts = [parts fi];
@@ -38,7 +44,11 @@ end
 % make picture of root filter
 pad = 2;
 bs = 20;
-w = foldHOG(model.filters(root).w);
+if isfield(model.filters(root), 'w')
+    w = foldHOG(model.filters(root).w);
+else
+    w = foldHOG(model_get_block(model, model.filters(root)));
+end
 scale = max(w(:));
 im = HOGpicture(w, bs);
 im = imresize(im, 2);
@@ -60,7 +70,11 @@ if numparts > 0
   def_scale = 500;
   for i = 1:numparts
     % part filter
-    w = model.filters(parts(i)).w;
+    if isfield(model.filters(parts(i)), 'w')
+        w = model.filters(parts(i)).w;
+    else
+        w = model_get_block(model, model.filters(parts(i)));
+    end
     p = HOGpicture(foldHOG(w), bs);
     p = padarray(p, [pad pad], 0);
     p = uint8(p * (255/scale));    

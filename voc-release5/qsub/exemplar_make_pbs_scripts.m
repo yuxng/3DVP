@@ -20,7 +20,7 @@ for o_i = 1:num
   fprintf(fid, '#PBS -q cvgl\n');
   
   fprintf(fid,'cd /scail/scratch/u/yuxiang/SLM/voc-release5\n');
-  fprintf(fid, ['matlab.new -nodesktop -nosplash -r "exemplar_dpm_train(' int2str(o_i) '); exit;"']);
+  fprintf(fid, ['matlab.new -nodesktop -nosplash -r "exemplar_dpm_test(' int2str(o_i) '); exit;"']);
   
   fclose(fid);
 end
