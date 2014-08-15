@@ -33,7 +33,7 @@ truncation = [];
 pattern = [];
 grid = [];
 translation = [];
-for i = 1:3740
+for i = 1:N%3740
     img_idx = i - 1;
     
     % load the velo_to_cam matrix

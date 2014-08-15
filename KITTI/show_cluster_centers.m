@@ -3,9 +3,9 @@ function show_cluster_centers
 opt = globals;
 
 % load data
-object = load('data.mat');
+object = load('data_old.mat');
 data = object.data;
-idx = data.idx_ap2;
+idx = data.idx;
 
 % load the mean CAD model
 cls = 'car';
@@ -40,7 +40,7 @@ for i = 1:N
     title(til);
     
     % show exemplar DPM
-    filename = sprintf('../voc-release5/KITTI/%s_%d_final.mat', cls, ind);
+    filename = sprintf('../Exemplar_DPM/kitti_train/%s_%d_final.mat', cls, ind);
     if exist(filename, 'file')
         object = load(filename);
         model = object.model;

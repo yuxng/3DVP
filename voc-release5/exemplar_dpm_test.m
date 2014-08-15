@@ -1,7 +1,7 @@
 function exemplar_dpm_test(index)
 
 matlabpool open;
-
+startup;
 % Main function to test exemplar DPM for occlusion patterns
 
 % load occlusion patterns

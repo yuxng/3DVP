@@ -26,9 +26,7 @@ end
 
 % size of HOG features
 if nargin < 4
-  model.sbin = conf.features.sbin;
-else
-  model.sbin = sbin;
+  sbin = conf.features.sbin;
 end
 
 if nargin < 5
@@ -45,18 +43,19 @@ if nargin < 5
   % pick 20 percentile area
   areas = sort(h.*w);
   area = areas(floor(length(areas) * 0.2));
-  area = max(min(area, 5000), 3000);
+  area = max(min(area, 5000), 500);
 
   % pick dimensions
   w = sqrt(area/aspect);
   h = w*aspect;
-
+  
   % size of root filter
-  sz = [round(h/model.sbin) round(w/model.sbin)];
+  sz = [round(h/sbin) round(w/sbin)];
 end
 
 % get an empty model
 model = model_create(cls, note);
+model.sbin = sbin;
 model.interval = conf.eval.interval;
 
 % start non-terminal

@@ -1,5 +1,7 @@
-all:
-	matlab -nodesktop -r "disp('building...'); compile; disp('done!'); quit;"
+all: evaluate_object
+
+evaluate_object: evaluate_object.cpp
+	g++ -O3 -g -o evaluate_object evaluate_object.cpp
 
 clean:
-	rm -rf bin/*.mex*
+	/bin/rm evaluate_object

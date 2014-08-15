@@ -81,12 +81,15 @@ catch
   % Filter to interoplate parts from
   filterind = 1;
   
-  if min(model.filters(1).size) > 3
+  if min(model.filters(1).size) >= 9
     model = model_add_parts(model, model.start, ruleind, ...
                             partner, filterind, 8, [6 6], 1);
-  else
+  elseif min(model.filters(1).size) >= 5
     model = model_add_parts(model, model.start, ruleind, ...
                             partner, filterind, 8, [3 3], 1);
+  else
+    model = model_add_parts(model, model.start, ruleind, ...
+                            partner, filterind, 4, [3 3], 1);      
   end
   
   % Enable learning location/scale prior

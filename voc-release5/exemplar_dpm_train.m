@@ -3,6 +3,7 @@ function exemplar_dpm_train(index)
 matlabpool open;
 
 cls = 'car';
+startup;
 
 % Main function to train exemplar DPM for occlusion patterns
 

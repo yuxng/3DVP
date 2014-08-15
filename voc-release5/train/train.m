@@ -260,7 +260,7 @@ for t = 1:iter
       % Compute threshold for high recall of foreground examples
       P = find((info.is_belief == 1)&(info.is_zero == 0)&(info.is_unique == 1));
       pos_vals = sort(info.scores(P));
-      model.thresh = pos_vals(ceil(length(pos_vals)*0.05));
+      model.thresh = pos_vals(ceil(max(length(pos_vals)*0.05, 1)));
 
       % Save the intermediate model for debugging / inspection
       model_name = [model.class '_model_' tag '_' ...
