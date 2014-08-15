@@ -21,6 +21,8 @@ for o_i = 1:num_job
   fprintf(fid, '#PBS -l mem=2gb\n');
   fprintf(fid, '#PBS -l walltime=48:00:00\n');
   fprintf(fid, '#PBS -q cvgl\n');
+  fprintf(fid, 'echo "I ran on:"\n');
+  fprintf(fid, 'cat $PBS_NODEFILE\n');
   
   fprintf(fid,'cd /scail/scratch/u/yuxiang/SLM/ACF\n');
   if o_i == num_job

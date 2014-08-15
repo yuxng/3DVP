@@ -212,7 +212,7 @@ for stage = 0:numel(opts.nWeak)-1
 end
 
 % save detector
-save([opts.name '_final.mat'],'detector');
+save([opts.name '_final.mat'], 'detector');
 
 % finalize logging
 diary('on');
