@@ -1,6 +1,6 @@
 function exemplar_dpm_train(index)
 
-matlabpool open;
+% matlabpool open;
 
 cls = 'car';
 
@@ -31,4 +31,4 @@ for i = index
     exemplar_kitti_train(cls, data, centers(i));
 end
 
-matlabpool close;
+% matlabpool close;

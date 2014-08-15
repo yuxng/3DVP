@@ -1,6 +1,6 @@
 function exemplar_dpm_test(index)
 
-matlabpool open;
+% matlabpool open;
 
 % Main function to test exemplar DPM for occlusion patterns
 
@@ -25,4 +25,4 @@ for i = index
     exemplar_kitti_test(cls, centers(i));
 end
 
-matlabpool close;
+% matlabpool close;

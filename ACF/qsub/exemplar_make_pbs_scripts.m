@@ -9,7 +9,6 @@ num = numel(cids);
 
 num_job = 32;
 index = round(linspace(1, num, num_job+1));
-num_cuda = round(num_job/5);
 
 for o_i = 1:num_job
     
@@ -21,17 +20,13 @@ for o_i = 1:num_job
   fprintf(fid, '#PBS -l nodes=1:ppn=12\n');
   fprintf(fid, '#PBS -l mem=2gb\n');
   fprintf(fid, '#PBS -l walltime=48:00:00\n');
-  if o_i <= num_cuda
-      fprintf(fid, '#PBS -q cvglcuda\n');
-  else
-      fprintf(fid, '#PBS -q cvgl\n');
-  end
+  fprintf(fid, '#PBS -q cvgl\n');
   
   fprintf(fid,'cd /scail/scratch/u/yuxiang/SLM/ACF\n');
   if o_i == num_job
       s = sprintf('%d:%d', index(o_i), index(o_i+1));
   else
-    s = sprintf('%d:%d', index(o_i), index(o_i+1)-1);
+      s = sprintf('%d:%d', index(o_i), index(o_i+1)-1);
   end
   fprintf(fid, ['matlab.new -nodesktop -nosplash -r "exemplar_dpm_train(' s '); exit;"']);
   
