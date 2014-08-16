@@ -17,7 +17,7 @@ for o_i = 1:num_job
   fprintf(fid, '#!/bin/bash\n');
   fprintf(fid, '#PBS -S /bin/bash\n');
   fprintf(fid, '#PBS -N run_it%d\n', o_i);
-  fprintf(fid, '#PBS -l nodes=1:ppn=12\n');
+  fprintf(fid, '#PBS -l nodes=1:ppn=1\n');
   fprintf(fid, '#PBS -l mem=2gb\n');
   fprintf(fid, '#PBS -l walltime=48:00:00\n');
   fprintf(fid, '#PBS -q cvgl\n');
@@ -30,7 +30,7 @@ for o_i = 1:num_job
   else
       s = sprintf('%d:%d', index(o_i), index(o_i+1)-1);
   end
-  fprintf(fid, ['matlab.new -nodesktop -nosplash -r "exemplar_dpm_train(' s '); exit;"']);
+  fprintf(fid, ['matlab.new -nodesktop -nosplash -r "exemplar_dpm_test(' s '); exit;"']);
   
   fclose(fid);
 end
@@ -38,6 +38,6 @@ end
 fid = fopen('exemplar_qsub.sh', 'w');
 fprintf(fid, 'for (( i = 1; i <= %d; i++))\n', num_job);
 fprintf(fid, 'do\n');
-fprintf(fid, '  qsub run$i.sh\n');
+fprintf(fid, '  /usr/local/bin/qsub run$i.sh\n');
 fprintf(fid, 'done\n');
 fclose(fid);
