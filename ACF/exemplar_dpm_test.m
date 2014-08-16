@@ -5,7 +5,7 @@ function exemplar_dpm_test(index)
 % Main function to test exemplar DPM for occlusion patterns
 
 % load occlusion patterns
-filename = '../KITTI/data.mat';
+filename = '../KITTI/data_all.mat';
 object = load(filename);
 data = object.data;
 

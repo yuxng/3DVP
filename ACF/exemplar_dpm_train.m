@@ -12,7 +12,7 @@ cls = 'car';
 % cad = object.(cls);
 
 % load occlusion patterns
-filename = '../KITTI/data.mat';
+filename = '../KITTI/data_all.mat';
 object = load(filename);
 data = object.data;
 
