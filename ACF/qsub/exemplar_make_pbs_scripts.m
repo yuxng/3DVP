@@ -24,13 +24,13 @@ for o_i = 1:num_job
   fprintf(fid, 'echo "I ran on:"\n');
   fprintf(fid, 'cat $PBS_NODEFILE\n');
   
-  fprintf(fid,'cd /scail/scratch/u/yuxiang/SLM/ACF\n');
+  fprintf(fid, 'cd /scail/scratch/u/yuxiang/SLM/ACF\n');
   if o_i == num_job
       s = sprintf('%d:%d', index(o_i), index(o_i+1));
   else
       s = sprintf('%d:%d', index(o_i), index(o_i+1)-1);
   end
-  fprintf(fid, ['matlab.new -nodesktop -nosplash -r "exemplar_dpm_train(' s '); exit;"']);
+  fprintf(fid, ['matlab.new -nodesktop -nosplash -r "exemplar_dpm_test(' s '); exit;"']);
   
   fclose(fid);
 end

@@ -17,7 +17,7 @@ fprintf('load detection done\n');
 if is_train == 1
     object = load('../KITTI/data.mat');
 else
-    object = load('../KITTI/data_trainval.mat');
+    object = load('../KITTI/data_all.mat');
 end
 data = object.data;
 

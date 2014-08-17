@@ -31,9 +31,10 @@ image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 
 % get test image ids
 object = load('kitti_ids.mat');
-ids_train = object.ids_train;
-ids_val = object.ids_val;
-ids = [ids_train ids_val];
+% ids_train = object.ids_train;
+% ids_val = object.ids_val;
+% ids = [ids_train ids_val];
+ids = object.ids_test;
 
 filename = sprintf('data/%s_%d_test.mat', cls, cid);
 
