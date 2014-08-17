@@ -1,14 +1,20 @@
 function exemplar_make_pbs_scripts
 
 % load occlusion patterns
-filename = '../../KITTI/data_all.mat';
+filename = '../../KITTI/data.mat';
 object = load(filename);
 data = object.data;
-cids = unique(data.idx_ap);
+cids = unique(data.idx_ap2);
 num = numel(cids);
+is_multiple = 0;
+is_train = 1;
 
-num_job = 48;
-index = round(linspace(1, num, num_job+1));
+if is_multiple
+    num_job = 48;
+    index = round(linspace(1, num, num_job+1));
+else
+    num_job = num;
+end
 
 for o_i = 1:num_job
     
@@ -25,12 +31,20 @@ for o_i = 1:num_job
   fprintf(fid, 'cat $PBS_NODEFILE\n');
   
   fprintf(fid, 'cd /scail/scratch/u/yuxiang/SLM/ACF\n');
-  if o_i == num_job
-      s = sprintf('%d:%d', index(o_i), index(o_i+1));
+  if is_multiple
+      if o_i == num_job
+          s = sprintf('%d:%d', index(o_i), index(o_i+1));
+      else
+          s = sprintf('%d:%d', index(o_i), index(o_i+1)-1);
+      end
   else
-      s = sprintf('%d:%d', index(o_i), index(o_i+1)-1);
+      s = num2str(o_i);
   end
-  fprintf(fid, ['matlab.new -nodesktop -nosplash -r "exemplar_dpm_test(' s '); exit;"']);
+  if is_train
+      fprintf(fid, ['matlab.new -nodesktop -nosplash -r "exemplar_dpm_train(' s '); exit;"']);
+  else
+      fprintf(fid, ['matlab.new -nodesktop -nosplash -r "exemplar_dpm_test(' s '); exit;"']);
+  end
   
   fclose(fid);
 end

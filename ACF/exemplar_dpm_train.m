@@ -12,12 +12,13 @@ cls = 'car';
 % cad = object.(cls);
 
 % load occlusion patterns
-filename = '../KITTI/data_all.mat';
+filename = '../KITTI/data.mat';
 object = load(filename);
 data = object.data;
+data.idx = data.idx_ap2;
 
 % cluster centers
-centers = unique(data.idx_ap);
+centers = unique(data.idx);
 
 % train an exemplar DPM for each cluster
 num = numel(centers);

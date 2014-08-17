@@ -1,4 +1,4 @@
-function exemplar_kitti_test(cls, cid)
+function exemplar_kitti_test(cls, cid, is_train)
 
 % load detector
 model_name = sprintf('data/%s_%d_final.mat', cls, cid);
@@ -23,7 +23,11 @@ separate = nDs > 1 && isfield(pNms, 'separate') && pNms.separate;
 % KITTI path
 exemplar_globals;
 root_dir = KITTIroot;
-data_set = 'testing';
+if is_train == 1
+    data_set = 'training';
+else
+    data_set = 'testing';
+end
 
 % get sub-directories
 cam = 2; % 2 = left color camera
@@ -31,10 +35,11 @@ image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 
 % get test image ids
 object = load('kitti_ids.mat');
-% ids_train = object.ids_train;
-% ids_val = object.ids_val;
-% ids = [ids_train ids_val];
-ids = object.ids_test;
+if is_train == 1
+    ids = [object.ids_train object.ids_val];
+else
+    ids = object.ids_test;
+end
 
 filename = sprintf('data/%s_%d_test.mat', cls, cid);
 

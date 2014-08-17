@@ -2,7 +2,7 @@ function cluster_3d_occlusion_patterns_second
 
 is_save = 1;
 
-data_file = 'data.mat';
+data_file = 'data_all.mat';
 object = load(data_file);
 data = object.data;
 cid = unique(data.idx_ap);

@@ -8,9 +8,11 @@ function exemplar_dpm_test(index)
 filename = '../KITTI/data_all.mat';
 object = load(filename);
 data = object.data;
+data.idx = data.idx_ap2;
+is_train = 1;
 
 % cluster centers
-centers = unique(data.idx_ap);
+centers = unique(data.idx);
 
 % train an exemplar DPM for each cluster
 cls = 'car';
@@ -22,7 +24,7 @@ end
 
 for i = index
     fprintf('%d/%d: Test DPM for center %d\n', i, num, centers(i));
-    exemplar_kitti_test(cls, centers(i));
+    exemplar_kitti_test(cls, centers(i), is_train);
 end
 
 % matlabpool close;
