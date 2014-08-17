@@ -23,7 +23,7 @@ separate = nDs > 1 && isfield(pNms, 'separate') && pNms.separate;
 % KITTI path
 exemplar_globals;
 root_dir = KITTIroot;
-data_set = 'training';
+data_set = 'testing';
 
 % get sub-directories
 cam = 2; % 2 = left color camera
