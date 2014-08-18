@@ -1,7 +1,8 @@
 function exemplar_display_result_pattern(cid)
 
 cls = 'car';
-threshold = -inf;
+threshold = -50;
+is_train = 0;
 
 % read detection results
 filename = sprintf('data/%s_%d_test.mat', cls, cid);
@@ -10,13 +11,21 @@ dets = object.boxes;
 
 % read ids of validation images
 object = load('kitti_ids.mat');
-ids = object.ids_val;
+if is_train
+    ids = object.ids_val;
+else
+    ids = object.ids_test;
+end
 N = numel(ids);
 
 % KITTI path
 exemplar_globals;
 root_dir = KITTIroot;
-data_set = 'training';
+if is_train
+    data_set = 'training';
+else
+    data_set = 'testing';
+end
 cam = 2;
 image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 
@@ -50,7 +59,7 @@ for i = 1:N
             % get predicted bounding box
             bbox_pr = det(k,1:4);
             rectangle('Position', bbox_pr, 'EdgeColor', 'g', 'LineWidth',2);
-            text(bbox_pr(1), bbox_pr(2), num2str(k), 'FontSize', 16, 'BackgroundColor', 'r');
+%             text(bbox_pr(1), bbox_pr(2), num2str(k), 'FontSize', 16, 'BackgroundColor', 'r');
 
             til = sprintf('%s, s%d=%.2f', til, k, det(k,5));
         end

@@ -1,12 +1,12 @@
 function exemplar_make_pbs_scripts
 
 % load occlusion patterns
-filename = '../../KITTI/data.mat';
+filename = '../../KITTI/data_all.mat';
 object = load(filename);
 data = object.data;
-cids = unique(data.idx_ap2);
+cids = unique(data.idx_ap);
 num = numel(cids);
-is_multiple = 0;
+is_multiple = 1;
 is_train = 1;
 
 if is_multiple
@@ -23,7 +23,7 @@ for o_i = 1:num_job
   fprintf(fid, '#!/bin/bash\n');
   fprintf(fid, '#PBS -S /bin/bash\n');
   fprintf(fid, '#PBS -N run_it%d\n', o_i);
-  fprintf(fid, '#PBS -l nodes=1:ppn=4\n');
+  fprintf(fid, '#PBS -l nodes=1:ppn=12\n');
   fprintf(fid, '#PBS -l mem=2gb\n');
   fprintf(fid, '#PBS -l walltime=48:00:00\n');
   fprintf(fid, '#PBS -q cvgl\n');

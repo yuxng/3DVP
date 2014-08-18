@@ -1,6 +1,6 @@
 function exemplar_dpm_test(index)
 
-% matlabpool open;
+matlabpool open;
 
 % Main function to test exemplar DPM for occlusion patterns
 
@@ -8,8 +8,8 @@ function exemplar_dpm_test(index)
 filename = '../KITTI/data_all.mat';
 object = load(filename);
 data = object.data;
-data.idx = data.idx_ap2;
-is_train = 1;
+data.idx = data.idx_ap;
+is_train = 0;
 
 % cluster centers
 centers = unique(data.idx);
@@ -27,4 +27,4 @@ for i = index
     exemplar_kitti_test(cls, centers(i), is_train);
 end
 
-% matlabpool close;
+matlabpool close;

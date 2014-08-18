@@ -29,7 +29,7 @@ end
 N = numel(centers);
 
 figure;
-nplot = 6;
+nplot = 8;
 mplot = 8;
 for i = 1:N
     ind = centers(i);
