@@ -1,6 +1,6 @@
 function exemplar_dpm_train(index)
 
-% matlabpool open;
+matlabpool open;
 
 cls = 'car';
 
@@ -12,10 +12,17 @@ cls = 'car';
 % cad = object.(cls);
 
 % load occlusion patterns
-filename = '../KITTI/data.mat';
+is_train = 0;
+
+if is_train
+    filename = '../KITTI/data.mat';
+else
+    filename = '../KITTI/data_all.mat';
+end
 object = load(filename);
 data = object.data;
-data.idx = data.idx_ap2;
+data.idx = data.idx_ap;
+
 
 % cluster centers
 centers = unique(data.idx);
@@ -29,7 +36,7 @@ end
 
 for i = index
     fprintf('%d/%d: Train DPM for center %d\n', i, num, centers(i));
-    exemplar_kitti_train(cls, data, centers(i));
+    exemplar_kitti_train(cls, data, centers(i), is_train);
 end
 
-% matlabpool close;
+matlabpool close;

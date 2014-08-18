@@ -50,12 +50,13 @@ opts.negImgDir = [dataDir 'train/neg'];
 opts.pBoost.pTree.fracFtrs = 1/16;
 opts.pLoad = {'squarify', {3,.41}};
 opts.name = 'models/AcfInria';
+opts.cascThr = -10;
 
 %% train detector (see acfTrain)
 detector = acfTrain( opts );
 
 %% modify detector (see acfModify)
-detector = acfModify(detector, 'cascThr', -1, 'cascCal', 0);
+% detector = acfModify(detector, 'cascThr', -1, 'cascCal', 0);
 
 %% run detector on a sample image (see acfDetect)
 imgNms = bbGt('getFiles', {[dataDir 'test/pos']});

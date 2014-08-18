@@ -10,7 +10,7 @@ is_multiple = 1;
 is_train = 1;
 
 if is_multiple
-    num_job = 48;
+    num_job = 32;
     index = round(linspace(1, num, num_job+1));
 else
     num_job = num;

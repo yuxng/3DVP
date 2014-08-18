@@ -1,8 +1,8 @@
-function detector = exemplar_kitti_train(cls, data, cid)
+function detector = exemplar_kitti_train(cls, data, cid, is_train)
 
 exemplar_globals;
 
-[pos, neg] = exemplar_kitti_data(cls, data, cid);
+[pos, neg] = exemplar_kitti_data(cls, data, cid, is_train);
 
 % set up opts for training detector (see acfTrain)
 opts = exemplar_acf_train();
@@ -11,11 +11,12 @@ opts.modelDs = modelDs;
 opts.modelDsPad = round(1.2*modelDs);
 opts.pos = pos;
 opts.neg = neg;
-opts.nWeak = [32 128 512 2048];
+opts.nWeak = [32 128 512 1024 2048];
 opts.pJitter = struct('flip',1);
 opts.pBoost.pTree.fracFtrs = 1/16;
 opts.pLoad = {'squarify', {3,.41}};
 opts.name = sprintf('%s%s_%d', cachedir, cls, cid);
+opts.cascThr = -50;
 
 % train detector (see acfTrain)
 detector = exemplar_acf_train( opts );

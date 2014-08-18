@@ -4,7 +4,6 @@ function exemplar_kitti_test(cls, cid, is_train)
 model_name = sprintf('data/%s_%d_final.mat', cls, cid);
 object = load(model_name);
 detector = object.detector;
-detector = acfModify(detector, 'cascThr', -50, 'cascCal', 0);
 
 Ds = detector;
 if ~iscell(Ds)

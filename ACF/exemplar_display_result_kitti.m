@@ -1,7 +1,7 @@
 function exemplar_display_result_kitti
 
 cls = 'car';
-threshold = -inf;
+threshold = 10;
 is_train = 0;
 
 % read detection results
@@ -64,7 +64,7 @@ for i = 1:N
     hold on;    
 
     for k = 1:num
-        if det(k,6) > threshold %|| k < 5
+        if det(k,6) > threshold
             % get predicted bounding box
             bbox_pr = det(k,1:4);
             bbox_draw = [bbox_pr(1), bbox_pr(2), bbox_pr(3)-bbox_pr(1), bbox_pr(4)-bbox_pr(2)];

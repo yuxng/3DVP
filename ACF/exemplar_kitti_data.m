@@ -1,4 +1,4 @@
-function [pos, neg] = exemplar_kitti_data(cls, data, cid)
+function [pos, neg] = exemplar_kitti_data(cls, data, cid, is_train)
 
 % Get training data from the KITTI dataset.
 
@@ -45,7 +45,11 @@ catch
           fprintf('undefined classes for negatives\n');
   end
   object = load('kitti_ids.mat');
-  ids = object.ids_train;
+  if is_train
+      ids = object.ids_train;
+  else
+      ids = [object.ids_train object.ids_val];
+  end
   neg = [];
   numneg = 0;
   for i = 1:length(ids);

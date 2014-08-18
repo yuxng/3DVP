@@ -5,11 +5,17 @@ matlabpool open;
 % Main function to test exemplar DPM for occlusion patterns
 
 % load occlusion patterns
-filename = '../KITTI/data_all.mat';
+is_train = 0;
+
+if is_train
+    filename = '../KITTI/data.mat';
+else
+    filename = '../KITTI/data_all.mat';
+end
 object = load(filename);
 data = object.data;
 data.idx = data.idx_ap;
-is_train = 0;
+
 
 % cluster centers
 centers = unique(data.idx);
