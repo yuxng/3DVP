@@ -7,7 +7,7 @@ data = object.data;
 cids = unique(data.idx_ap);
 num = numel(cids);
 is_multiple = 1;
-is_train = 1;
+is_train = 0;
 
 if is_multiple
     num_job = 32;
