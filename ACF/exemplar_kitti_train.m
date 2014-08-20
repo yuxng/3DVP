@@ -11,12 +11,12 @@ opts.modelDs = modelDs;
 opts.modelDsPad = round(1.2*modelDs);
 opts.pos = pos;
 opts.neg = neg;
-opts.nWeak = [32 128 512 1024 2048];
-opts.pJitter = struct('flip',1);
+opts.nWeak = [32 128 512 2048];
+opts.pJitter = struct('flip', 0);
 opts.pBoost.pTree.fracFtrs = 1/16;
 opts.pLoad = {'squarify', {3,.41}};
 opts.name = sprintf('%s%s_%d', cachedir, cls, cid);
-opts.cascThr = -50;
+opts.cascThr = -10;
 
 % train detector (see acfTrain)
 detector = exemplar_acf_train( opts );
