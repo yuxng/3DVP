@@ -16,7 +16,7 @@ opts.pJitter = struct('flip', 0);
 opts.pBoost.pTree.fracFtrs = 1/16;
 opts.pLoad = {'squarify', {3,.41}};
 opts.name = sprintf('%s%s_%d', cachedir, cls, cid);
-opts.cascThr = -10;
+opts.cascThr = -1;
 
 % train detector (see acfTrain)
 detector = exemplar_acf_train( opts );
