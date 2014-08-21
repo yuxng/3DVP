@@ -1,11 +1,11 @@
 function exemplar_display_result_pattern(cid)
 
 cls = 'car';
-threshold = -50;
+threshold = 0;
 is_train = 0;
 
 % read detection results
-filename = sprintf('data/%s_%d_test.mat', cls, cid);
+filename = sprintf('../%s_%d_test.mat', cls, cid);
 object = load(filename);
 dets = object.boxes;
 

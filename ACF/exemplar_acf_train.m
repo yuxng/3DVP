@@ -379,12 +379,12 @@ else
     [~, ord] = sort(bbs(:,5), 'descend');
     bbs = bbs(ord(1:min(end,opts.nPerNeg)), 1:4);
   end
-  if ~isempty(gt)
+  if ~isempty(gt) && ~isempty(bbs)
     % discard any candidate negative bb that matches the gt
     n = size(bbs,1);
     keep = false(1,n);
     for i=1:n
-        keep(i) = all(bbGt('compOas', bbs(i,:), gt) < 0.1);
+        keep(i) = all(bbGt('compOas', bbs(i,:), gt) == 0);
     end
     bbs = bbs(keep,:);
   end
