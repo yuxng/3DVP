@@ -148,6 +148,7 @@ for stage = 0:numel(opts.nWeak)-1
   fprintf([repmat('-',[1 75]) '\n']);
   fprintf('Training stage %i\n',stage);
   startStage = clock;
+  detector.opts.cascThr = detector.opts.thresholds(stage+1);
   
   % sample positives and compute features
   if stage == 0
@@ -230,7 +231,8 @@ dfs = { 'pPyramid',{}, 'modelDs',[100 41], 'modelDsPad',[128 64], ...
   'nWeak',128, 'pBoost', {}, 'seed',0, 'name','', 'posGtDir','', ...
   'posImgDir','', 'negImgDir','', 'posWinDir','', 'negWinDir','', ...
   'imreadf',@imread, 'imreadp',{}, 'pLoad',{}, 'nPos',inf, 'nNeg',5000, ...
-  'nPerNeg',25, 'nAccNeg',10000, 'pJitter',{}, 'winsSave',0, 'pos', [], 'neg', [] };
+  'nPerNeg',25, 'nAccNeg',10000, 'pJitter',{}, 'winsSave',0, ...
+  'pos', [], 'neg', [], 'thresholds', [] };
 opts = getPrmDflt(varargin, dfs, 1);
 
 % fill in remaining parameters

@@ -74,7 +74,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
         uint32 offset=t*nTreeNodes, k=offset, k0=0;
         getChild(chns1,cids,fids,thrs,offset,k0,k);
         getChild(chns1,cids,fids,thrs,offset,k0,k);
-        h += hs[k]; if( h<=cascThr ) break;
+        h += hs[k]; if( h<=cascThr ) break; 
       }
     } else if( treeDepth>2) {
       // specialized case for treeDepth>2
@@ -93,7 +93,9 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
           k = (ftr<thrs[k]) ? 1 : 0;
           k0 = k = child[k0]-k+offset;
         }
-        h += hs[k]; if( h<=cascThr ) break;
+        h += hs[k]; 
+        // mexPrintf("tree %d, h=%.2f, caseThr=%.2f\n", t, h, cascThr);
+        if( h<=cascThr ) break;
       }
     }
     if(h>cascThr) { cs.push_back(c); rs.push_back(r); hs1.push_back(h); }

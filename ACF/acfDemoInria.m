@@ -56,7 +56,7 @@ opts.cascThr = -10;
 detector = acfTrain( opts );
 
 %% modify detector (see acfModify)
-% detector = acfModify(detector, 'cascThr', -1, 'cascCal', 0);
+detector = acfModify(detector, 'cascThr', -1, 'cascCal', 0);
 
 %% run detector on a sample image (see acfDetect)
 imgNms = bbGt('getFiles', {[dataDir 'test/pos']});

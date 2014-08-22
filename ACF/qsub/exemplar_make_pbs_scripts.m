@@ -7,7 +7,6 @@ data = object.data;
 cids = unique(data.idx_ap);
 num = numel(cids);
 is_multiple = 1;
-is_train = 1;
 
 if is_multiple
     num_job = 32;
@@ -40,12 +39,7 @@ for o_i = 1:num_job
   else
       s = num2str(o_i);
   end
-  if is_train
-      fprintf(fid, ['matlab.new -nodesktop -nosplash -r "exemplar_dpm_train(' s '); exit;"']);
-  else
-      fprintf(fid, ['matlab.new -nodesktop -nosplash -r "exemplar_dpm_test(' s '); exit;"']);
-  end
-  
+  fprintf(fid, ['matlab.new -nodesktop -nosplash -r "exemplar_dpm_train_and_test(' s '); exit;"']);
   fclose(fid);
 end
 
