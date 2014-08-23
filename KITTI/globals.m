@@ -38,7 +38,11 @@ opt.path_kitti_root = [opt.path_kitti '/data_object_image_2'];
 
 opt.path_slm = path_slm;
 opt.path_slm_geometry = [opt.path_slm '/Geometry'];
+opt.path_slm_acf = [opt.path_slm '/ACF'];
+opt.path_kmeans = [opt.path_slm '/3rd_party/vggkmeans'];
 
 % add kitti devit path
 addpath(opt.path_kitti_devkit);
 addpath(opt.path_slm_geometry);
+addpath(opt.path_slm_acf);
+addpath(opt.path_kmeans);

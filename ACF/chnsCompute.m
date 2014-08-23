@@ -2,7 +2,7 @@ function chns = chnsCompute( I, varargin )
 % Compute channel features at a single scale given an input image.
 %
 % Compute the channel features as described in:
-%  P. Dollár, Z. Tu, P. Perona and S. Belongie
+%  P. Dollï¿½r, Z. Tu, P. Perona and S. Belongie
 %  "Integral Channel Features", BMVC 2009.
 % Channel features have proven very effective in sliding window object
 % detection, both in terms of *accuracy* and *speed*. Numerous feature
@@ -118,9 +118,14 @@ function chns = chnsCompute( I, varargin )
 % Licensed under the Simplified BSD License [see external/bsd.txt]
 
 % get default parameters pChns
-if(nargin==2), pChns=varargin{1}; else pChns=[]; end
+if nargin == 2
+    pChns = varargin{1};
+else
+    pChns = [];
+end
+
 if( ~isfield(pChns,'complete') || pChns.complete~=1 || isempty(I) )
-  p=struct('enabled',{},'name',{},'hFunc',{},'pFunc',{},'padWith',{});
+  p = struct('enabled',{},'name',{},'hFunc',{},'pFunc',{},'padWith',{});
   pChns = getPrmDflt(varargin,{'shrink',4,'pColor',{},'pGradMag',{},...
     'pGradHist',{},'pCustom',p,'complete',1},1);
   pChns.pColor = getPrmDflt( pChns.pColor, {'enabled',1,...
@@ -134,38 +139,64 @@ if( ~isfield(pChns,'complete') || pChns.complete~=1 || isempty(I) )
       'name','REQ','hFunc','REQ','pFunc',{},'padWith',0}, 1 ); end
   if( nc>0 ), pChns.pCustom=[pc{:}]; end
 end
-if(nargin==0), chns=pChns; return; end
+
+if nargin == 0
+    chns = pChns;
+    return;
+end
 
 % create output struct
-info=struct('name',{},'pChn',{},'nChns',{},'padWith',{});
-chns=struct('pChns',pChns,'nTypes',0,'data',{{}},'info',info);
+info = struct('name',{},'pChn',{},'nChns',{},'padWith',{});
+chns = struct('pChns',pChns,'nTypes',0,'data',{{}},'info',info);
 
 % crop I so divisible by shrink and get target dimensions
-shrink=pChns.shrink; [h,w,~]=size(I); cr=mod([h w],shrink);
-if(any(cr)), h=h-cr(1); w=w-cr(2); I=I(1:h,1:w,:); end
-h=h/shrink; w=w/shrink;
+shrink = pChns.shrink;
+[h, w, ~] = size(I);
+cr = mod([h w], shrink);
+
+if any(cr)
+    h = h - cr(1);
+    w = w - cr(2);
+    I = I(1:h, 1:w,:);
+end
+h = h/shrink;
+w = w/shrink;
 
 % compute color channels
-p=pChns.pColor; nm='color channels';
-I=rgbConvert(I,p.colorSpace); I=convTri(I,p.smooth);
-if(p.enabled), chns=addChn(chns,I,nm,p,'replicate',h,w); end
+p = pChns.pColor;
+nm = 'color channels';
+I = rgbConvert(I, p.colorSpace);
+I = convTri(I, p.smooth);
+if p.enabled
+    chns = addChn(chns, I, nm, p, 'replicate', h, w);
+end
 
 % compute gradient magnitude channel
-p=pChns.pGradMag; nm='gradient magnitude';
-full=0; if(isfield(p,'full')), full=p.full; end
-if( pChns.pGradHist.enabled )
-  [M,O]=gradientMag(I,p.colorChn,p.normRad,p.normConst,full);
-elseif( p.enabled )
-  M=gradientMag(I,p.colorChn,p.normRad,p.normConst,full);
+p = pChns.pGradMag;
+nm = 'gradient magnitude';
+full = 0;
+if isfield(p,'full')
+    full = p.full;
 end
-if(p.enabled), chns=addChn(chns,M,nm,p,0,h,w); end
+if( pChns.pGradHist.enabled )
+    [M, O] = gradientMag(I,p.colorChn,p.normRad,p.normConst,full);
+elseif( p.enabled )
+    M = gradientMag(I,p.colorChn,p.normRad,p.normConst,full);
+end
+if p.enabled
+    chns = addChn(chns,M,nm,p,0,h,w);
+end
 
 % compute gradient histgoram channels
-p=pChns.pGradHist; nm='gradient histogram';
+p = pChns.pGradHist;
+nm = 'gradient histogram';
 if( p.enabled )
-  binSize=p.binSize; if(isempty(binSize)), binSize=shrink; end
-  H=gradientHist(M,O,binSize,p.nOrients,p.softBin,p.useHog,p.clipHog,full);
-  chns=addChn(chns,H,nm,pChns.pGradHist,0,h,w);
+  binSize = p.binSize;
+  if isempty(binSize)
+      binSize = shrink;
+  end
+  H = gradientHist(M,O,binSize,p.nOrients,p.softBin,p.useHog,p.clipHog,full);
+  chns = addChn(chns,H,nm,pChns.pGradHist,0,h,w);
 end
 
 % compute custom channels

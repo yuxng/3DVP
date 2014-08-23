@@ -9,9 +9,9 @@ cam = 2; % 2 = left color camera
 image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 
 % load data
-object = load('data_all.mat');
+object = load('data.mat');
 data = object.data;
-idx = data.idx_ap;
+idx = data.idx_kmeans;
 
 % load the mean CAD model
 cls = 'car';
@@ -23,6 +23,7 @@ index = cad.grid == 1;
 % cluster centers
 if nargin < 1
     centers = unique(idx);
+    centers(centers == -1) = [];
 else
     centers = cid;
 end
