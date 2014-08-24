@@ -2,7 +2,7 @@ function exemplar_combine_detections
 
 cls = 'car';
 threshold = -inf;
-is_train = 0;
+is_train = 1;
 is_calibration = 0;
 
 % load data
@@ -12,8 +12,10 @@ else
     object = load('../KITTI/data_all.mat');
 end
 data = object.data;
-idx = data.idx_ap;
+idx = data.idx_kmeans;
+
 centers = double(unique(idx));
+centers(centers == -1) = [];
 N = numel(centers);
 
 % load detections
@@ -37,7 +39,7 @@ for i = 1:N
     lim = [rmin - 0.1*rlen rmax + 0.1*rlen];
     
     if is_train == 1
-        filename = sprintf('kitti_train/%s_%d_test.mat', cls, cid);
+        filename = sprintf('kitti_train_kmeans/%s_%d_test.mat', cls, cid);
     else
         filename = sprintf('kitti_test/%s_%d_test.mat', cls, cid);
     end
@@ -70,7 +72,7 @@ for i = 1:N
 end
 
 if is_train == 1
-    filename = sprintf('kitti_train/%s_test.mat', cls);
+    filename = sprintf('kitti_train_kmeans/%s_test.mat', cls);
 else
     filename = sprintf('kitti_test/%s_test.mat', cls);
 end

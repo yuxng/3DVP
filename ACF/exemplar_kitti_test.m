@@ -80,5 +80,5 @@ catch
         boxes{id} = bbs;
         % no non-maximum suppression
     end  
-    save(filename, 'boxes');
+    save(filename, 'boxes', '-v7.3');
 end
