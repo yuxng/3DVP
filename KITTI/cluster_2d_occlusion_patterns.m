@@ -52,7 +52,7 @@ end
 
 % kmeans clustering
 opts = struct('maxiters', 1000, 'mindelta', eps, 'verbose', 1);
-K = 20;
+K = 25;
 [center, sse] = vgg_kmeans(X, K, opts);
 [idx_kmeans, d] = vgg_nearest_neighbour(X, center);
 
