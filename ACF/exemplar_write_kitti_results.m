@@ -1,11 +1,11 @@
 function exemplar_write_kitti_results
 
 cls = 'car';
-is_train = 0;
+is_train = 1;
 
 % read detection results
 if is_train == 1
-    filename = sprintf('kitti_train/%s_test.mat', cls);
+    filename = sprintf('kitti_train_kmeans/%s_test.mat', cls);
 else
     filename = sprintf('kitti_test/%s_test.mat', cls);
 end
