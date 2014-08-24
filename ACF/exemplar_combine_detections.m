@@ -4,6 +4,7 @@ cls = 'car';
 threshold = -inf;
 is_train = 1;
 is_calibration = 0;
+is_filtering = 1;
 
 % load data
 if is_train == 1
@@ -27,16 +28,20 @@ for i = 1:N
     
     % compute the range of this cluster
     % compute the range of bounding box center, width and height
-    bbox = data.bbox(:, idx == cid);
-    x = (bbox(1,:) + bbox(3,:)) / 2;
-    y = (bbox(2,:) + bbox(4,:)) / 2;
-    w = bbox(3,:) - bbox(1,:);
-    h = bbox(4,:) - bbox(2,:);
-    r = [x; y; w; h];
-    rmin = min(r, [], 2);
-    rmax = max(r, [], 2);
-    rlen = rmax - rmin;
-    lim = [rmin - 0.1*rlen rmax + 0.1*rlen];
+    if is_filtering
+        bbox = data.bbox(:, idx == cid);
+        x = (bbox(1,:) + bbox(3,:)) / 2;
+        y = (bbox(2,:) + bbox(4,:)) / 2;
+        w = bbox(3,:) - bbox(1,:);
+        h = bbox(4,:) - bbox(2,:);
+        r = [x; y; w; h];
+        rmin = min(r, [], 2);
+        rmax = max(r, [], 2);
+        rlen = rmax - rmin;
+        lim = [rmin - 0.1*rlen rmax + 0.1*rlen];
+    else
+        lim = [];
+    end
     
     if is_train == 1
         filename = sprintf('kitti_train_kmeans/%s_%d_test.mat', cls, cid);
@@ -90,8 +95,13 @@ else
     w = boxes(:,3) - boxes(:,1);
     h = boxes(:,4) - boxes(:,2);    
     
-    index= find((boxes(:, 5) > threshold & x > lim(1,1) & x < lim(1,2) & ...
-        y > lim(2,1) & y < lim(2,2) & w > lim(3,1) & w < lim(3,2) & h > lim(4,1) & h < lim(4,2)) == 1);
+    if isempty(lim) == 1
+        index = 1:size(boxes,1);
+        index = index';
+    else
+        index= find((boxes(:, 5) > threshold & x > lim(1,1) & x < lim(1,2) & ...
+            y > lim(2,1) & y < lim(2,2) & w > lim(3,1) & w < lim(3,2) & h > lim(4,1) & h < lim(4,2)) == 1);
+    end
     if isempty(index) == 1
         boxes_new = [];
     else

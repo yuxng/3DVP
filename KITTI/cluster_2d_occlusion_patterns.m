@@ -1,7 +1,7 @@
 function cluster_2d_occlusion_patterns
 
 opt = globals;
-data_file = 'data.mat';
+data_file = 'data_all.mat';
 is_save = 1;
 
 % get image directory
