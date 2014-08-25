@@ -2,7 +2,7 @@ function exemplar_combine_detections
 
 cls = 'car';
 threshold = -inf;
-is_train = 0;
+is_train = 1;
 is_calibration = 0;
 is_filtering = 1;
 
