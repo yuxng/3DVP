@@ -3,6 +3,7 @@ function exemplar_dpm_train_and_test(index)
 matlabpool open;
 
 cls = 'car';
+is_continue = 0;
 
 % Main function to train exemplar DPM for occlusion patterns
 
@@ -37,8 +38,8 @@ end
 
 for i = index
     fprintf('%d/%d: Train DPM for center %d\n', i, num, centers(i));
-    exemplar_kitti_train(cls, data, centers(i), is_train);
-    exemplar_kitti_test(cls, centers(i), is_train);
+    exemplar_kitti_train(cls, data, centers(i), is_train, is_continue);
+    exemplar_kitti_test(cls, centers(i), is_train, is_continue);
 end
 
 matlabpool close;

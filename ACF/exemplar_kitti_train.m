@@ -1,8 +1,8 @@
-function detector = exemplar_kitti_train(cls, data, cid, is_train)
+function detector = exemplar_kitti_train(cls, data, cid, is_train, is_continue)
 
 exemplar_globals;
 
-[pos, neg] = exemplar_kitti_data(cls, data, cid, is_train);
+[pos, neg] = exemplar_kitti_data(cls, data, cid, is_train, is_continue);
 
 % set up opts for training detector (see acfTrain)
 opts = exemplar_acf_train();
@@ -17,6 +17,7 @@ opts.pBoost.pTree.fracFtrs = 1/16;
 opts.pLoad = {'squarify', {3,.41}};
 opts.name = sprintf('%s%s_%d', cachedir, cls, cid);
 opts.cascThr = -1;
+opts.is_continue = is_continue;
 
 % train detector (see acfTrain)
 detector = exemplar_acf_train( opts );

@@ -1,12 +1,13 @@
-function [pos, neg] = exemplar_kitti_data(cls, data, cid, is_train)
+function [pos, neg] = exemplar_kitti_data(cls, data, cid, is_train, is_continue)
 
 % Get training data from the KITTI dataset.
 
 exemplar_globals;
 
-try
-  load([cachedir cls '_train_' num2str(cid)]);
-catch
+filename = [cachedir cls '_train_' num2str(cid) '.mat'];
+if is_continue == 1 && exist(filename, 'file') ~= 0
+  load(filename);
+else
   % positive examples from kitti
   root_dir = KITTIroot;
   data_set = 'training';

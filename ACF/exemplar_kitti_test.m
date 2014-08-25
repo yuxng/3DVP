@@ -1,4 +1,4 @@
-function exemplar_kitti_test(cls, cid, is_train)
+function exemplar_kitti_test(cls, cid, is_train, is_continue)
 
 % load detector
 model_name = sprintf('data/%s_%d_final.mat', cls, cid);
@@ -45,9 +45,9 @@ end
 filename = sprintf('data/%s_%d_test.mat', cls, cid);
 
 % run detector in each image
-try
+if is_continue == 1 && exist(filename, 'file')
     load(filename);
-catch
+else
     N = numel(ids);
     boxes = cell(1, N);
     parfor id = 1:N

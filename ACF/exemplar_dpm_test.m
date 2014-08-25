@@ -5,6 +5,7 @@ matlabpool open;
 % Main function to test exemplar DPM for occlusion patterns
 
 % load occlusion patterns
+is_continue = 0;
 is_train = 1;
 
 if is_train
@@ -31,7 +32,7 @@ end
 
 for i = index
     fprintf('%d/%d: Test DPM for center %d\n', i, num, centers(i));
-    exemplar_kitti_test(cls, centers(i), is_train);
+    exemplar_kitti_test(cls, centers(i), is_train, is_continue);
 end
 
 matlabpool close;

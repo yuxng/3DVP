@@ -119,7 +119,7 @@ end
 
 % load or initialize detector and begin logging
 nm = [opts.name '_final.mat'];
-if exist(nm, 'file')
+if opts.is_continue == 1 && exist(nm, 'file')
     if nargout
         t = load(nm);
         detector = t.detector;
@@ -231,7 +231,7 @@ dfs = { 'pPyramid',{}, 'modelDs',[100 41], 'modelDsPad',[128 64], ...
   'posImgDir','', 'negImgDir','', 'posWinDir','', 'negWinDir','', ...
   'imreadf',@imread, 'imreadp',{}, 'pLoad',{}, 'nPos',inf, 'nNeg',5000, ...
   'nPerNeg',25, 'nAccNeg',10000, 'pJitter',{}, 'winsSave',0, ...
-  'pos', [], 'neg', []};
+  'pos', [], 'neg', [], 'is_continue', 0};
 opts = getPrmDflt(varargin, dfs, 1);
 
 % fill in remaining parameters
