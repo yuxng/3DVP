@@ -1,7 +1,7 @@
 function exemplar_make_pbs_scripts
 
 % load occlusion patterns
-filename = '../../KITTI/data_all.mat';
+filename = '../../KITTI/data.mat';
 object = load(filename);
 data = object.data;
 

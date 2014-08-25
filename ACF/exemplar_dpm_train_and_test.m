@@ -13,7 +13,7 @@ is_continue = 0;
 % cad = object.(cls);
 
 % load occlusion patterns
-is_train = 0;
+is_train = 1;
 
 if is_train
     filename = '../KITTI/data.mat';
