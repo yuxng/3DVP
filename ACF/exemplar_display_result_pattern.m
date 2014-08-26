@@ -2,7 +2,7 @@ function exemplar_display_result_pattern(cid)
 
 cls = 'car';
 threshold = 0;
-is_train = 0;
+is_train = 1;
 
 % read detection results
 filename = sprintf('../%s_%d_test.mat', cls, cid);

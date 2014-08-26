@@ -385,7 +385,7 @@ else
     n = size(bbs,1);
     keep = false(1,n);
     for i=1:n
-        keep(i) = all(bbGt('compOas', bbs(i,:), gt) == 0);
+        keep(i) = all(bbGt('compOas', bbs(i,:), gt) < 0.6);
     end
     bbs = bbs(keep,:);
   end

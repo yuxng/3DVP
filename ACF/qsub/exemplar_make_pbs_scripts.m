@@ -1,7 +1,7 @@
 function exemplar_make_pbs_scripts
 
 % load occlusion patterns
-filename = '../../KITTI/data.mat';
+filename = '../../KITTI/data_all.mat';
 object = load(filename);
 data = object.data;
 
@@ -49,5 +49,6 @@ fid = fopen('exemplar_qsub.sh', 'w');
 fprintf(fid, 'for (( i = 1; i <= %d; i++))\n', num_job);
 fprintf(fid, 'do\n');
 fprintf(fid, '  /usr/local/bin/qsub run$i.sh\n');
+fprintf(fid, '  sleep 5\n');
 fprintf(fid, 'done\n');
 fclose(fid);
