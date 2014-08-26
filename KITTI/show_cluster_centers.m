@@ -3,7 +3,7 @@ function show_cluster_centers
 opt = globals;
 
 % load data
-object = load('data.mat');
+object = load('data_all.mat');
 data = object.data;
 idx = data.idx_ap;
 
@@ -28,6 +28,9 @@ ind_plot = 1;
 for i = 1:N
     % show center
     ind = centers(i);
+    if data.truncation(ind) < 0.3
+        continue;
+    end
     grid = data.grid(:,ind);
     visibility_grid = zeros(size(cad.grid));
     visibility_grid(index) = grid;

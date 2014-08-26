@@ -18,6 +18,11 @@ opts.pLoad = {'squarify', {3,.41}};
 opts.name = sprintf('%s%s_%d', cachedir, cls, cid);
 opts.cascThr = -1;
 opts.is_continue = is_continue;
+if data.truncation(cid) > 0.3
+    opts.overlap_neg = 0.01;
+else
+    opts.overlap_neg = 0.6;
+end
 
 % train detector (see acfTrain)
 detector = exemplar_acf_train( opts );

@@ -231,7 +231,7 @@ dfs = { 'pPyramid',{}, 'modelDs',[100 41], 'modelDsPad',[128 64], ...
   'posImgDir','', 'negImgDir','', 'posWinDir','', 'negWinDir','', ...
   'imreadf',@imread, 'imreadp',{}, 'pLoad',{}, 'nPos',inf, 'nNeg',5000, ...
   'nPerNeg',25, 'nAccNeg',10000, 'pJitter',{}, 'winsSave',0, ...
-  'pos', [], 'neg', [], 'is_continue', 0};
+  'pos', [], 'neg', [], 'is_continue', 0, 'overlap_neg', 0.6};
 opts = getPrmDflt(varargin, dfs, 1);
 
 % fill in remaining parameters
@@ -385,7 +385,7 @@ else
     n = size(bbs,1);
     keep = false(1,n);
     for i=1:n
-        keep(i) = all(bbGt('compOas', bbs(i,:), gt) < 0.6);
+        keep(i) = all(bbGt('compOas', bbs(i,:), gt) < opts.overlap_neg);
     end
     bbs = bbs(keep,:);
   end

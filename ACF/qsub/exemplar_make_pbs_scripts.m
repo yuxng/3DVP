@@ -5,11 +5,11 @@ filename = '../../KITTI/data_all.mat';
 object = load(filename);
 data = object.data;
 
-cids = unique(data.idx_kmeans);
+cids = unique(data.idx_ap);
 cids(cids == -1) = [];
 num = numel(cids);
 
-is_multiple = 0;
+is_multiple = 1;
 if is_multiple
     num_job = 32;
     index = round(linspace(1, num, num_job+1));
