@@ -1,29 +1,23 @@
 function exemplar_dpm_train_and_test(index)
 
-matlabpool open;
+exemplar_globals;
+
+if is_hadoop == 0
+    matlabpool open;
+end
 
 cls = 'car';
 is_continue = 0;
-
-% Main function to train exemplar DPM for occlusion patterns
-
-% load the mean CAD model
-% filename = sprintf('../Geometry/%s_mean.mat', cls);
-% object = load(filename);
-% cad = object.(cls);
-
-% load occlusion patterns
 is_train = 0;
 
 if is_train
-    filename = '../KITTI/data.mat';
+    filename = fullfile(SLMroot, 'KITTI/data.mat');
 else
-    filename = '../KITTI/data_all.mat';
+    filename = fullfile(SLMroot, 'KITTI/data_all.mat');
 end
 object = load(filename);
 data = object.data;
 data.idx = data.idx_ap;
-
 
 % cluster centers
 centers = unique(data.idx);
@@ -42,4 +36,6 @@ for i = index
     exemplar_kitti_test(cls, centers(i), is_train, is_continue);
 end
 
-matlabpool close;
+if is_hadoop == 0
+    matlabpool close;
+end

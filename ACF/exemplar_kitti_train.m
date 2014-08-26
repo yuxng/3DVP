@@ -28,7 +28,7 @@ end
 detector = exemplar_acf_train( opts );
 
 % save detector
-filename = sprintf('%s%s_%d_final.mat', resultdir, cls, cid);
+filename = fullfile(resultdir, sprintf('%s_%d_final.mat', cls, cid));
 save(filename, 'detector');
 
 

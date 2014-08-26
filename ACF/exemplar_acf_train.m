@@ -208,7 +208,11 @@ for stage = 0:numel(opts.nWeak)-1
   
   % update log
   fprintf('Done training stage %i (time=%.0fs).\n',...
-    stage,etime(clock,startStage)); diary('off');
+    stage,etime(clock,startStage)); 
+  diary('off');
+  
+  tempstring = sprintf('Done training stage %d', stage);
+  stdout_withFlush(tempstring);
 end
 
 % save detector
@@ -309,6 +313,9 @@ while i < nImg && k < n
     end
     i = i + batch;
     tocStatus(tid, max(i/nImg,k/n));
+    
+    tempstring = sprintf('Sampled %d windows from image %d', length(Is1), i);
+    stdout_withFlush(tempstring);
 end
 Is = Is(1:k);
 fprintf('Sampled %i windows from %i images.\n',k,i);

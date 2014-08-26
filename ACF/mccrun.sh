@@ -1,0 +1,1 @@
+sh ./run_exemplar_dpm_train_and_test.sh /usr/local/mathworks/ $1

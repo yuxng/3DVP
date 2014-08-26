@@ -1,7 +1,9 @@
 function exemplar_kitti_test(cls, cid, is_train, is_continue)
 
+exemplar_globals;
+
 % load detector
-model_name = sprintf('data/%s_%d_final.mat', cls, cid);
+model_name = fullfile(resultdir, sprintf('%s_%d_final.mat', cls, cid));
 object = load(model_name);
 detector = object.detector;
 detector = acfModify(detector, 'cascThr', -20);
@@ -22,7 +24,6 @@ pad = pPyramid.pad;
 separate = nDs > 1 && isfield(pNms, 'separate') && pNms.separate;
 
 % KITTI path
-exemplar_globals;
 root_dir = KITTIroot;
 if is_train == 1
     data_set = 'training';
@@ -35,14 +36,15 @@ cam = 2; % 2 = left color camera
 image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]); 
 
 % get test image ids
-object = load('kitti_ids.mat');
+filename = fullfile(SLMroot, 'ACF/kitti_ids.mat');
+object = load(filename);
 if is_train == 1
     ids = [object.ids_train object.ids_val];
 else
     ids = object.ids_test;
 end
 
-filename = sprintf('data/%s_%d_test.mat', cls, cid);
+filename = fullfile(resultdir, sprintf('%s_%d_test.mat', cls, cid));
 
 % run detector in each image
 if is_continue == 1 && exist(filename, 'file')
@@ -79,6 +81,8 @@ else
         bbs = cat(1, bbs{:});
         boxes{id} = bbs;
         % no non-maximum suppression
+        tempstring = sprintf('%d objects detected in image %d', size(bbs,1), img_idx);
+        stdout_withFlush(tempstring);        
     end  
     save(filename, 'boxes', '-v7.3');
 end

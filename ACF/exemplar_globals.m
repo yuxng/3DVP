@@ -1,8 +1,24 @@
 % Set up global variables used throughout the code
 
+is_hadoop = 1;
+
 % directory for caching models, intermediate data, and results
-cachedir = '/scratch/yuxiang/Projects/data/';
-resultdir = 'data/';
+% cachedir = '/scratch/yuxiang/Projects/data/';
+
+if is_hadoop
+    % rootdir = '/workplace/hadoop_cache/slm/';
+    rootdir = 'test';
+    cachedir = fullfile(rootdir, 'cache/');
+    resultdir = fullfile(rootdir, 'data/');
+else
+    rootdir = '/scratch/yuxiang/Projects';
+    cachedir = fullfile(roo_dir, 'data/');
+    resultdir = 'data/';
+end
+
+if exist(rootdir, 'dir') == 0
+    mkdir(rootdir);
+end
 
 if exist(cachedir, 'dir') == 0
   unix(['mkdir -p ' cachedir]);
@@ -13,9 +29,11 @@ if exist(resultdir, 'dir') == 0
 end
 
 % directory with KITTI development kit and dataset
-KITTIpaths = {'/net/acadia/workplace/yuxiang/Projects/KITTI', ...
+KITTIpaths = {'/net/skyserver10/workplace/yxiang/KITTI_Dataset', ...
+    '/net/acadia/workplace/yuxiang/Projects/KITTI', ...
     '/home/yuxiang/Projects/KITTI_Dataset', ...
     '/scratch/yuxiang/Projects/KITTI_Dataset'};
+
 for i = 1:numel(KITTIpaths)
     if exist(KITTIpaths{i}, 'dir')
         KITTIroot = [KITTIpaths{i} '/data_object_image_2'];
@@ -23,4 +41,18 @@ for i = 1:numel(KITTIpaths)
         break;
     end
 end
-addpath(KITTIdevkit);
+
+if is_hadoop == 0
+    addpath(KITTIdevkit);
+end
+
+SLMpaths = {'/net/skyserver10/workplace/yxiang/SLM', ...
+    '/home/yuxiang/Projects/SLM', ...
+    '/scail/scratch/u/yuxiang/SLM'};
+
+for i = 1:numel(SLMpaths)
+    if exist(SLMpaths{i}, 'dir')
+        SLMroot = SLMpaths{i};
+        break;
+    end
+end
