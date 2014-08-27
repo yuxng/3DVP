@@ -6,7 +6,7 @@ matlabpool open;
 
 % load occlusion patterns
 is_continue = 0;
-is_train = 1;
+is_train = 0;
 
 if is_train
     filename = '../KITTI/data.mat';
@@ -15,7 +15,7 @@ else
 end
 object = load(filename);
 data = object.data;
-data.idx = data.idx_kmeans;
+data.idx = data.idx_ap;
 
 
 % cluster centers
