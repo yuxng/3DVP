@@ -26,16 +26,20 @@ else
   for i = 1:num_train
     fprintf('%s %d: parsing positives: %d/%d\n', cls, cid, i, num_train);
     ind = index(i);
-    numpos = numpos+1;
-    pos(numpos).im = fullfile(image_dir, data.imgname{ind});
     bbox = data.bbox(:,ind);
-    pos(numpos).x1 = bbox(1);
-    pos(numpos).y1 = bbox(2);
-    pos(numpos).x2 = bbox(3);
-    pos(numpos).y2 = bbox(4);
-    pos(numpos).bbox = bbox';
-    pos(numpos).flip = false;
-    pos(numpos).trunc = data.truncation(ind);
+    w = bbox(3) - bbox(1);
+    h = bbox(4) - bbox(2);
+    if w > 1 && h > 1 
+        numpos = numpos+1;
+        pos(numpos).im = fullfile(image_dir, data.imgname{ind});
+        pos(numpos).x1 = bbox(1);
+        pos(numpos).y1 = bbox(2);
+        pos(numpos).x2 = bbox(3);
+        pos(numpos).y2 = bbox(4);
+        pos(numpos).bbox = bbox';
+        pos(numpos).flip = false;
+        pos(numpos).trunc = data.truncation(ind);
+    end
   end
 
   % negative examples from kitti
