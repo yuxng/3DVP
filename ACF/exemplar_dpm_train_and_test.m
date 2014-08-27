@@ -1,7 +1,10 @@
 function exemplar_dpm_train_and_test(index)
 
-exemplar_globals;
+if(ischar(index))
+    index = str2double(index);
+end
 
+exemplar_globals;
 if is_hadoop == 0
     matlabpool open;
 end

@@ -6,8 +6,8 @@ is_hadoop = 1;
 % cachedir = '/scratch/yuxiang/Projects/data/';
 
 if is_hadoop
-    % rootdir = '/workplace/hadoop_cache/slm/';
-    rootdir = 'test';
+    rootdir = '/workplace/hadoop_cache/slm/';
+    % rootdir = '/workplace/yxiang/slm/';
     cachedir = fullfile(rootdir, 'cache/');
     resultdir = fullfile(rootdir, 'data/');
 else
