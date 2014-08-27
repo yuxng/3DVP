@@ -4,15 +4,6 @@ matlabpool open;
 
 cls = 'car';
 is_continue = 0;
-
-% Main function to train exemplar DPM for occlusion patterns
-
-% load the mean CAD model
-% filename = sprintf('../Geometry/%s_mean.mat', cls);
-% object = load(filename);
-% cad = object.(cls);
-
-% load occlusion patterns
 is_train = 0;
 
 if is_train

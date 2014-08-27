@@ -1,4 +1,4 @@
-function p = randperm(n, k)
+function p = randPerm(n, k)
 %RANDPERM Random permutation.
 %   RANDPERM(n) is a random permutation of the integers from 1 to n.
 %   For example, RANDPERM(6) might be [2 4 5 6 1 3].

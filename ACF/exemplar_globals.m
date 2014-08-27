@@ -1,18 +1,15 @@
 % Set up global variables used throughout the code
 
-is_hadoop = 1;
+is_hadoop = 0;
 
 % directory for caching models, intermediate data, and results
-% cachedir = '/scratch/yuxiang/Projects/data/';
-
 if is_hadoop
     rootdir = '/workplace/hadoop_cache/slm/';
-    % rootdir = '/workplace/yxiang/slm/';
     cachedir = fullfile(rootdir, 'cache/');
     resultdir = fullfile(rootdir, 'data/');
 else
     rootdir = '/scratch/yuxiang/Projects';
-    cachedir = fullfile(roo_dir, 'data/');
+    cachedir = fullfile(rootdir, 'data/');
     resultdir = 'data/';
 end
 

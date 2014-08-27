@@ -23,6 +23,11 @@ N = numel(centers);
 dets = [];
 for i = 1:N
     cid = centers(i);
+    
+    if data.truncation(cid) > 0.1
+        continue;
+    end
+    
     num = numel(find(idx == cid));
     fprintf('cluster %d: %d training examples\n', cid, num);
     

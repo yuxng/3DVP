@@ -4,11 +4,17 @@ exemplar_globals;
 
 [pos, neg] = exemplar_kitti_data(cls, data, cid, is_train, is_continue);
 
+is_truncated = data.truncation(cid) > 0;
+
 % set up opts for training detector (see acfTrain)
 opts = exemplar_acf_train();
 modelDs = compute_model_size(pos);
 opts.modelDs = modelDs;
-opts.modelDsPad = round(1.2*modelDs);
+if is_truncated
+    opts.modelDsPad = modelDs;
+else
+    opts.modelDsPad = round(1.2*modelDs);
+end
 opts.pos = pos;
 opts.neg = neg;
 opts.nWeak = [32 128 512 2048];
@@ -18,11 +24,9 @@ opts.pLoad = {'squarify', {3,.41}};
 opts.name = sprintf('%s%s_%d', cachedir, cls, cid);
 opts.cascThr = -1;
 opts.is_continue = is_continue;
-if data.truncation(cid) > 0.3
-    opts.overlap_neg = 0.01;
-else
-    opts.overlap_neg = 0.6;
-end
+opts.overlap_neg = max(0, 0.6 - data.truncation(cid));
+opts.is_truncated = is_truncated;
+opts.is_hadoop = is_hadoop;
 
 % train detector (see acfTrain)
 detector = exemplar_acf_train( opts );

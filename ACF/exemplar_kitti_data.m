@@ -35,7 +35,7 @@ else
     pos(numpos).y2 = bbox(4);
     pos(numpos).bbox = bbox';
     pos(numpos).flip = false;
-    pos(numpos).trunc = 0;
+    pos(numpos).trunc = data.truncation(ind);
   end
 
   % negative examples from kitti
@@ -64,14 +64,18 @@ else
     objects = readLabels(label_dir, ids(i));
     n = numel(objects);
     bbox = [];
+    trunc = [];
     count = 0;
     for j = 1:n
         if sum(strcmp(objects(j).type, str_pos)) > 0
             count = count + 1;
             bbox(count,:) = [objects(j).x1 objects(j).y1 objects(j).x2 objects(j).y2];
+            trunc(count) = objects(j).truncation;
         end
     end
     neg(numneg).bbox = bbox;
+    trunc(trunc == -1) = 0;
+    neg(numneg).trunc = trunc;
   end
   
   save([cachedir cls '_train_' num2str(cid)], 'pos', 'neg');

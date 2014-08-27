@@ -1,6 +1,6 @@
 function exemplar_dpm_train_and_test(index)
 
-if(ischar(index))
+if ischar(index)
     index = str2double(index);
 end
 

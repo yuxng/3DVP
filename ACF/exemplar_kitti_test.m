@@ -22,6 +22,7 @@ imreadp = opts.imreadp;
 shrink = pPyramid.pChns.shrink;
 pad = pPyramid.pad;
 separate = nDs > 1 && isfield(pNms, 'separate') && pNms.separate;
+is_hadoop = opts.is_hadoop;
 
 % KITTI path
 root_dir = KITTIroot;
@@ -81,8 +82,10 @@ else
         bbs = cat(1, bbs{:});
         boxes{id} = bbs;
         % no non-maximum suppression
-        tempstring = sprintf('%d objects detected in image %d', size(bbs,1), img_idx);
-        stdout_withFlush(tempstring);        
+        if is_hadoop
+            tempstring = sprintf('%d objects detected in image %d', size(bbs,1), img_idx);
+            stdout_withFlush(tempstring);        
+        end
     end  
     save(filename, 'boxes', '-v7.3');
 end

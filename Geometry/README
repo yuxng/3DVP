@@ -1,0 +1,8 @@
+Author: Yu Xiang
+Date: 8/25/2014
+
+render_depth_images is to reconstruct the surface points of a CAD model.
+
+Command: ./render_depth_images category_name cad_index
+Example: ./render_depth_images car 1
+         The input file is car/01.off, and the output file is car/01_surf.off.

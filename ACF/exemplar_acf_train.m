@@ -211,8 +211,10 @@ for stage = 0:numel(opts.nWeak)-1
     stage,etime(clock,startStage)); 
   diary('off');
   
-  tempstring = sprintf('Done training stage %d', stage);
-  stdout_withFlush(tempstring);
+  if opts.is_hadoop
+    tempstring = sprintf('Done training stage %d', stage);
+    stdout_withFlush(tempstring);
+  end
 end
 
 % save detector
@@ -235,7 +237,8 @@ dfs = { 'pPyramid',{}, 'modelDs',[100 41], 'modelDsPad',[128 64], ...
   'posImgDir','', 'negImgDir','', 'posWinDir','', 'negWinDir','', ...
   'imreadf',@imread, 'imreadp',{}, 'pLoad',{}, 'nPos',inf, 'nNeg',5000, ...
   'nPerNeg',25, 'nAccNeg',10000, 'pJitter',{}, 'winsSave',0, ...
-  'pos', [], 'neg', [], 'is_continue', 0, 'overlap_neg', 0.6};
+  'pos', [], 'neg', [], 'is_continue', 0, 'overlap_neg', 0.6, ...
+  'is_truncated', 0, 'is_hadoop', 0};
 opts = getPrmDflt(varargin, dfs, 1);
 
 % fill in remaining parameters
@@ -314,8 +317,10 @@ while i < nImg && k < n
     i = i + batch;
     tocStatus(tid, max(i/nImg,k/n));
     
-    tempstring = sprintf('Sampled %d windows from image %d', length(Is1), i);
-    stdout_withFlush(tempstring);
+    if opts.is_hadoop
+        tempstring = sprintf('Sampled %d windows from image %d', length(Is1), i);
+        stdout_withFlush(tempstring);
+    end
 end
 Is = Is(1:k);
 fprintf('Sampled %i windows from %i images.\n',k,i);
@@ -392,20 +397,26 @@ else
     n = size(bbs,1);
     keep = false(1,n);
     for i=1:n
-        keep(i) = all(bbGt('compOas', bbs(i,:), gt) < opts.overlap_neg);
+        keep(i) = all(bbGt('compOas', bbs(i,:), gt) <= opts.overlap_neg);
     end
     bbs = bbs(keep,:);
   end
 end
 
 % grow bbs to a large padded size and finally crop windows
-modelDsBig = max(8*shrink, modelDsPad) + max(2, ceil(64/shrink)) * shrink;
-% r = modelDs(2)/modelDs(1);
-% assert(all(abs(bbs(:,3)./bbs(:,4)-r) < 1e-5));
+if opts.is_truncated
+    modelDsBig = modelDsPad;
+else
+    modelDsBig = max(8*shrink, modelDsPad) + max(2, ceil(64/shrink)) * shrink;
+end
 
 r = modelDsBig ./ modelDs;
 bbs = bbApply('resize', bbs, r(1), r(2));
-Is = bbApply('crop', I, bbs, 'replicate', modelDsBig([2 1]));
+if opts.is_truncated
+    Is = bbApply('crop', I, bbs, [], modelDsBig([2 1]));
+else
+    Is = bbApply('crop', I, bbs, 'replicate', modelDsBig([2 1]));
+end
 
 end
 
