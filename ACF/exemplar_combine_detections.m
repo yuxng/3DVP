@@ -48,6 +48,9 @@ for i = 1:N
     else
         filename = sprintf('kitti_test/%s_%d_test.mat', cls, cid);
     end
+    if exist(filename, 'file') == 0
+        continue;
+    end
     object = load(filename);
     boxes1 = object.boxes;
     

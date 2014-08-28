@@ -2,7 +2,7 @@ function cluster_3d_occlusion_patterns
 
 data_file = 'data.mat';
 is_save = 1;
-algorithm = 'kmeans';
+algorithm = 'pose';
 
 switch algorithm
     case 'ap'
@@ -80,7 +80,7 @@ switch algorithm
         flag = height > 40 & occlusion == 0 & truncation < 0.15;        
         
         % load data
-        K = 20;
+        K = 5;
         opts = struct('maxiters', 1000, 'mindelta', eps, 'verbose', 1);
         idx_kmeans = kmeans_hamming(distances(flag, flag), K, opts);
         
@@ -103,7 +103,61 @@ switch algorithm
             data = object.data;
             data.idx_kmeans = idx;
             save(data_file, 'data');
-        end    
+        end
+    case 'pose'
+        % load data
+        object = load(data_file);
+        data = object.data;
+        
+        % select the clustering data
+        height = data.bbox(4,:) - data.bbox(2,:) + 1;
+        occlusion = data.occlusion;
+        truncation = data.truncation;
+        flag = height > 40 & occlusion == 0 & truncation < 0.15;
+        
+        % split the azimuth
+        vnum = 16;
+        azimuth = data.azimuth(flag);
+        num = numel(azimuth);
+        idx_pose = zeros(num, 1);
+        for i = 1:num
+            idx_pose(i) = find_interval(azimuth(i), vnum);
+        end
+        
+        % construct idx
+        num = numel(data.imgname);
+        idx = zeros(num, 1);
+        idx(flag == 0) = -1;
+        index_all = find(flag == 1);
+        for i = 1:vnum
+            index = find(idx_pose == i);
+            ind = 1;
+            cid = index_all(index(ind));
+            idx(index_all(index)) = cid;
+        end
+        
+        % save results
+        if is_save == 1
+            object = load(data_file);
+            data = object.data;
+            data.idx_pose = idx;
+            save(data_file, 'data');
+        end        
+        
     otherwise
         fprintf('algorithm %s not supported\n', algorithm);
+end
+
+function ind = find_interval(azimuth, num)
+
+a = (360/(num*2)):(360/num):360-(360/(num*2));
+
+for i = 1:numel(a)
+    if azimuth < a(i)
+        break;
+    end
+end
+ind = i;
+if azimuth > a(end)
+    ind = 1;
 end
