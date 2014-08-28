@@ -80,7 +80,7 @@ switch algorithm
         flag = height > 40 & occlusion == 0 & truncation < 0.15;        
         
         % load data
-        K = 10;
+        K = 20;
         opts = struct('maxiters', 1000, 'mindelta', eps, 'verbose', 1);
         idx_kmeans = kmeans_hamming(distances(flag, flag), K, opts);
         
