@@ -11,7 +11,7 @@ end
 
 cls = 'car';
 is_continue = 0;
-is_train = 1;
+is_train = 0;
 
 if is_train
     filename = fullfile(SLMroot, 'KITTI/data.mat');

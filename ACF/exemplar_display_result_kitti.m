@@ -1,12 +1,12 @@
 function exemplar_display_result_kitti
 
 cls = 'car';
-threshold = -inf;
-is_train = 0;
+threshold = -20;
+is_train = 1;
 
 % read detection results
 if is_train
-    filename = sprintf('kitti_train/%s_test.mat', cls);
+    filename = sprintf('kitti_train_few/%s_test.mat', cls);
 else
     filename = sprintf('kitti_test/%s_test.mat', cls);
 end

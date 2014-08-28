@@ -13,7 +13,7 @@ else
     object = load('../KITTI/data_all.mat');
 end
 data = object.data;
-idx = data.idx_kmeans;
+idx = data.idx_ap;
 
 centers = double(unique(idx));
 centers(centers == -1) = [];
@@ -44,7 +44,7 @@ for i = 1:N
     end
     
     if is_train == 1
-        filename = sprintf('kitti_train_kmeans/%s_%d_test.mat', cls, cid);
+        filename = sprintf('kitti_train_few/%s_%d_test.mat', cls, cid);
     else
         filename = sprintf('kitti_test/%s_%d_test.mat', cls, cid);
     end
@@ -80,7 +80,7 @@ for i = 1:N
 end
 
 if is_train == 1
-    filename = sprintf('kitti_train_kmeans/%s_test.mat', cls);
+    filename = sprintf('kitti_train_few/%s_test.mat', cls);
 else
     filename = sprintf('kitti_test/%s_test.mat', cls);
 end
