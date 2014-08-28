@@ -1,9 +1,9 @@
-function exemplar_kitti_test(cls, cid, is_train, is_continue)
+function exemplar_kitti_test(cls, ind, cid, is_train, is_continue)
 
 exemplar_globals;
 
 % load detector
-model_name = fullfile(resultdir, sprintf('%s_%d_final.mat', cls, cid));
+model_name = fullfile(resultdir, sprintf('%s_%d_final.mat', cls, ind));
 object = load(model_name);
 detector = object.detector;
 detector = acfModify(detector, 'cascThr', -50);
@@ -45,7 +45,7 @@ else
     ids = object.ids_test;
 end
 
-filename = fullfile(resultdir, sprintf('%s_%d_test.mat', cls, cid));
+filename = fullfile(resultdir, sprintf('%s_%d_test.mat', cls, ind));
 
 % run detector in each image
 if is_continue == 1 && exist(filename, 'file')

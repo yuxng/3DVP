@@ -1,4 +1,4 @@
-function detector = exemplar_kitti_train(cls, data, cid, is_train, is_continue)
+function detector = exemplar_kitti_train(cls, data, ind, cid, is_train, is_continue)
 
 exemplar_globals;
 
@@ -32,7 +32,7 @@ opts.is_hadoop = is_hadoop;
 detector = exemplar_acf_train( opts );
 
 % save detector
-filename = fullfile(resultdir, sprintf('%s_%d_final.mat', cls, cid));
+filename = fullfile(resultdir, sprintf('%s_%d_final.mat', cls, ind));
 save(filename, 'detector');
 
 

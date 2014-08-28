@@ -35,8 +35,8 @@ end
 
 for i = index
     fprintf('%d/%d: Train DPM for center %d\n', i, num, centers(i));
-    exemplar_kitti_train(cls, data, centers(i), is_train, is_continue);
-    exemplar_kitti_test(cls, centers(i), is_train, is_continue);
+    exemplar_kitti_train(cls, data, i, centers(i), is_train, is_continue);
+    exemplar_kitti_test(cls, i, centers(i), is_train, is_continue);
 end
 
 if is_hadoop == 0
