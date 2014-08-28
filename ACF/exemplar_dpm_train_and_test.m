@@ -20,7 +20,7 @@ else
 end
 object = load(filename);
 data = object.data;
-data.idx = data.idx_kmeans;
+data.idx = data.idx_ap;
 
 % cluster centers
 centers = unique(data.idx);

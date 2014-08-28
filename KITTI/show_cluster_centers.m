@@ -3,7 +3,7 @@ function show_cluster_centers
 opt = globals;
 
 % load data
-object = load('data_all.mat');
+object = load('data.mat');
 data = object.data;
 idx = data.idx_ap;
 
@@ -16,6 +16,7 @@ index = cad.grid == 1;
 
 % cluster centers
 centers = unique(idx);
+centers(centers == -1) = [];
 N = numel(centers);
 
 % sort centers according to azimuth
@@ -28,9 +29,6 @@ ind_plot = 1;
 for i = 1:N
     % show center
     ind = centers(i);
-    if data.truncation(ind) < 0.3
-        continue;
-    end
     grid = data.grid(:,ind);
     visibility_grid = zeros(size(cad.grid));
     visibility_grid(index) = grid;

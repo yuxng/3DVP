@@ -2,49 +2,70 @@ function cluster_3d_occlusion_patterns
 
 data_file = 'data.mat';
 is_save = 1;
-algorithm = 'pose';
+algorithm = 'ap';
 
 switch algorithm
     case 'ap'
+        % load data
+        object = load(data_file);
+        data = object.data;       
 
         % try to load similarity scores
         if exist('similarity.mat', 'file') ~= 0
             fprintf('load similarity scores from file\n');
             object = load('similarity.mat');
-            s = object.s;
+            scores = object.scores;
         else
             fprintf('computing similarity scores...\n');
-            % load data
-            object = load(data_file);
-            data = object.data;
-
             scores = compute_similarity(data.grid);
-
-            N = size(scores, 1);
-            M = N*N-N;
-            s = zeros(M,3); % Make ALL N^2-N similarities
-            j = 1;
-            for i = 1:N
-                for k = [1:i-1,i+1:N]
-                    s(j,1) = i;
-                    s(j,2) = k;
-                    s(j,3) = scores(i,k);
-                    j = j+1;
-                end
-            end 
-
-            save('similarity.mat', 's', '-v7.3');
+            save('similarity.mat', 'scores', '-v7.3');
             fprintf('save similarity scores\n');
         end
+        
+        % select the clustering data
+        height = data.bbox(4,:) - data.bbox(2,:) + 1;
+        occlusion = data.occlusion;
+        truncation = data.truncation;
+        flag = height > 25 & occlusion < 3 & truncation < 0.5;
+        fprintf('%d examples in clustering\n', sum(flag));        
+        
+        scores = scores(flag, flag);
+        N = size(scores, 1);
+        M = N*N-N;
+        s = zeros(M,3); % Make ALL N^2-N similarities
+        j = 1;
+        for i = 1:N
+            for k = [1:i-1,i+1:N]
+                s(j,1) = i;
+                s(j,2) = k;
+                s(j,3) = scores(i,k);
+                j = j+1;
+            end
+        end       
 
-        p = median(s(:,3));
+        % p = median(s(:,3));
+        p = min(s(:,3));
 
         % clustering
         fprintf('Start AP clustering\n');
-        [idx, netsim, dpsim, expref] = apclustermex(s, p);
+        [idx_ap, netsim, dpsim, expref] = apclustermex(s, p);
 
-        fprintf('Number of clusters: %d\n', length(unique(idx)));
+        fprintf('Number of clusters: %d\n', length(unique(idx_ap)));
         fprintf('Fitness (net similarity): %f\n', netsim);
+        
+        % construct idx
+        num = numel(data.imgname);
+        idx = zeros(num, 1);
+        idx(flag == 0) = -1;
+        index_all = find(flag == 1);
+        
+        cids = unique(idx_ap);
+        K = numel(cids);
+        for i = 1:K
+            index = idx_ap == cids(i);
+            cid = index_all(cids(i));
+            idx(index_all(index)) = cid;
+        end        
         
         % save results
         if is_save == 1
@@ -77,7 +98,8 @@ switch algorithm
         height = data.bbox(4,:) - data.bbox(2,:) + 1;
         occlusion = data.occlusion;
         truncation = data.truncation;
-        flag = height > 40 & occlusion == 0 & truncation < 0.15;        
+        flag = height > 40 & occlusion == 0 & truncation < 0.15;
+        fprintf('%d examples in clustering\n', sum(flag));
         
         % load data
         K = 5;
@@ -114,6 +136,7 @@ switch algorithm
         occlusion = data.occlusion;
         truncation = data.truncation;
         flag = height > 40 & occlusion == 0 & truncation < 0.15;
+        fprintf('%d examples in clustering\n', sum(flag));
         
         % split the azimuth
         vnum = 16;
