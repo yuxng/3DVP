@@ -7,13 +7,17 @@ import gmailsend as gmail
 ifile = "acflist.txt"
 odir = "acfout"
 
-expdescription="I'm running XXX experiment with YYY parameters to see something.\n"
+expdescription="I'm running ACF experiments.\n"
 
 # write hadoop input file
 f = open(ifile, 'w')
 for s in range(1, 21):
     f.write(str(s)+"\n")
 f.close()
+
+resultdir = "/net/skyserver10/workplace/yxiang/SLM/ACF/data/"
+cmd = "rm " + resultdir + "*"
+os.system(cmd)
 
 # prepare data/directory in hdfs
 hadoopcmd = "hadoop dfs -rm yuxiang/"+ifile
@@ -31,7 +35,7 @@ hadoopcmd = "hadoop jar /opt/hadoop/contrib/streaming/hadoop-streaming-1.2.1.jar
 os.system(hadoopcmd)
 
 # download result from hdfs
-hadoopcmd = "hadoop fs -get yuxiang/"+odir+" results/"
+hadoopcmd = "hadoop fs -get yuxiang/" + odir + " " + resultdir
 os.system(hadoopcmd)
 
 # do your own batch processing after collecting all of the result files - ie. detection decoding
