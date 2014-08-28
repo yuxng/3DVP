@@ -6,7 +6,7 @@ is_hadoop = 0;
 if is_hadoop
     rootdir = '/workplace/hadoop_cache/slm/';
     cachedir = fullfile(rootdir, 'cache/');
-    resultdir = fullfile(rootdir, 'data/');
+    resultdir = '/net/skyserver10/workplace/yxiang/SLM/ACF/data/';
 else
     rootdir = '/scratch/yuxiang/Projects';
     cachedir = fullfile(rootdir, 'data/');
