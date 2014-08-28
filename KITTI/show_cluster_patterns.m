@@ -9,9 +9,9 @@ cam = 2; % 2 = left color camera
 image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 
 % load data
-object = load('data_all.mat');
+object = load('data.mat');
 data = object.data;
-idx = data.idx_ap;
+idx = data.idx_kmeans;
 
 % load the mean CAD model
 cls = 'car';
@@ -33,6 +33,7 @@ figure;
 nplot = 8;
 mplot = 8;
 for i = 1:N
+    disp(i);
     ind = centers(i);
 
     bbox = data.bbox(:, idx == ind);

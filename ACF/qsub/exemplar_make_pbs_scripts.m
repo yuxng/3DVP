@@ -1,15 +1,15 @@
 function exemplar_make_pbs_scripts
 
 % load occlusion patterns
-filename = '../../KITTI/data_all.mat';
+filename = '../../KITTI/data.mat';
 object = load(filename);
 data = object.data;
 
-cids = unique(data.idx_ap);
+cids = unique(data.idx_kmeans);
 cids(cids == -1) = [];
 num = numel(cids);
 
-is_multiple = 1;
+is_multiple = 0;
 if is_multiple
     num_job = 32;
     index = round(linspace(1, num, num_job+1));

@@ -1,7 +1,7 @@
 function exemplar_display_result_kitti
 
 cls = 'car';
-threshold = -20;
+threshold = -inf;
 is_train = 0;
 
 % read detection results

@@ -4,7 +4,7 @@ exemplar_globals;
 
 [pos, neg] = exemplar_kitti_data(cls, data, cid, is_train, is_continue);
 
-is_truncated = data.truncation(cid) > 0;
+is_truncated = data.truncation(cid) > 0.1;
 
 % set up opts for training detector (see acfTrain)
 opts = exemplar_acf_train();

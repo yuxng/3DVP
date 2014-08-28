@@ -11,7 +11,7 @@ end
 
 cls = 'car';
 is_continue = 0;
-is_train = 0;
+is_train = 1;
 
 if is_train
     filename = fullfile(SLMroot, 'KITTI/data.mat');
@@ -20,7 +20,7 @@ else
 end
 object = load(filename);
 data = object.data;
-data.idx = data.idx_ap;
+data.idx = data.idx_kmeans;
 
 % cluster centers
 centers = unique(data.idx);
