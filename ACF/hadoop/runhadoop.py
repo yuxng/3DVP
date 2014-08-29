@@ -24,6 +24,10 @@ hadoopcmd = "hadoop dfs -rm yuxiang/"+ifile
 os.system(hadoopcmd)
 hadoopcmd = "hadoop dfs -rmr yuxiang/"+odir
 os.system(hadoopcmd)
+hadoopcmd = "hadoop dfs -mkdir yuxiang/"+odir
+os.system(hadoopcmd)
+hadoopcmd = "hadoop dfs -rmr yuxiang/temp/"
+os.system(hadoopcmd)
 hadoopcmd = "hadoop dfs -copyFromLocal ./"+ifile+" yuxiang/"+ifile
 os.system(hadoopcmd)
 
@@ -31,7 +35,7 @@ os.system(hadoopcmd)
 hadoopcmd = "hadoop jar /opt/hadoop/contrib/streaming/hadoop-streaming-1.2.1.jar \
 -mapper \"python $PWD/mapper.py\" \
 -input \"yuxiang/"+ifile+"\" \
--output \"yuxiang/"+odir+"/\""
+-output \"yuxiang/temp/\""
 os.system(hadoopcmd)
 
 # download result from hdfs
@@ -42,7 +46,7 @@ os.system(hadoopcmd)
 
 # I suggest to generate the final results and send the summary to your email
 title = "Detection experiment {0} is done".format(1)
-contents = "You can find the result at some directory. The testing accuracy for the training set is XXX.\n"+exdescription
+contents = "You can find the result at some directory. The testing accuracy for the training set is XXX.\n"+expdescription
 recipient = "yuxiang@umich.edu"
 
 gmail.sendemail(title, contents, recipient)
