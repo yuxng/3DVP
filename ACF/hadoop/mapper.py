@@ -3,7 +3,6 @@ import os
 import sys
 
 slm_bin = '/net/skyserver10/workplace/yxiang/SLM/ACF/mccrun.sh'
-# slm_bin = '/net/skyserver10/workplace/yxiang/SLM/ACF/fakerun.sh'
 resultdir = '/workplace/hadoop_cache/slm/data/'
 odir = "/user/yxiang/yuxiang/acfout/"
 

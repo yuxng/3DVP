@@ -32,7 +32,7 @@ end
 
 for i = index
     fprintf('%d/%d: Test DPM for center %d\n', i, num, centers(i));
-    exemplar_kitti_test(cls, centers(i), is_train, is_continue);
+    exemplar_kitti_test(cls, i, centers(i), is_train, is_continue);
 end
 
 matlabpool close;
