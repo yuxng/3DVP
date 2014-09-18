@@ -40,7 +40,7 @@ for img_idx = 1:nimages-1
   P = readCalibration(calib_dir, img_idx, cam);
   
   % load labels
-  objects = readLabels(label_dir,img_idx);
+  objects = readLabels(label_dir, img_idx);
   
   % sort objects from large distance to small distance
   index = sort_objects(objects);
