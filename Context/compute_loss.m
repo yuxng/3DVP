@@ -1,17 +1,7 @@
-function loss = compute_loss(Detections, GroundTruth)
+function loss = compute_loss(boxes, gt, overlap_threshold)
 % loss = computeloss(Detections, GroundTruth)
 % loss(i,1) is the loss associated with turning on  candidate i
 % loss(i,2) is the loss associated with turning off candidate i
-
-loss = classLoss(Detections, GroundTruth);
-% Uncomment two lines below to get out a scalar loss between 0 and 1
-loss = double(loss > 0.7);
-%I = find(loss(:,2) < .5);
-%+loss(I,2) = 0;
-
-function loss = classLoss(boxes, gt)
-% Helper function only considers boxes and gt of the same class
-% Returns scalar positive-label loss and negative-label loss  
 
 n  = size(boxes, 1);
 x1 = boxes(:, 1);
@@ -21,8 +11,9 @@ y2 = boxes(:, 4);
 ba = (x2-x1+1) .* (y2-y1+1);
 
 % Compute the maximum overlap of each box with each ground truth
-lp = zeros(n,1);
-ln = zeros(n,1);
+loss = zeros(n, 2);
+lp = zeros(n, 1);
+ln = zeros(n, 1);
 
 % Iterate through ground truth, and update box with new best overlap    
 for i = 1:size(gt,1),
@@ -50,6 +41,5 @@ for i = 1:size(gt,1),
     lp = max(lp, ov);
 end
 
-lp = 1 - lp;
-
-loss = [lp ln];
+loss(:,1) = double(lp < overlap_threshold);
+loss(:,2) = double(ln > overlap_threshold);

@@ -2,7 +2,6 @@ function configure
 
 mex addcols.cc
 mex qp.cc
-mex maximize.cc
 
 % extract ground truth feature vector from fixing the true +ves
 extract_groundtruth_features;

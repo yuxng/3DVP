@@ -97,15 +97,18 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   
   int numPos = 0;
   
-  while (numPos < num) {
+  while (numPos < num) 
+  {
     // Find highest scoring un-instanced box "i" and 
     // make sure it's positive score is better than negative score
     double best  = -1000000;
     int i = 0;
-    for (int j = 0; j < num; j++) {
-      if (I[j]  == 0 && S[j] > best) {
-	i    = j;
-	best = S[i];
+    for (int j = 0; j < num; j++) 
+    {
+      if (I[j]  == 0 && S[j] > best) 
+      {
+	      i    = j;
+	      best = S[i];
       }
     }
     
@@ -132,28 +135,32 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     //printf("i=%d,bx=%g,by=%g,bw=%g,bh=%g,bc=%d\n",i,bxi,byi,bwi,bhi,bci);
     
     // Loop through all uninstanced boxes j
-    for (int j=0; j < num; j++) {
-      if (I[j] == 0) {
+    for (int j=0; j < num; j++) 
+    {
+      if (I[j] == 0) 
+      {
 	
-	// Get statistics of box j
-	double bxj = bx[j];
-	double byj = by[j];
-	int    bcj = bc[j];	
-	double relx = ABS(bxj - bxi);
-	double rely = byj - byi;
-	double *wij =  ws + NUM_PAIR*bcj + NUM_PAIR*NUM_CLASS*bci;
-	double width  = bwi;
-	double height = bhi;
+	      // Get statistics of box j
+	      double bxj = bx[j];
+	      double byj = by[j];
+	      int    bcj = bc[j];	
+	      double relx = ABS(bxj - bxi);
+	      double rely = byj - byi;
+	      double *wij =  ws + NUM_PAIR*bcj + NUM_PAIR*NUM_CLASS*bci;
+	      double width  = bwi;
+	      double height = bhi;
 
 	//printf("j=%d,bx=%g,by=%g,bc=%d,relx=%g,rely=%g,width=%g,height=%g,ij=%d,S[j]=%g\n",
 	///    j,bxj,byj,bcj,relx,rely,width,height,NUM_PAIR*bci + NUM_PAIR*NUM_CLASS*bcj,S[j]);
 	
 	// Are i and j far away
-	if (relx > 1.5*width || rely > 1.5*height || rely < -1.5*height) {
+	if (relx > 1.5*width || rely > 1.5*height || rely < -1.5*height) 
+  {
 	  
 	  S[j] += wij[FAR];
 	  
-	} else {
+	} else
+  {
 	  
 	  S[j] += wij[NEAR];
 	  //printf("S[j]=%g\n",S[j]);
@@ -195,11 +202,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	//j,bxj,byj,bcj,relx,rely,width,height,NUM_PAIR*bcj + NUM_PAIR*NUM_CLASS*bci,S[j]);
       
 	// Are i and j far away
-	if (relx > 1.5*width || rely > 1.5*height || rely < -1.5*height) {
+	if (relx > 1.5*width || rely > 1.5*height || rely < -1.5*height)
+  {
 
 	  S[j] += wij[FAR];	  
 
-	} else {
+	} else
+  {
 	  
 	  S[j] += wij[NEAR];
 	  

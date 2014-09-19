@@ -1,6 +1,7 @@
 function precompute_loss_values
 
 is_train = 1;
+overlap_threshold = 0.7;
 cache_dir = 'CACHED_DATA_TRAINVAL';
 loss_dir = 'LOSS_TRAINVAL';
 
@@ -35,10 +36,10 @@ for id = 1:N
     
     % load detections
     filename = fullfile(cache_dir, sprintf('%04d.mat', ids(id)));
-    object = load(filename);
+    object = load(filename, 'Detections');
     Detections = object.Detections;
         
-    loss = compute_loss(Detections, GT);
+    loss = compute_loss(Detections, GT, overlap_threshold);
         
     filename = fullfile(loss_dir, sprintf('%04d.mat', ids(id)));
     save(filename, 'loss');

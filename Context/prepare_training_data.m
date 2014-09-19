@@ -1,6 +1,8 @@
 % prepare the training data to train the contextual model
 function prepare_training_data
 
+matlabpool open;
+
 cls = 'car';
 is_train = 1;
 cache_dir = 'CACHED_DATA_TRAINVAL';
@@ -60,26 +62,28 @@ cam = 2;
 image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 
 N = numel(ids);
-for i = 1:N
+parfor i = 1:N
     % read image
     fprintf('%d\n', ids(i));
     file_img = sprintf('%s/%06d.png', image_dir, ids(i));
     I = imread(file_img);
+    width = size(I, 2);
+    height = size(I, 1);    
     
     % compute the occlusion patterns
     det = dets{i};
     num = size(det, 1);
     Detections = zeros(num, 5);
     Scores = zeros(num, 1);
-    Patterns = cell(num, 1);
+    Patterns = uint8(zeros(height, width, num));
     for k = 1:num
         % get predicted bounding box
         bbox_pr = det(k,1:4);
         bbox = zeros(1,4);
-        bbox(1) = max(1, round(bbox_pr(1)));
-        bbox(2) = max(1, round(bbox_pr(2)));
-        bbox(3) = min(size(I,2), round(bbox_pr(3)));
-        bbox(4) = min(size(I,1), round(bbox_pr(4)));
+        bbox(1) = max(1, floor(bbox_pr(1)));
+        bbox(2) = max(1, floor(bbox_pr(2)));
+        bbox(3) = min(size(I,2), floor(bbox_pr(3)));
+        bbox(4) = min(size(I,1), floor(bbox_pr(4)));
         w = bbox(3) - bbox(1) + 1;
         h = bbox(4) - bbox(2) + 1;
         
@@ -96,9 +100,59 @@ for i = 1:N
             [y, x] = ind2sub(size(pattern), index);                
             pattern = pattern(min(y):max(y), min(x):max(x));
         end
-        Patterns{k} = imresize(pattern, [h w], 'nearest');
+        pattern = imresize(pattern, [h w], 'nearest');
+        
+        % build the pattern in the image
+        P = uint8(zeros(height, width));
+        x = bbox(1);
+        y = bbox(2);
+        index_y = y:min(y+h-1, height);
+        index_x = x:min(x+w-1, width);
+        P(index_y, index_x) = pattern(1:numel(index_y), 1:numel(index_x));
+        Patterns(:,:,k) = P;
     end
     
+    % precompute the pattern matching scores
+%     Matching = zeros(num, num);
+%     for j = 1:num
+%         dj = Detections(j,4);   
+%         pj = Patterns(:,:,j);
+%         for k = j+1:num
+%             dk = Detections(k,4);
+%             pk = Patterns(:,:,k);
+% 
+%             index = pj > 0 & pk > 0;
+%             overlap = sum(sum(index));
+% 
+%             if dj < dk  % object j is occluded
+%                 rj = overlap / sum(sum(pj > 0));
+%                 if rj < 0.1
+%                     s = 1;
+%                 else
+%                     s = sum(pj(index) == 2) / overlap;
+%                 end
+%             else  % object k is occluded
+%                 rk = overlap / sum(sum(pk > 0));            
+%                 if rk < 0.1
+%                     s = 1;
+%                 else
+%                     s = sum(pk(index) == 2) / overlap;
+%                 end
+%             end
+%             
+%             Matching(j, k) = s;
+%             Matching(k, j) = s;
+%         end
+%     end
+    
+    Matching = compute_matching_scores(Detections, Patterns);
+    
     filename = fullfile(cache_dir, sprintf('%04d.mat', ids(i)));
-    save(filename, 'Detections', 'Scores', 'Patterns');
+    parsave(filename, Detections, Scores, Matching);
 end
+
+matlabpool close;
+
+function parsave(filename, Detections ,Scores, Matching)
+
+save(filename, 'Detections', 'Scores', 'Matching', '-v7.3');

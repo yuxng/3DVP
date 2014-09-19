@@ -1,8 +1,6 @@
-function main(C)
 % example usage: main(2)
 % paramemeter C := tradeoff between hinge loss and regularizer
-
-global ids numClasses h l;
+function main(C)
 
 is_train = 1;
 
@@ -23,15 +21,40 @@ if is_train
 else
     ids = [object.ids_train object.ids_val];
 end
-considerIDS = 1:numel(ids);
 
-W_s  = rand(2, 1);
+% load training data
+fprintf('load training data...');
+Tdata = [];
+for i = 1:numel(ids)
+    id = ids(i);
+    % load groundtruth feature
+    filename = fullfile('FEAT_TRUE_TRAINVAL', sprintf('%04d.mat', id));
+    object = load(filename);
+    Tdata(i).Feat_true = object.Feat_true;
+
+    % load detections
+    filename = fullfile('CACHED_DATA_TRAINVAL', sprintf('%04d.mat', id));
+    object = load(filename);
+    Tdata(i).Detections = object.Detections;
+    Tdata(i).Scores = object.Scores;
+    Tdata(i).Matching = object.Matching;
+
+    % load loss
+    filename = fullfile('LOSS_TRAINVAL', sprintf('%04d.mat', id));
+    object = load(filename);
+    Tdata(i).loss = object.loss;
+end
+fprintf('done\n');
+   
+% initialize the weights
+W_s = rand(2, 1);
 W_a = rand(numClasses*2, 1);
 
-Constraints = zeros(length(W_s) + length(W_a), 100000, 'single');
-Margins = zeros(1, 100000, 'single');
-IDS = zeros(1, 100000, 'single');
-Labelings  = zeros(500, 100000, 'single'); % assume no image contains more than 500 detections across all classes
+MAX_CON = 100000;
+Constraints = zeros(length(W_s) + length(W_a), MAX_CON, 'single');
+Margins = zeros(1, MAX_CON, 'single');
+IDS = zeros(1, MAX_CON, 'single');
+Labelings  = zeros(500, MAX_CON, 'single'); % assume no image contains more than 500 detections across all classes
 
 max_iter = 500;
 iter = 1;
@@ -42,25 +65,21 @@ n = 0;
 w = [W_s; W_a];
 cost = w'*w*.5;
 
-MAX_CON = 100000;
-h = 0; 
-l = 0;
-
 while (iter < max_iter && trigger)
     datestr(now);
     trigger = 0;
 
-    for id = considerIDS
-        [H_wo, X_wo, m]  = find_MVC(W_s, W_a, numClasses,id);
+    for id = 1:numel(ids)
+        [H_wo, X_wo, m]  = find_MVC(W_s, W_a, centers, Tdata(id));
         
         % if this constraint is the MVC for this image
         isMVC = 1;
-        check_labels = find(IDS(1, 1:n) ==id);
-        score = m-w'*X_wo;
+        check_labels = find(IDS(1, 1:n) == id);
+        score = m - w'*X_wo;
         
         for ii = 1:numel(check_labels)
             label_ii = check_labels(ii);
-            if (m - w'*Constraints(:, label_ii) > score)
+            if m - w'*Constraints(:, label_ii) > score
                 isMVC = 0;
                 break;
             end
@@ -68,13 +87,12 @@ while (iter < max_iter && trigger)
        
         if isMVC ==1
             cost = cost + C * max(0, m - w'*X_wo);
-            %add only if this is a hard constraint
+            % add only if this is a hard constraint
             if (m - w'*X_wo) >= -0.001
                 n = n + 1;
                 Constraints(:, n) = X_wo;
                 Margins(n) = m;
                 IDS(n) = id;
-                any_addition=1;
 
                 if n > MAX_CON
                     disp('n > MAX_CON');
@@ -87,14 +105,11 @@ while (iter < max_iter && trigger)
                 end
             end
         end
-        [cost low_bound];
+        fprintf('cost = %.2f, low_bound = %.2f\n', cost, low_bound);
 
-        if 1 - low_bound/cost > .01
+        if 1 - low_bound/cost > 0.01
             % Call QP
-            %if mod(iter, 10) == 1
-            % [cost low_bound]
-            %end
-            [w, cache] = lsvmopt_new(Constraints(:,1:n),Margins(1:n), IDS(1:n) ,C, 0.01,[]);
+            [w, cache] = lsvmopt_new(Constraints(:, 1:n), Margins(1:n), IDS(1:n), C, 0.01, []);
 
             % Prune working set
             I = find(cache.sv > 0);
@@ -107,21 +122,21 @@ while (iter < max_iter && trigger)
             Labelings(:, 1:n) = Labelings(:, I);
            
             % Update parameters
-            W_s  = w(1:length(W_s));
-            W_a  = w(length(W_s)+1:end);
+            W_s = w(1:length(W_s));
+            W_a = w(length(W_s)+1:end);
             
             %reset the running estimate on upper bund
             cost = w'*w*0.5;
             low_bound = cache.lb;
             trigger = 1;
         end
-
     end
 
     iter = iter +1;
+    if trigger == 0
+        fprintf('not triggered\n');
+    end
     
     save('wts_trainval_pascal', 'w');
-    disp(trigger);
-    %exist
 end
 disp('converged');

@@ -3,19 +3,22 @@ function extract_groundtruth_features
 
 is_train = 1;
 is_show = 0;
+overlap_threshold = 0.7;
 cache_dir = 'CACHED_DATA_TRAINVAL';
 feature_dir = 'FEAT_TRUE_TRAINVAL';
 
 % KITTI path
-globals;
-root_dir = KITTIroot;
-if is_train
-    data_set = 'training';
-else
-    data_set = 'testing';
+if is_show
+    globals;
+    root_dir = KITTIroot;
+    if is_train
+        data_set = 'training';
+    else
+        data_set = 'testing';
+    end
+    cam = 2;
+    image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 end
-cam = 2;
-image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 
 % load ids
 object = load('kitti_ids.mat');
@@ -43,15 +46,17 @@ end
 N = numel(ids);
 for id = 1:N
     fprintf('%d\n', ids(id));
-    file_img = sprintf('%s/%06d.png', image_dir, ids(id));
-    Iimage = imread(file_img);
+    if is_show
+        file_img = sprintf('%s/%06d.png', image_dir, ids(id));
+        Iimage = imread(file_img);
+    end
     
     filename = fullfile(cache_dir, sprintf('%04d.mat', ids(id)));
     object = load(filename);
     Detections = object.Detections;
     Detections(:, 6) = 0;
     Scores = object.Scores;
-    Patterns = object.Patterns;
+    Matching = object.Matching;
 
     % load the ground truth bounding boxes
     index = find(img_idx == ids(id) & data.idx_ap ~= -1);
@@ -89,14 +94,25 @@ for id = 1:N
         ov    = zeros(n, 1);
         ov(I) = int ./ (ba(I) + ga - int);
         
-        [v,j] = max(ov);
+        [v, j] = max(ov);
         
         %  label as true +ve the detection that overlaps the GT most
-        if v > 0.7
+        if v > overlap_threshold
             Detections(clsDT(j), 6) = 1;
             if is_show
                 bbox = Detections(clsDT(j), 1:4);
-                pattern = Patterns{clsDT(j)};
+                w = bbox(3) - bbox(1) + 1;
+                h = bbox(4) - bbox(2) + 1;
+
+                cid = Detections(clsDT(j), 5);
+                pattern = data.pattern{cid};                
+                index_pattern = find(pattern == 1);
+                if data.truncation(cid) > 0 && isempty(index_pattern) == 0
+                    [y, x] = ind2sub(size(pattern), index_pattern);                
+                    pattern = pattern(min(y):max(y), min(x):max(x));
+                end
+                pattern = imresize(pattern, [h w], 'nearest');                
+                
                 im = create_mask_image(pattern);
                 Isub = Iimage(bbox(2):bbox(4), bbox(1):bbox(3), :);
                 index_pattern = im == 255;
@@ -108,6 +124,7 @@ for id = 1:N
 
     non_bg = find(Detections(:, 6) == 1);
     
+    % show true detections
     if is_show
         imshow(Iimage);
         hold on;
@@ -121,12 +138,9 @@ for id = 1:N
         pause;
     end
  
-    if isempty(non_bg)
-        Feat_true = [];
-    else
-        [PSI_true, PHI_true] = compute_feature(Iimage, Detections(non_bg, :), Scores(non_bg), Patterns(non_bg), centers); 
-        Feat_true = [PSI_true; PHI_true];
-    end    
+    % compute the ground truth features
+    [PSI_true, PHI_true] = compute_feature(Detections(non_bg, :), Scores(non_bg), Matching(non_bg, non_bg), centers); 
+    Feat_true = [PSI_true; PHI_true];
     filename = fullfile(feature_dir, sprintf('%04d.mat', ids(id)));
     save(filename, 'Feat_true');
 end
