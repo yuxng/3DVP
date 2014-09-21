@@ -46,7 +46,7 @@ while num_pos < N
         end
         
         % get the matching score
-        s = Matching(ind, i);
+        s = Matching(ind, i);     
         
         S(i) = S(i) + Weights(1) * s + Weights(2);
     end

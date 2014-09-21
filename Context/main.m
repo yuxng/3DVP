@@ -105,7 +105,6 @@ while (iter < max_iter && trigger)
                 end
             end
         end
-        fprintf('cost = %.2f, low_bound = %.2f\n', cost, low_bound);
 
         if 1 - low_bound/cost > 0.01
             % Call QP

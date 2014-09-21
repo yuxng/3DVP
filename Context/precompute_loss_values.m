@@ -31,7 +31,8 @@ N = numel(ids);
 for id = 1:N
     fprintf('%d\n', ids(id));    
     % load the ground truth bounding boxes
-    index = find(img_idx == ids(id) & data.idx_ap ~= -1);
+    % index = find(img_idx == ids(id) & data.idx_ap ~= -1);
+    index = find(img_idx == ids(id));
     GT = [data.bbox(:,index)' data.idx_ap(index)];
     
     % load detections

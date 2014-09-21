@@ -2,6 +2,9 @@ function configure
 
 mex addcols.cc
 mex qp.cc
+mex compute_matching_scores.cc
+
+prepare_training_data;
 
 % extract ground truth feature vector from fixing the true +ves
 extract_groundtruth_features;

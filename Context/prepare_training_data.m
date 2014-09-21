@@ -5,15 +5,12 @@ matlabpool open;
 
 cls = 'car';
 is_train = 1;
+overlap_threshold = 0.7;  % use a large threshold for nms
 cache_dir = 'CACHED_DATA_TRAINVAL';
 
 % load ids
 object = load('kitti_ids.mat');
-if is_train
-    ids = object.ids_train;
-else
-    ids = [object.ids_train object.ids_val];
-end
+ids = [object.ids_train object.ids_val];
 
 % load data
 if is_train
@@ -72,6 +69,13 @@ parfor i = 1:N
     
     % compute the occlusion patterns
     det = dets{i};
+    
+    % non-maximum suppression
+    if isempty(det) == 0
+        index = nms(det, overlap_threshold);
+        det = det(index, :);    
+    end
+    
     num = size(det, 1);
     Detections = zeros(num, 5);
     Scores = zeros(num, 1);

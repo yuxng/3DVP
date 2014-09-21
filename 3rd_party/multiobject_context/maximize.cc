@@ -228,9 +228,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	  // Compute overlap
 	  double iw = MIN(x2i,x2[j]) - MAX(x1i,x1[j]) + 1;
 	  double ih = MIN(y2i,y2[j]) - MAX(y1i,y1[j]) + 1;
-	  if (iw > 0 && ih > 0) {
+	  if (iw > 0 && ih > 0) 
+    {
 	    double ov = iw*ih  / (bai + ba[j] - iw*ih);
-	    if (ov > .5) {
+	    if (ov > .5) 
+      {
 	      S[j] += wij[OVER];
 	    }
 	  }

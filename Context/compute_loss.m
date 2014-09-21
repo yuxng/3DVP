@@ -13,7 +13,6 @@ ba = (x2-x1+1) .* (y2-y1+1);
 % Compute the maximum overlap of each box with each ground truth
 loss = zeros(n, 2);
 lp = zeros(n, 1);
-ln = zeros(n, 1);
 
 % Iterate through ground truth, and update box with new best overlap    
 for i = 1:size(gt,1),
@@ -36,10 +35,8 @@ for i = 1:size(gt,1),
     ov(I) = int ./ (ba(I) + ga - int);
 
     % Assign true positive
-    [v, j] = max(ov);
-    ln(j) = max(ln(j), v);
     lp = max(lp, ov);
 end
 
 loss(:,1) = double(lp < overlap_threshold);
-loss(:,2) = double(ln > overlap_threshold);
+loss(:,2) = double(lp >= overlap_threshold);

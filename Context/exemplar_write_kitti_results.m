@@ -1,17 +1,7 @@
 function exemplar_write_kitti_results
 
-cls = 'car';
 is_train = 1;
-
-% read detection results
-if is_train == 1
-    filename = sprintf('kitti_train_few/%s_test.mat', cls);
-else
-    filename = sprintf('kitti_test_few/%s_test.mat', cls);
-end
-object = load(filename);
-dets = object.dets;
-fprintf('load detection done\n');
+cache_dir = 'CACHED_DATA_TRAINVAL';
 
 % load clustering data
 if is_train == 1
@@ -31,8 +21,12 @@ end
 N = numel(ids);
 
 for i = 1:N
-    img_idx = ids(i);    
-    det = dets{img_idx + 1};
+    img_idx = ids(i);
+    
+    % load detections
+    filename = fullfile(cache_dir, sprintf('%04d.mat', ids(i)));
+    object = load(filename);
+    det = [object.Detections object.Scores];
     
     % result file
     if is_train == 1
@@ -50,10 +44,10 @@ for i = 1:N
     end
     
     % non-maximum suppression
-    if isempty(det) == 0
-        I = nms(det, 0.5);
-        det = det(I, :);    
-    end    
+%     if isempty(det) == 0
+%         I = nms(det, 0.5);
+%         det = det(I, :);    
+%     end    
     
     % write detections
     num = size(det, 1);

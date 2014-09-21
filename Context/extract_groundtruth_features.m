@@ -59,14 +59,16 @@ for id = 1:N
     Matching = object.Matching;
 
     % load the ground truth bounding boxes
-    index = find(img_idx == ids(id) & data.idx_ap ~= -1);
+    % index = find(img_idx == ids(id) & data.idx_ap ~= -1);
+    index = find(img_idx == ids(id));
     % for every GT bounding box
     for gi = 1:numel(index)
         ind = index(gi);
-        cid = data.idx_ap(ind);
         gbox = data.bbox(:, ind);
         
-        clsDT = find(Detections(:, 5) == cid & Detections(:, 6) ~= 1);
+        % cid = data.idx_ap(ind);
+        % clsDT = find(Detections(:, 5) == cid & Detections(:, 6) ~= 1);
+        clsDT = find(Detections(:, 6) ~= 1);
         n = length(clsDT);
         
         x1 = Detections(clsDT, 1);
@@ -94,12 +96,15 @@ for id = 1:N
         ov    = zeros(n, 1);
         ov(I) = int ./ (ba(I) + ga - int);
         
-        [v, j] = max(ov);
+        % assign all boxes with overlap larger than threshold to 1
+        Detections(clsDT(ov > overlap_threshold), 6) = 1;
         
         %  label as true +ve the detection that overlaps the GT most
-        if v > overlap_threshold
-            Detections(clsDT(j), 6) = 1;
-            if is_show
+        if is_show
+            for j = 1:n
+                if Detections(clsDT(j), 6) == 0
+                    continue;
+                end
                 bbox = Detections(clsDT(j), 1:4);
                 w = bbox(3) - bbox(1) + 1;
                 h = bbox(4) - bbox(2) + 1;
@@ -128,11 +133,15 @@ for id = 1:N
     if is_show
         imshow(Iimage);
         hold on;
-        for i = 1:numel(non_bg)
-            bbox = Detections(non_bg(i), 1:4);
+        for i = 1:size(Detections,1)
+            bbox = Detections(i, 1:4);
             bbox_draw = [bbox(1) bbox(2) bbox(3)-bbox(1) bbox(4)-bbox(2)];
-            rectangle('Position', bbox_draw', 'EdgeColor', 'g');
-            text(bbox(1), bbox(2), num2str(Scores(non_bg(i))), 'BackgroundColor', [.7 .9 .7], 'Color', 'r');
+            if Detections(i,6) == 1
+                rectangle('Position', bbox_draw', 'EdgeColor', 'g');
+            else
+                rectangle('Position', bbox_draw', 'EdgeColor', 'r');
+            end
+            text(bbox(1), bbox(2), num2str(Scores(i)), 'BackgroundColor', [.7 .9 .7], 'Color', 'r');
         end
         hold off;
         pause;

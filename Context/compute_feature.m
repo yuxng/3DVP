@@ -2,13 +2,15 @@
 % PHI: unary feature
 function [PSI, PHI] = compute_feature(Detections, Scores, Matching, centers)
 
+n = numel(centers);
+
 % pairwise feature
 PSI = zeros(2, 1);
 
 % compute pattern matching scores
 num = size(Detections, 1);
 for i = 1:num
-    for j = i+1:num
+    for j = i+1:num    
         s = Matching(i,j);
         PSI(1) = PSI(1) + s;
         PSI(2) = PSI(2) + 1;
@@ -16,7 +18,7 @@ for i = 1:num
 end
 
 % unary feature
-n = numel(centers);
+
 PHI = zeros(2*n, 1);
 
 for i = 1:num
