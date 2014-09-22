@@ -1,5 +1,5 @@
 /*
- *  Scores = compute_matching_scores(Detections, Patterns)
+ *  [Scores, Overlaps] = compute_matching_scores(Detections, Patterns)
  *
  *  Inputs:
  *
@@ -9,6 +9,7 @@
  *  Outputs:
  *
  *  Scores: N by N matching score matrix
+ *  Overlaps: N by N matching overlap matrix
  */
 
 #include "mex.h"
@@ -20,18 +21,20 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   size_t num, d, height, width;
   const mwSize *dims;
-  double *scores, *detections;
+  double *scores, *detections, *overlaps;
   unsigned char *patterns;
 
   num = mxGetM(prhs[0]);
   if(num == 0)
   {
     plhs[0] = mxCreateDoubleMatrix(0, 0, mxREAL);
+    plhs[1] = mxCreateDoubleMatrix(0, 0, mxREAL);
     return;
   }
   else if(num == 1)
   {
     plhs[0] = mxCreateDoubleMatrix(1, 1, mxREAL);
+    plhs[1] = mxCreateDoubleMatrix(1, 1, mxREAL);
     return;
   }
 
@@ -59,6 +62,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // output
   plhs[0] = mxCreateDoubleMatrix(num, num, mxREAL);
   scores = mxGetPr(plhs[0]);
+  plhs[1] = mxCreateDoubleMatrix(num, num, mxREAL);
+  overlaps = mxGetPr(plhs[1]);
 
   // bottom coordinate the detections
   double *x1 = detections + 0*num;
@@ -83,12 +88,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     area[i] = count;
   }
 
-  // compute the matching score
+  // compute the matching score and overlap
   for(int i = 0; i < num; i++)
   {
     for(int j = i+1; j < num; j++)
     {
-      double score = 0;
+      double score = 1;
+      double box_overlap = 0;
 
       // compute bounding box overlap
   	  double w = MIN(x2[i], x2[j]) - MAX(x1[i], x1[j]) + 1;
@@ -125,20 +131,25 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         if(y2[i] < y2[j])  // object i is occluded
         {
           ratio = overlap / area[i];
-          if(overlap)
+          if(ratio > 0.1)
             score = oi / overlap;
         }
         else
         {
           ratio = overlap / area[j];
-          if(overlap)
+          if(ratio > 0.1)
             score = oj / overlap;
         }
+
+        // bounding box overlap
+        box_overlap = overlap  / (area[i] + area[j] - overlap);
       }
 
       // assign the value
       scores[i*num + j] = score;
       scores[j*num + i] = score;
+      overlaps[i*num + j] = box_overlap;
+      overlaps[j*num + i] = box_overlap;
     }
   }
 
