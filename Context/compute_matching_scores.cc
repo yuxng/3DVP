@@ -93,8 +93,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   {
     for(int j = i+1; j < num; j++)
     {
-      double score = 1;
-      double box_overlap = 0;
+      double score = 0;
+      double ratio = 0;
 
       // compute bounding box overlap
   	  double w = MIN(x2[i], x2[j]) - MAX(x1[i], x1[j]) + 1;
@@ -127,29 +127,25 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
           }
         }
 
-        double ratio;
         if(y2[i] < y2[j])  // object i is occluded
         {
           ratio = overlap / area[i];
-          if(ratio > 0.1)
+          if(ratio)
             score = oi / overlap;
         }
         else
         {
           ratio = overlap / area[j];
-          if(ratio > 0.1)
+          if(ratio)
             score = oj / overlap;
         }
-
-        // bounding box overlap
-        box_overlap = overlap  / (area[i] + area[j] - overlap);
       }
 
       // assign the value
       scores[i*num + j] = score;
       scores[j*num + i] = score;
-      overlaps[i*num + j] = box_overlap;
-      overlaps[j*num + i] = box_overlap;
+      overlaps[i*num + j] = ratio;
+      overlaps[j*num + i] = ratio;
     }
   }
 

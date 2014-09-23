@@ -4,6 +4,9 @@ function exemplar_greedy_occlusion_reasoning
 
 is_train = 1;
 is_show = 1;
+K = 15;   % number of detections to keep in each cluster
+bandwidth = 20;  % meanshift band width
+threshold_confident = 20;
 cache_dir = 'CACHED_DATA_TRAINVAL';
 
 addpath(genpath('../KITTI'));
@@ -36,11 +39,15 @@ if is_train
 else
     ids = object.ids_test;
 end
-M = numel(ids);
+N = numel(ids);
 
-for id = 1:M
+for id = 1:N
     disp(id);
     % read image
+    file_img = sprintf('%s/%06d.png', image_dir, ids(id));
+    Iimage = imread(file_img);
+    width = size(Iimage, 2);
+    height = size(Iimage, 1);        
     fprintf('%d\n', ids(id));
 
     % load detection results
@@ -50,65 +57,164 @@ for id = 1:M
     scores = record.Scores;
     overlaps = record.Overlaps;
     matching = record.Matching;
+    patterns = record.Patterns;
     num = numel(scores);
     
     if num == 0
         continue;
     end
     
+    % meanshift clustering on bounding boxes
     if num == 1
-        idx = 1;
+        clusters = cell(1,1);
+        clusters{1} = 1;
     else
-        % meanshift clustering on bounding boxes
         x = [(detections(:,1)+detections(:,3))/2 (detections(:,2)+detections(:,4))/2]';
-        bandwidth = 20;
-        [~, idx, ~] = MeanShiftCluster(x, bandwidth);
+        [~, ~, clusters] = MeanShiftCluster(x, bandwidth);
     end
     
-    % sort clusters
-    cid = unique(idx);
-    n = numel(cid);
-    fprintf('%d clusters\n', n);
-    scores_cluster = zeros(1, n);
+    % for each cluster, keep the top K detections only
+    % max pooling on detection scores in each cluster, but use the most
+    % compatible pattern
+    n = numel(clusters);
+    scores_cluster = zeros(n, 1);
+    index_cluster = zeros(n, 1);    
     for i = 1:n
-        scores_cluster(i) = max(scores(idx == cid(i)));
+        index = clusters{i};
+        % sort the detections in each cluster
+        [~, ind] = sort(scores(index), 'descend');
+        index = index(ind);
+        if numel(index) < K
+            clusters{i} = index;
+        else
+            clusters{i} = index(1:K);
+        end
+        scores_cluster(i) = scores(index(1));
+        index_cluster(i) = index(1);
     end
+
+    % sort clusters by detection scores
+    fprintf('%d clusters\n', n);
     [~, index] = sort(scores_cluster, 'descend');
-    cid = cid(index);
 
     % add clusters into the scene greedily
     flags = zeros(1, n);
+    order = 0;
     for i = 1:n
-        flags(i) = 1;
+        ci = index(i);
+        flags(ci) = order + 1;
+        % find the most compatible pattern
+        cindex = clusters{ci};
+        s = [];
         for j = 1:i-1
+            cj = index(j);
             % for each objects in the scene
-            if flags(j) == 1
-                M = matching(idx == cid(i), idx == cid(j));
-                smax = max(max(M));
-                if smax < 0.5  % incompatitable
-                    flags(i) = 0;
-                    break;
-                end
+            if flags(cj) > 0
+                M = matching(cindex, index_cluster(cj));
+                O = overlaps(cindex, index_cluster(cj));
+                M(O < 0.1) = 1;
+                M(O > 0.9) = 0;
+                s = [s M];
+            end
+        end
+        C = sum(s > 0.5, 2);
+        if max(C) ~= size(s, 2)
+            flags(ci) = 0;
+        end
+        if flags(ci)  % add the cluster
+            order = order + 1;
+            % choose the most compatible pattern
+            if isempty(s) == 0
+                s = sum(s, 2);
+                [~, ind] = max(s);
+                index_cluster(ci) = cindex(ind);
             end
         end
     end
+    
+    while(1)
+        % create the occlusion mask of all the objects
+        % sort objects from large distance to small distance
+        y = zeros(n, 1);
+        for i = 1:n
+            if flags(i) == 0
+                y(i) = inf;
+            else
+                y(i) = detections(index_cluster(i), 4);
+            end
+        end
+        [~, index] = sort(y);
+        % build the mask
+        mask = uint8(zeros(height, width));
+        for i = 1:n
+            ci = index(i);
+            if isinf(y(ci)) == 0
+                pattern = patterns(:, :, index_cluster(ci));
+                mask(pattern > 0) = ci;
+            end
+        end
+
+        % check the compatibility of the whole scene for occluded regions
+        is_change = 0;
+        for i = 1:n
+            if flags(i) == 0
+                continue;
+            end
+            pattern = patterns(:, :, index_cluster(i));
+
+            intersection = pattern == 2 & mask ~= i;
+            occluded = pattern == 2;
+            r = sum(sum(occluded)) / sum(sum(pattern > 0));
+            if r < 0.1
+                s = 1;
+            else
+                s = sum(sum(intersection)) / sum(sum(occluded));
+            end
+
+            if s < 0.5
+                flags(i) = 0;
+                is_change = 1;
+            end
+        end
+        
+        % check if there is any change
+        if is_change == 0
+            break;
+        end
+    end
+    
+    % keep very confidence detections
+    flags(scores_cluster > threshold_confident) = 1;
     
     % compute the flags for objects
     flags_cluster = flags;
     flags = zeros(1, num);
     for i = 1:n
-        if flags_cluster(i) == 1
-            index = find(idx == cid(i));
-            [~, ind] = max(scores(index));
-            flags(index(ind)) = 1;
+        if flags_cluster(i) > 0
+            flags(index_cluster(i)) = flags_cluster(i);
         end
     end
 
     if is_show
-        file_img = sprintf('%s/%06d.png', image_dir, ids(id));
-        Iimage = imread(file_img);
-        dets = detections;
+        % show box clustering result
+        figure(1);
+        cmap = colormap;
+        imshow(Iimage);
+        hold on;
+        for i = 1:n
+            index = clusters{i};
+            for j = 1:numel(index)
+                bbox = detections(index(j), 1:4);
+                bbox_draw = [bbox(1) bbox(2) bbox(3)-bbox(1) bbox(4)-bbox(2)];
+                cindex = round(i * size(cmap,1) / n);
+                rectangle('Position', bbox_draw', 'EdgeColor', cmap(cindex,:));
+                text(bbox(1), bbox(2), num2str(i), 'BackgroundColor', [.7 .9 .7], 'Color', 'r');
+            end
+        end
+        hold off;        
         
+        % show occlusion reasoning result
+        dets = detections;
         for j = 1:size(dets, 1)
             if flags(j) == 0
                 continue;
@@ -123,10 +229,10 @@ for id = 1:M
             w = bbox(3) - bbox(1) + 1;
             h = bbox(4) - bbox(2) + 1;
 
-            cid = dets(j, 5);
-            pattern = data.pattern{cid};                
+            c = dets(j, 5);
+            pattern = data.pattern{c};                
             index_pattern = find(pattern == 1);
-            if data.truncation(cid) > 0 && isempty(index_pattern) == 0
+            if data.truncation(c) > 0 && isempty(index_pattern) == 0
                 [y, x] = ind2sub(size(pattern), index_pattern);                
                 pattern = pattern(min(y):max(y), min(x):max(x));
             end
@@ -139,6 +245,7 @@ for id = 1:M
             Iimage(bbox(2):bbox(4), bbox(1):bbox(3), :) = uint8(0.1*Isub + 0.9*im);
         end
         
+        figure(2);
         imshow(Iimage);
         hold on;
         for j = 1:size(dets, 1)
@@ -147,12 +254,9 @@ for id = 1:M
             end            
             bbox = dets(j, 1:4);
             bbox_draw = [bbox(1) bbox(2) bbox(3)-bbox(1) bbox(4)-bbox(2)];
-            if flags(j) == 1
-                rectangle('Position', bbox_draw', 'EdgeColor', 'g');
-            else
-                rectangle('Position', bbox_draw', 'EdgeColor', 'r');
-            end
-            text(bbox(1), bbox(2), num2str(scores(j)), 'BackgroundColor', [.7 .9 .7], 'Color', 'r');
+            rectangle('Position', bbox_draw', 'EdgeColor', 'g');
+            s = sprintf('%d:%.2f', flags(j), scores_cluster(index_cluster == j));
+            text(bbox(1), bbox(2), s, 'BackgroundColor', [.7 .9 .7], 'Color', 'r');
         end
         hold off;
         pause;   

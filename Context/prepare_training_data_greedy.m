@@ -3,13 +3,15 @@ function prepare_training_data_greedy
 
 matlabpool open;
 
+mex compute_matching_scores.cc
+
 cls = 'car';
 is_train = 1;
 cache_dir = 'CACHED_DATA_TRAINVAL';
 
 % load ids
 object = load('kitti_ids.mat');
-ids = [object.ids_train object.ids_val];
+ids = object.ids_val;
 
 % load data
 if is_train
@@ -40,7 +42,7 @@ cam = 2;
 image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 
 N = numel(ids);
-parfor i = 1:N
+for i = 1:N
     % read image
     fprintf('%d\n', ids(i));
     file_img = sprintf('%s/%06d.png', image_dir, ids(i));
@@ -49,7 +51,7 @@ parfor i = 1:N
     height = size(I, 1);    
     
     % compute the occlusion patterns
-    det = dets{i};
+    det = dets{ids(i)+1};
     
     num = size(det, 1);
     Detections = zeros(num, 5);
@@ -94,11 +96,11 @@ parfor i = 1:N
     [Matching, Overlaps] = compute_matching_scores(Detections, Patterns);
     
     filename = fullfile(cache_dir, sprintf('%04d.mat', ids(i)));
-    parsave(filename, Detections, Scores, Overlaps, Matching);
+    parsave(filename, Detections, Scores, Patterns, Overlaps, Matching);
 end
 
 matlabpool close;
 
-function parsave(filename, Detections, Scores, Overlaps, Matching)
+function parsave(filename, Detections, Scores, Patterns, Overlaps, Matching)
 
-save(filename, 'Detections', 'Scores', 'Overlaps', 'Matching', '-v7.3');
+save(filename, 'Detections', 'Scores', 'Patterns', 'Overlaps', 'Matching', '-v7.3');
