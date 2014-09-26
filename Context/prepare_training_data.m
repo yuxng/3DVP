@@ -5,7 +5,7 @@ matlabpool open;
 
 cls = 'car';
 is_train = 1;
-overlap_threshold = 0.7;  % use a large threshold for nms
+overlap_threshold = 0.6;  % use a large threshold for nms
 cache_dir = 'CACHED_DATA_TRAINVAL';
 
 % load ids
@@ -72,7 +72,7 @@ parfor i = 1:N
     
     % non-maximum suppression
     if isempty(det) == 0
-        index = nms(det, overlap_threshold);
+        index = nms_new(det, overlap_threshold);
         det = det(index, :);    
     end
     
@@ -149,14 +149,14 @@ parfor i = 1:N
 %         end
 %     end
     
-    Matching = compute_matching_scores(Detections, Patterns);
+    [Matching, Overlaps] = compute_matching_scores(Detections, Patterns);
     
     filename = fullfile(cache_dir, sprintf('%04d.mat', ids(i)));
-    parsave(filename, Detections, Scores, Matching);
+    parsave(filename, Detections, Scores, Patterns, Overlaps, Matching);
 end
 
 matlabpool close;
 
-function parsave(filename, Detections ,Scores, Matching)
+function parsave(filename, Detections, Scores, Patterns, Overlaps, Matching)
 
-save(filename, 'Detections', 'Scores', 'Matching', '-v7.3');
+save(filename, 'Detections', 'Scores', 'Patterns', 'Overlaps', 'Matching', '-v7.3');

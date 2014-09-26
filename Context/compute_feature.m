@@ -10,7 +10,7 @@ PSI = zeros(2, 1);
 % compute pattern matching scores
 num = size(Detections, 1);
 for i = 1:num
-    for j = i+1:num    
+    for j = i+1:num
         s = Matching(i,j);
         PSI(1) = PSI(1) + s;
         PSI(2) = PSI(2) + 1;

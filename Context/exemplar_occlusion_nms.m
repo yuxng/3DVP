@@ -1,18 +1,7 @@
-function exemplar_write_kitti_results
+function exemplar_occlusion_nms
 
-cls = 'car';
 is_train = 1;
-threshold_overlap = 0.6;
-
-% read detection results
-if is_train == 1
-    filename = sprintf('kitti_train_few/%s_test.mat', cls);
-else
-    filename = sprintf('kitti_test_few/%s_test.mat', cls);
-end
-object = load(filename);
-dets = object.dets;
-fprintf('load detection done\n');
+cache_dir = 'CACHED_DATA_TRAINVAL';
 
 % load clustering data
 if is_train == 1
@@ -32,8 +21,19 @@ end
 N = numel(ids);
 
 for i = 1:N
-    img_idx = ids(i);    
-    det = dets{img_idx + 1};
+    img_idx = ids(i);
+    
+    % load detection results
+    filename = fullfile(cache_dir, sprintf('%04d.mat', img_idx));
+    record = load(filename, 'Detections', 'Scores');
+    detections = record.Detections;
+    scores = record.Scores;
+    det = [detections scores];
+    
+%     overlaps = record.Overlaps;
+%     matching = record.Matching;
+%     patterns = record.Patterns;
+%     num = numel(scores);
     
     % result file
     if is_train == 1
@@ -52,8 +52,8 @@ for i = 1:N
     
     % non-maximum suppression
     if isempty(det) == 0
-        I = nms_new(det, threshold_overlap);
-        det = det(I, :);    
+        I = nms_new(det, 0.6);
+        det = det(I, :);
     end    
     
     % write detections

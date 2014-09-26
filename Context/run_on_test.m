@@ -1,9 +1,8 @@
 function run_on_test
 
 is_train = 1;
-is_show = 1;
-is_write = 0;
-overlap_threshold = inf;
+is_show = 0;
+is_write = 1;
 
 % load data
 if is_train
@@ -47,23 +46,18 @@ for i = 1:numel(ids)
     id = ids(i);
     % load detections
     filename = fullfile('CACHED_DATA_TRAINVAL', sprintf('%04d.mat', id));
-    object = load(filename);
+    object = load(filename, 'Detections', 'Scores', 'Matching', 'Overlaps');
     Tdata.Detections = object.Detections;
     Tdata.Scores = object.Scores;
     Tdata.Matching = object.Matching;
+    Tdata.Overlaps = object.Overlaps;
 
     [I, S] = find_MVC_test(W_s, W_a, centers, Tdata);
     TP = I == 1;
     
     if is_write
         % write detections
-        det = [Tdata.Detections S];
-        
-        % non-maximum suppression
-        if isempty(det) == 0
-            index = nms(det, overlap_threshold);
-            det = det(index, :);    
-        end        
+        det = [Tdata.Detections S]; 
         
         if is_train == 1
             filename = sprintf('results_kitti_train/%06d.txt', id);

@@ -7,6 +7,8 @@ Feat_true = Tdata.Feat_true;
 Detections = Tdata.Detections;
 Scores = Tdata.Scores;
 Matching = Tdata.Matching;
+Overlaps = Tdata.Overlaps;
+Matching(Overlaps < 0.1) = 1;
 
 % load loss
 loss = Tdata.loss;

@@ -4,6 +4,8 @@ function [I, S] = find_MVC_test(W_s, W_a, centers, Tdata)
 Detections = Tdata.Detections;
 Scores = Tdata.Scores;
 Matching = Tdata.Matching;
+Overlaps = Tdata.Overlaps;
+Matching(Overlaps < 0.1) = 1;
 
 num = size(Detections, 1);
 E = zeros(num, 1);

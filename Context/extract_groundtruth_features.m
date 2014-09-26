@@ -57,6 +57,8 @@ for id = 1:N
     Detections(:, 6) = 0;
     Scores = object.Scores;
     Matching = object.Matching;
+    Overlaps = object.Overlaps;
+    Matching(Overlaps < 0.1) = 1;
 
     % load the ground truth bounding boxes
     % index = find(img_idx == ids(id) & data.idx_ap ~= -1);
@@ -95,9 +97,11 @@ for id = 1:N
         int   = w(I).*h(I);
         ov    = zeros(n, 1);
         ov(I) = int ./ (ba(I) + ga - int);
+        [v, j] = max(ov);
         
-        % assign all boxes with overlap larger than threshold to 1
-        Detections(clsDT(ov > overlap_threshold), 6) = 1;
+        if v > overlap_threshold
+            Detections(clsDT(j), 6) = 1;
+        end
         
         %  label as true +ve the detection that overlaps the GT most
         if is_show
