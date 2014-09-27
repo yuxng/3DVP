@@ -3,7 +3,7 @@ function cluster_2d_occlusion_patterns
 opt = globals;
 data_file = 'data.mat';
 is_save = 1;
-K = 40;
+K = 50;
 
 % get image directory
 root_dir = opt.path_kitti_root;
