@@ -14,7 +14,7 @@ else
     object = load('../KITTI/data_all.mat');
 end
 data = object.data;
-idx = data.idx_ap;
+idx = data.idx_kmeans;
 
 centers = double(unique(idx));
 centers(centers == -1) = [];
