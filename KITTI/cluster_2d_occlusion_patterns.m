@@ -18,7 +18,7 @@ data = object.data;
 height = data.bbox(4,:) - data.bbox(2,:) + 1;
 occlusion = data.occlusion;
 truncation = data.truncation;
-flag = height > 40 & occlusion == 0 & truncation < 0.15;
+flag = height > 25 & occlusion < 3 & truncation < 0.5;
 
 % determine the canonical size of the bounding boxes
 modelDs = compute_model_size(data.bbox(:,flag));
@@ -52,7 +52,7 @@ end
 
 % kmeans clustering
 opts = struct('maxiters', 1000, 'mindelta', eps, 'verbose', 1);
-K = 10;
+K = 5;
 [center, sse] = vgg_kmeans(X, K, opts);
 [idx_kmeans, d] = vgg_nearest_neighbour(X, center);
 
