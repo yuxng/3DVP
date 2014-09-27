@@ -2,10 +2,10 @@ function exemplar_combine_detections
 
 cls = 'car';
 threshold = -inf;
-is_train = 0;
+is_train = 1;
 is_calibration = 0;
 is_filtering = 1;
-result_dir = 'kitti_test_acf_3d_245';
+result_dir = 'kitti_train_kmeans_2d_10';
 
 % load data
 if is_train == 1
