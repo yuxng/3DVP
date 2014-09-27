@@ -3,6 +3,7 @@ function cluster_2d_occlusion_patterns
 opt = globals;
 data_file = 'data.mat';
 is_save = 1;
+K = 10;
 
 % get image directory
 root_dir = opt.path_kitti_root;
@@ -52,7 +53,6 @@ end
 
 % kmeans clustering
 opts = struct('maxiters', 1000, 'mindelta', eps, 'verbose', 1);
-K = 5;
 [center, sse] = vgg_kmeans(X, K, opts);
 [idx_kmeans, d] = vgg_nearest_neighbour(X, center);
 
