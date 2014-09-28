@@ -6,7 +6,7 @@ exemplar_globals;
 model_name = fullfile(resultdir, sprintf('%s_%d_final.mat', cls, ind));
 object = load(model_name);
 detector = object.detector;
-detector = acfModify(detector, 'cascThr', -20);
+detector = acfModify(detector, 'cascThr', -30);
 
 Ds = detector;
 if ~iscell(Ds)
@@ -40,7 +40,7 @@ image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 filename = fullfile(SLMroot, 'ACF/kitti_ids.mat');
 object = load(filename);
 if is_train == 1
-    ids = [object.ids_train object.ids_val];
+    ids = object.ids_val;
 else
     ids = object.ids_test;
 end
