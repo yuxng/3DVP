@@ -327,8 +327,13 @@ fprintf('Sampled %i windows from %i images.\n',k,i);
 
 % optionally jitter positive windows
 if length(Is) < 2
-    Is{2} = Is{1};
-    Is = Is';
+    if positive
+        Is{2} = Is{1};
+        Is = Is';
+    else
+        Is = {};
+        return;
+    end
 end
 nd = ndims(Is{1}) + 1;
 Is = cat(nd,Is{:});
