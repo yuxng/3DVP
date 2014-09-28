@@ -5,9 +5,9 @@ if ischar(index)
 end
 
 exemplar_globals;
-if is_hadoop == 0
-    matlabpool open;
-end
+% if is_hadoop == 0
+%     matlabpool open;
+% end
 
 cls = 'car';
 is_continue = 0;
@@ -39,6 +39,6 @@ for i = index
     exemplar_kitti_test(cls, i, centers(i), is_train, is_continue);
 end
 
-if is_hadoop == 0
-    matlabpool close;
-end
+% if is_hadoop == 0
+%     matlabpool close;
+% end
