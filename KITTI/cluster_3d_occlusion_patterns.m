@@ -1,8 +1,8 @@
 function cluster_3d_occlusion_patterns
 
-data_file = 'data_all.mat';
+data_file = 'data.mat';
 is_save = 1;
-algorithm = 'ap';
+algorithm = 'kmeans';
 
 switch algorithm
     case 'ap'
@@ -98,7 +98,7 @@ switch algorithm
         height = data.bbox(4,:) - data.bbox(2,:) + 1;
         occlusion = data.occlusion;
         truncation = data.truncation;
-        flag = height > 40 & occlusion == 0 & truncation < 0.15;
+        flag = height > 25 & occlusion < 3 & truncation < 0.5;
         fprintf('%d examples in clustering\n', sum(flag));
         
         % load data

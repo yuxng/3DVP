@@ -9,7 +9,7 @@ cids = unique(data.idx_kmeans);
 cids(cids == -1) = [];
 num = numel(cids);
 
-is_multiple = 1;
+is_multiple = 0;
 if is_multiple
     num_job = 30;
     index = round(linspace(1, num, num_job+1));
