@@ -34,7 +34,7 @@ N = numel(ids);
 
 for i = 1:N
     img_idx = ids(i);    
-    det = dets{img_idx + 1};
+    det = dets{i};
     
     % result file
     if is_train == 1
