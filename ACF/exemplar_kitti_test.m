@@ -6,7 +6,7 @@ exemplar_globals;
 model_name = fullfile(resultdir, sprintf('%s_%d_final.mat', cls, ind));
 object = load(model_name);
 detector = object.detector;
-detector = acfModify(detector, 'cascThr', -30);
+detector = acfModify(detector, 'cascThr', -50);
 
 Ds = detector;
 if ~iscell(Ds)
