@@ -102,7 +102,7 @@ switch algorithm
         fprintf('%d examples in clustering\n', sum(flag));
         
         % load data
-        K = 20;
+        K = 30;
         opts = struct('maxiters', 1000, 'mindelta', eps, 'verbose', 1);
         idx_kmeans = kmeans_hamming(distances(flag, flag), K, opts);
         
