@@ -47,7 +47,7 @@ end
 
 cad.cls = cls;
 cad.grid_size = grid_size;
-cad.grid = double(grid > 2);
+cad.grid = double(grid > 0);
 
 [x3d, ind] = compute_3d_points(cad.grid);
 cad.x3d = x3d;
