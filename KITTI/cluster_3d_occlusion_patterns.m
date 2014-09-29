@@ -43,7 +43,7 @@ switch algorithm
             end
         end       
 
-        p = median(s(:,3));
+        p = (median(s(:,3)) + min(s(:,3))) * 0.53;
         % p = min(s(:,3));
 
         % clustering

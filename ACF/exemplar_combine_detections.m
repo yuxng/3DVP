@@ -5,7 +5,7 @@ threshold = -inf;
 is_train = 1;
 is_calibration = 0;
 is_filtering = 1;
-result_dir = 'kitti_train_kmeans_3d_350';
+result_dir = 'kitti_train_acf_3d_248';
 
 % load data
 if is_train == 1
@@ -14,7 +14,7 @@ else
     object = load('../KITTI/data_all.mat');
 end
 data = object.data;
-idx = data.idx_kmeans;
+idx = data.idx_ap;
 
 centers = double(unique(idx));
 centers(centers == -1) = [];
