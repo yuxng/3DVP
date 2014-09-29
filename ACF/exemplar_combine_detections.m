@@ -5,7 +5,7 @@ threshold = -inf;
 is_train = 1;
 is_calibration = 0;
 is_filtering = 1;
-result_dir = 'kitti_train_kmeans_3d_50';
+result_dir = 'kitti_train_kmeans_3d_100';
 
 % load data
 if is_train == 1
