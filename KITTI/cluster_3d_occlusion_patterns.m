@@ -85,6 +85,9 @@ switch algorithm
             fprintf('load distances from file\n');
             object = load('distances.mat');
             distances = object.distances;
+            for i = 1:size(distances,1)
+                distances(i,i) = 0;
+            end
         else
             fprintf('computing distances...\n');
             scores = compute_similarity(data.grid);
@@ -102,7 +105,7 @@ switch algorithm
         fprintf('%d examples in clustering\n', sum(flag));
         
         % load data
-        K = 300;
+        K = 350;
         opts = struct('maxiters', 1000, 'mindelta', eps, 'verbose', 1);
         idx_kmeans = kmeans_hamming(distances(flag, flag), K, opts);
         

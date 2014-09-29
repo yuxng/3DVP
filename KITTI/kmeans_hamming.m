@@ -28,9 +28,14 @@ end
 % assign points to centers
 idx = zeros(N, 1);
 for i = 1:N
-    d = distances(i, centers);
-    [~, ind] = min(d);
-    idx(i) = centers(ind);
+    ind = find(centers == i);
+    if ~isempty(ind)
+        idx(i) = centers(ind);
+    else    
+        d = distances(i, centers);
+        [~, ind] = min(d);
+        idx(i) = centers(ind);
+    end
 end
 
 
@@ -44,10 +49,15 @@ sse = 0;
 % assign points to centers
 assignment = zeros(1,N);
 for i = 1:N
-    d = distances(i, centers);
-    [dmin, ind] = min(d);
-    sse = sse + dmin;
-    assignment(i) = ind;
+    ind = find(centers == i);
+    if ~isempty(ind)
+        assignment(i) = ind;
+    else
+        d = distances(i, centers);
+        [dmin, ind] = min(d);
+        sse = sse + dmin;
+        assignment(i) = ind;
+    end
 end
 
 % compute new centers
