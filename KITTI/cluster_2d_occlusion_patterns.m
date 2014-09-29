@@ -4,6 +4,7 @@ opt = globals;
 data_file = 'data.mat';
 is_save = 1;
 K = 350;
+algorithm = 'ap';
 
 % get image directory
 root_dir = opt.path_kitti_root;
@@ -51,26 +52,83 @@ else
     save('feature.mat', 'X');
 end
 
-% kmeans clustering
-opts = struct('maxiters', 1000, 'mindelta', eps, 'verbose', 1);
-[center, sse] = vgg_kmeans(X, K, opts);
-[idx_kmeans, d] = vgg_nearest_neighbour(X, center);
+switch algorithm
+    case 'kmeans'
+        % kmeans clustering
+        opts = struct('maxiters', 1000, 'mindelta', eps, 'verbose', 1);
+        [center, sse] = vgg_kmeans(X, K, opts);
+        [idx_kmeans, d] = vgg_nearest_neighbour(X, center);
 
-% construct idx
-num = numel(data.imgname);
-idx = zeros(num, 1);
-idx(flag == 0) = -1;
-index_all = find(flag == 1);
-for i = 1:K
-    index = find(idx_kmeans == i);
-    [~, ind] = min(d(index));
-    cid = index_all(index(ind));
-    idx(index_all(index)) = cid;
-end
+        % construct idx
+        num = numel(data.imgname);
+        idx = zeros(num, 1);
+        idx(flag == 0) = -1;
+        index_all = find(flag == 1);
+        for i = 1:K
+            index = find(idx_kmeans == i);
+            [~, ind] = min(d(index));
+            cid = index_all(index(ind));
+            idx(index_all(index)) = cid;
+        end
 
-if is_save
-    data.idx_kmeans = idx;
-    save(data_file, 'data');
+        if is_save
+            data.idx_kmeans = idx;
+            save(data_file, 'data');
+        end
+    case 'ap'
+        % try to load similarity scores
+        if exist('similarity_2d.mat', 'file') ~= 0
+            fprintf('load similarity scores from file\n');
+            object = load('similarity_2d.mat');
+            scores = object.scores;
+        else
+            fprintf('computing similarity scores...\n');
+            scores = compute_similarity_2d(X);
+            save('similarity_2d.mat', 'scores', '-v7.3');
+            fprintf('save similarity scores\n');
+        end
+        
+        N = size(scores, 1);
+        M = N*N-N;
+        s = zeros(M,3); % Make ALL N^2-N similarities
+        j = 1;
+        for i = 1:N
+            for k = [1:i-1,i+1:N]
+                s(j,1) = i;
+                s(j,2) = k;
+                s(j,3) = scores(i,k);
+                j = j+1;
+            end
+        end       
+
+        p = min(s(:,3));
+
+        % clustering
+        fprintf('Start AP clustering\n');
+        [idx_ap, netsim, dpsim, expref] = apclustermex(s, p);
+
+        fprintf('Number of clusters: %d\n', length(unique(idx_ap)));
+        fprintf('Fitness (net similarity): %f\n', netsim);
+        
+        % construct idx
+        num = numel(data.imgname);
+        idx = zeros(num, 1);
+        idx(flag == 0) = -1;
+        index_all = find(flag == 1);
+        
+        cids = unique(idx_ap);
+        K = numel(cids);
+        for i = 1:K
+            index = idx_ap == cids(i);
+            cid = index_all(cids(i));
+            idx(index_all(index)) = cid;
+        end        
+        
+        % save results
+        if is_save
+            data.idx_ap = idx;
+            save(data_file, 'data');
+        end        
 end
 
 function modelDs = compute_model_size(bbox)
