@@ -88,6 +88,12 @@ switch algorithm
             fprintf('save similarity scores\n');
         end
         
+        smax = max(max(scores));
+        smin = min(min(scores));
+        wa = 1 / (smax - smin);
+        wb = -smin / (smax - smin);        
+        scores = wa .* scores + wb;
+        
         N = size(scores, 1);
         M = N*N-N;
         s = zeros(M,3); % Make ALL N^2-N similarities
@@ -101,7 +107,7 @@ switch algorithm
             end
         end       
 
-        p = min(s(:,3));
+        p = (min(s(:,3)) + median(s(:,3))) * 0.35;
 
         % clustering
         fprintf('Start AP clustering\n');
