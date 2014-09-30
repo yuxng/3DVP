@@ -68,6 +68,9 @@ for img_idx = 1:nimages
         cad_index = object.cad_index;
         x3d = cads{cls_index}(cad_index).vertices;
         x2d = project_3d(x3d, object);
+        if isempty(x2d)
+            continue;
+        end
         face = cads{cls_index}(cad_index).faces;
         
         index_color = 1 + floor((i-1) * size(cmap,1) / numel(index));
