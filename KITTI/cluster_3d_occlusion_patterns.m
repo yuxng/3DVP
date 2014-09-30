@@ -43,7 +43,7 @@ switch algorithm
             end
         end       
 
-        p = min(s(:,3)) / 2;
+        p = min(s(:,3)) / 100;
 
         % clustering
         fprintf('Start AP clustering\n');
