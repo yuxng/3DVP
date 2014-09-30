@@ -3,7 +3,7 @@ function exemplar_write_kitti_results
 cls = 'car';
 is_train = 1;
 threshold_overlap = 0.6;
-result_dir = 'kitti_train_acf_2d_214';
+result_dir = 'kitti_train_acf_2d_368';
 
 % read detection results
 if is_train == 1

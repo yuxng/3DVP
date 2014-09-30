@@ -107,7 +107,7 @@ switch algorithm
             end
         end       
 
-        p = (min(s(:,3)) + median(s(:,3))) * 0.35;
+        p = (min(s(:,3)) + median(s(:,3))) * 0.12;
 
         % clustering
         fprintf('Start AP clustering\n');
