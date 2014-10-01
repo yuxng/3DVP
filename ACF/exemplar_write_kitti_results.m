@@ -1,16 +1,12 @@
 function exemplar_write_kitti_results
 
 cls = 'car';
-is_train = 1;
+is_train = 0;
 threshold_overlap = 0.6;
-result_dir = 'kitti_train_acf_2d_87';
+result_dir = 'kitti_test_acf_3d_245';
 
 % read detection results
-if is_train == 1
-    filename = sprintf('%s/%s_test.mat', result_dir, cls);
-else
-    filename = sprintf('kitti_test_few/%s_test.mat', cls);
-end
+filename = sprintf('%s/%s_test.mat', result_dir, cls);
 object = load(filename);
 dets = object.dets;
 fprintf('load detection done\n');

@@ -1,6 +1,6 @@
 function cluster_3d_occlusion_patterns
 
-data_file = 'data.mat';
+data_file = 'data_all.mat';
 is_save = 1;
 algorithm = 'ap';
 
@@ -43,7 +43,7 @@ switch algorithm
             end
         end       
 
-        p = median(s(:,3)) * 1.1;
+        p = min(s(:,3));
 
         % clustering
         fprintf('Start AP clustering\n');
