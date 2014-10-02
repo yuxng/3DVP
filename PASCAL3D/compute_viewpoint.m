@@ -7,27 +7,14 @@ issave = 0;
 pad_size = 100;
 use_nonvisible = 1;
 clear_nonvisible = 0;
-rescale = 1.0;
-
-classes = {'aeroplane', 'bicycle', 'boat', 'bottle', 'bus', 'car', 'chair', ...
-    'diningtable', 'motorbike', 'sofa', 'train', 'tvmonitor'};
 
 % load PASCAL3D+ cad models
-if exist('cads.mat', 'file')
-    fprintf('load CAD models from file\n');
-    object = load('cads.mat');
-    cads = object.cads;
-else
-    nc = numel(classes);
-    cads = cell(nc, 1);
-    for i = 1:nc
-        cls = classes{i};
-        filename = sprintf(opt.path_cad, cls);
-        object = load(filename);
-        cads{i} = object.(cls);
-    end
-    save('cads.mat', 'cads');
-end
+fprintf('load CAD models from file\n');
+object = load('cads.mat');
+cads = object.cads;
+classes = cads.classes;
+rescales = cads.rescales;
+models = cads.models;
 
 ids = textread(sprintf(VOCopts.imgsetpath, 'trainval'), '%s');
 
@@ -37,7 +24,7 @@ for i = 1:length(ids)
     record = object.record;
     [azimuth, elevation, azi_co, ele_co, distance, focal, px, py,...
         theta, error, interval_azimuth, interval_elevation, num_anchor, ob_index, tmp]...
-        = view_estimator(classes, record, cads, use_nonvisible, clear_nonvisible, rescale);
+        = view_estimator(classes, record, models, use_nonvisible, clear_nonvisible, rescales);
     record = tmp;
     
     for j = 1:length(ob_index)
@@ -89,12 +76,12 @@ for i = 1:length(ids)
             cls_index = find(strcmp(object.class, classes) == 1);
             if isempty(cls_index) == 0
                 cad_index = object.cad_index;
-                x3d = cads{cls_index}(cad_index).vertices;
+                x3d = models{cls_index}(cad_index).vertices * rescales(cls_index);
                 x2d = project_3d(x3d, object);
                 if isempty(x2d)
                     continue;
                 end
-                face = cads{cls_index}(cad_index).faces;
+                face = models{cls_index}(cad_index).faces;
 
                 index_color = 1 + floor((j-1) * size(cmap,1) / numel(index));
                 patch('vertices', x2d, 'faces', face, ...

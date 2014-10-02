@@ -13,7 +13,7 @@
 
 function [azimuth, elevation, azi_co, ele_co, distance, focal, px, py, theta,...
     error, interval_azimuth, interval_elevation, num_anchor, ob_index, record] = ...
-    view_estimator(classes, record, cad_bunch, use_nonvisible, clear_nonvisible, rescale)
+    view_estimator(classes, record, cad_bunch, use_nonvisible, clear_nonvisible, rescales)
 
 ttnum = numel(record.objects);
 j = 1;
@@ -70,7 +70,7 @@ for i = 1:num_ob
             end
         end
     end
-    x3d = rescale * x3d;
+    x3d = rescales(class_index(i)) * x3d;
     
     % compute continous viewpoint
     num_anch = size(x2d,1);
