@@ -45,7 +45,11 @@ for i = 1:length(ids)
     if issave == 1
         save(sprintf('Annotations/%s.mat', ids{i}), 'record');
     else
-        figure(1);
+        if numel(find(distance > 0)) < 2
+            continue;
+        end
+        
+        hf = figure(1);
         cmap = colormap(jet);        
         
         % show image
@@ -55,6 +59,10 @@ for i = 1:length(ids)
         [h, w, ~] = size(I);
         mask = ones(h, w, 3);
         mask = padarray(mask, [pad_size pad_size 0]);
+        
+        mask_object = zeros(h, w);
+        mask_object = padarray(mask_object, [pad_size pad_size]);
+        
         imshow(I);
         hold on;
 
@@ -65,10 +73,12 @@ for i = 1:length(ids)
         index = sort_objects(objects);
 
         % for all annotated objects do
+        is_overlap = 0;
         for j = 1:numel(index)
             obj_idx = index(j);
             % plot 2D bounding box
             object = objects(obj_idx);
+            fprintf('%s %d\n', object.class, object.cad_index);
             bbox = object.bbox;
             bbox_draw = [bbox(1) bbox(2) bbox(3)-bbox(1) bbox(4)-bbox(2)];
             rectangle('Position', bbox_draw, 'EdgeColor', 'g');
@@ -76,7 +86,7 @@ for i = 1:length(ids)
             cls_index = find(strcmp(object.class, classes) == 1);
             if isempty(cls_index) == 0
                 cad_index = object.cad_index;
-                x3d = models{cls_index}(cad_index).vertices * rescales(cls_index);
+                x3d = models{cls_index}(cad_index).vertices * rescales{cls_index}(cad_index);
                 x2d = project_3d(x3d, object);
                 if isempty(x2d)
                     continue;
@@ -93,6 +103,11 @@ for i = 1:length(ids)
                             x2d(face(:,3),2) x2d(face(:,3),1)];
 
                 BW = mesh_test(vertices, h+2*pad_size, w+2*pad_size);
+                
+                if sum(sum(mask_object > 0 & BW)) > 0
+                    is_overlap = 1;
+                end
+                mask_object(BW) = obj_idx;
 
                 for k = 1:3
                     tmp = mask(:,:,k);
@@ -108,7 +123,12 @@ for i = 1:length(ids)
         imshow(uint8(255*mask));
         axis off;  
         axis equal;
+        
+        if is_overlap
+            filename = sprintf('Groundtruths/%s.png', ids{i});
+            saveas(hf, filename);
+        end
 
-        pause;
+%         pause;
     end
 end

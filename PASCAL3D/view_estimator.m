@@ -70,7 +70,7 @@ for i = 1:num_ob
             end
         end
     end
-    x3d = rescales(class_index(i)) * x3d;
+    x3d = rescales{class_index(i)}(cad_index) * x3d;
     
     % compute continous viewpoint
     num_anch = size(x2d,1);

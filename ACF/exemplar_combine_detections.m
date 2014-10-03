@@ -5,7 +5,7 @@ threshold = -inf;
 is_train = 0;
 is_calibration = 0;
 is_filtering = 1;
-result_dir = 'kitti_test_acf_3d_245';
+result_dir = 'kitti_test_acf_3d_418';
 
 % load data
 if is_train == 1
@@ -47,7 +47,7 @@ for i = 1:N
     if is_train == 1
         filename = sprintf('%s/%s_%d_test.mat', result_dir, cls, i);
     else
-        filename = sprintf('%s/%s_%d_test.mat', result_dir, cls, cid);
+        filename = sprintf('%s/%s_%d_test.mat', result_dir, cls, i);
     end
     if exist(filename, 'file') == 0
         continue;
