@@ -14,7 +14,9 @@ switch cls
     case 'bus'
         N = 6;           
     case 'car'
-        N = 7;
+        N = 10;
+    case 'car_kitti'
+        N = 7;        
     case 'chair'
         N = 10;
     case 'diningtable'
@@ -68,10 +70,13 @@ switch cls
         save('bottle.mat', 'bottle');     
     case 'bus'
         bus = cad;
-        save('bus.mat', 'bus');        
+        save('bus.mat', 'bus');    
     case 'car'
         car = cad;
-        save('car.mat', 'car');
+        save('car.mat', 'car');        
+    case 'car_kitti'
+        car = cad;
+        save('car_kitti.mat', 'car');
     case 'chair'
         chair = cad;
         save('chair.mat', 'chair');       

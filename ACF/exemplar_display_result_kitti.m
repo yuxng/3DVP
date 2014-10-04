@@ -1,10 +1,10 @@
 function exemplar_display_result_kitti
 
 cls = 'car';
-threshold = -40;
+threshold = -20;
 is_train = 0;
 threshold_overlap = 0.6;
-result_dir = 'kitti_test_acf_3d_418';
+result_dir = 'kitti_test_acf_3d_169';
 
 % read detection results
 filename = sprintf('%s/%s_test.mat', result_dir, cls);

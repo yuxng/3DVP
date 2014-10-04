@@ -5,7 +5,7 @@ threshold = -inf;
 is_train = 0;
 is_calibration = 0;
 is_filtering = 1;
-result_dir = 'kitti_test_acf_3d_418';
+result_dir = 'kitti_test_acf_3d_169';
 
 % load data
 if is_train == 1

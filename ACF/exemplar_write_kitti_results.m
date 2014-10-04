@@ -3,7 +3,7 @@ function exemplar_write_kitti_results
 cls = 'car';
 is_train = 0;
 threshold_overlap = 0.6;
-result_dir = 'kitti_test_acf_3d_418';
+result_dir = 'kitti_test_acf_3d_169';
 
 % read detection results
 filename = sprintf('%s/%s_test.mat', result_dir, cls);

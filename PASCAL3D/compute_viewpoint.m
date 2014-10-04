@@ -3,8 +3,7 @@ function compute_viewpoint
 
 opt = globals();
 pascal_init;
-issave = 0;
-pad_size = 100;
+pad_size = 1000;
 use_nonvisible = 1;
 clear_nonvisible = 0;
 
@@ -40,95 +39,124 @@ for i = 1:length(ids)
         record.objects(ob_index(j)).viewpoint.interval_elevation = interval_elevation(j);
         record.objects(ob_index(j)).viewpoint.num_anchor = num_anchor(j);
         record.objects(ob_index(j)).viewpoint.viewport = 3000;
+    end     
+
+    % read image
+    filename = sprintf(VOCopts.imgpath, ids{i});
+    I = imread(filename);
+    [h, w, ~] = size(I);
+    % occlusion mask
+    mask = zeros(h, w);
+    mask = padarray(mask, [pad_size pad_size]);
+
+    % load annotations
+    objects = record.objects;
+
+    % sort objects from large distance to small distance
+    index = sort_objects(objects);
+
+    % for all annotated objects do
+    num = numel(index);
+    BWs = cell(num, 1);    
+    for j = 1:num
+        obj_idx = index(j);
+        object = objects(obj_idx);
+
+        cls_index = find(strcmp(object.class, classes) == 1);
+        if isempty(cls_index) == 0
+            cad_index = object.cad_index;
+            x3d = models{cls_index}(cad_index).vertices * rescales{cls_index}(cad_index);
+            x2d = project_3d(x3d, object);
+            if isempty(x2d)
+                continue;
+            end
+            face = models{cls_index}(cad_index).faces;
+            
+            flag = min(x2d(:,1)) < 0 & max(x2d(:,1)) > w;
+            if flag == 1
+                continue;
+            end            
+
+            x2d = x2d + pad_size;
+            vertices = [x2d(face(:,1),2) x2d(face(:,1),1) ...
+                        x2d(face(:,2),2) x2d(face(:,2),1) ...
+                        x2d(face(:,3),2) x2d(face(:,3),1)];
+
+            BWs{obj_idx} = mesh_test(vertices, h+2*pad_size, w+2*pad_size);
+
+            mask(BWs{obj_idx}) = obj_idx;
+        end
     end
 
-    if issave == 1
-        save(sprintf('Annotations/%s.mat', ids{i}), 'record');
-    else
-        if numel(find(distance > 0)) < 2
+    mask = mask(pad_size+1:h+pad_size, pad_size+1:w+pad_size);
+    mask = padarray(mask, [pad_size pad_size], -1);
+    record.pad_size = pad_size;
+    record.mask = mask;
+
+    % create occlusion patterns
+    index_object = index;
+    for j = 1:num
+        if isempty(BWs{j}) == 1
+            objects(j).pattern = [];
+            objects(j).occ_per = 0;
+            objects(j).trunc_per = 0;
+            objects(j).grid = [];
             continue;
-        end
+        end        
         
-        hf = figure(1);
-        cmap = colormap(jet);        
-        
-        % show image
-        subplot(1, 2, 1);
-        filename = sprintf(VOCopts.imgpath, ids{i});
-        I = imread(filename);
-        [h, w, ~] = size(I);
-        mask = ones(h, w, 3);
-        mask = padarray(mask, [pad_size pad_size 0]);
-        
-        mask_object = zeros(h, w);
-        mask_object = padarray(mask_object, [pad_size pad_size]);
-        
-        imshow(I);
-        hold on;
+        azimuth = objects(j).viewpoint.azimuth;
+        elevation = objects(j).viewpoint.elevation;
+        distance = objects(j).viewpoint.distance;
+          
+        objects(j).azimuth = azimuth;
+        objects(j).elevation = elevation;
+        objects(j).distance = distance;      
 
-        % load annotations
-        objects = record.objects;
+        pattern = uint8(BWs{j});  % 1 visible
+        pattern(mask > 0 & mask ~= j & BWs{j}) = 2;  % occluded
+        pattern(mask == -1 & BWs{j}) = 3;  % truncated
+        [x, y] = find(pattern > 0);
+        pattern = pattern(min(x):max(x), min(y):max(y));
+        objects(j).pattern = pattern;
 
-        % sort objects from large distance to small distance
-        index = sort_objects(objects);
+        % compute occlusion percentage
+        occ = numel(find(pattern == 2)) / numel(find(pattern > 0));
+        objects(j).occ_per = occ;
 
-        % for all annotated objects do
-        is_overlap = 0;
-        for j = 1:numel(index)
-            obj_idx = index(j);
-            % plot 2D bounding box
-            object = objects(obj_idx);
-            fprintf('%s %d\n', object.class, object.cad_index);
-            bbox = object.bbox;
-            bbox_draw = [bbox(1) bbox(2) bbox(3)-bbox(1) bbox(4)-bbox(2)];
-            rectangle('Position', bbox_draw, 'EdgeColor', 'g');
+        % compute truncation percentage
+        trunc = numel(find(pattern == 3)) / numel(find(pattern > 0));
+        objects(j).trunc_per = trunc;
 
-            cls_index = find(strcmp(object.class, classes) == 1);
-            if isempty(cls_index) == 0
-                cad_index = object.cad_index;
-                x3d = models{cls_index}(cad_index).vertices * rescales{cls_index}(cad_index);
-                x2d = project_3d(x3d, object);
-                if isempty(x2d)
-                    continue;
+        % 3D occlusion mask
+        cls_index = strcmp(objects(j).class, classes) == 1;
+        cad_index = objects(j).cad_index;  
+        [visibility_grid, visibility_ind] = check_visibility(models{cls_index}(cad_index), azimuth, elevation);
+
+        % check the occlusion status of visible voxels
+        index = find(visibility_ind == 1);
+        x3d = models{cls_index}(cad_index).x3d(index,:) * rescales{cls_index}(cad_index);
+        x2d = project_3d(x3d, objects(j));
+        x2d = x2d + pad_size;
+        occludee = find(index_object == j);
+        for k = 1:numel(index)
+            x = round(x2d(k,1));
+            y = round(x2d(k,2));
+            ind = models{cls_index}(cad_index).ind(index(k),:);
+            if x > pad_size && x <= size(mask,2)-pad_size && y > pad_size && y <= size(mask,1)-pad_size
+                if mask(y,x) > 0 && mask(y,x) ~= j % occluded by other objects
+                    occluder = find(index_object == mask(y,x));
+                    if occluder > occludee
+                        visibility_grid(ind(1), ind(2), ind(3)) = 2;
+                    end
                 end
-                face = models{cls_index}(cad_index).faces;
-
-                index_color = 1 + floor((j-1) * size(cmap,1) / numel(index));
-                patch('vertices', x2d, 'faces', face, ...
-                    'FaceColor', cmap(index_color,:), 'FaceAlpha', 0.2, 'EdgeColor', 'none');
-
-                x2d = x2d + pad_size;
-                vertices = [x2d(face(:,1),2) x2d(face(:,1),1) ...
-                            x2d(face(:,2),2) x2d(face(:,2),1) ...
-                            x2d(face(:,3),2) x2d(face(:,3),1)];
-
-                BW = mesh_test(vertices, h+2*pad_size, w+2*pad_size);
-                
-                if sum(sum(mask_object > 0 & BW)) > 0
-                    is_overlap = 1;
-                end
-                mask_object(BW) = obj_idx;
-
-                for k = 1:3
-                    tmp = mask(:,:,k);
-                    tmp(BW) = cmap(index_color,k);
-                    mask(:,:,k) = tmp;
-                end
+            else
+                visibility_grid(ind(1), ind(2), ind(3)) = 3;  % truncated
             end
         end
-        hold off;
-
-        subplot(1,2,2);
-        mask = mask(pad_size+1:h+pad_size, pad_size+1:w+pad_size,:);
-        imshow(uint8(255*mask));
-        axis off;  
-        axis equal;
-        
-        if is_overlap
-            filename = sprintf('Groundtruths/%s.png', ids{i});
-            saveas(hf, filename);
-        end
-
-%         pause;
+        objects(j).grid = visibility_grid;
     end
+
+    % save annotation
+    record.objects = objects;
+    save(sprintf('Annotations/%s.mat', ids{i}), 'record');
 end

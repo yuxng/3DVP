@@ -12,8 +12,10 @@ switch cls
     case 'bottle'
         N = 8;
     case 'bus'
-        N = 6;           
+        N = 6;
     case 'car'
+        N = 10;        
+    case 'car_kitti'
         N = 7;
     case 'chair'
         N = 10;
@@ -73,6 +75,9 @@ switch cls
     case 'car'
         car = cad;
         save('car_mean.mat', 'car');
+    case 'car_kitti'
+        car = cad;
+        save('car_kitti_mean.mat', 'car');        
     case 'chair'
         chair = cad;
         save('chair_mean.mat', 'chair');       

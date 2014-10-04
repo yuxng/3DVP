@@ -1,7 +1,9 @@
 function cad_train_all
 
-cls = {'aeroplane', 'bicycle', 'boat', 'bottle', 'bus', 'chair', 'diningtable', ...
-    'motorbike', 'sofa', 'train', 'tvmonitor'};
+% cls = {'aeroplane', 'bicycle', 'boat', 'bottle', 'bus', 'chair', 'diningtable', ...
+%     'motorbike', 'sofa', 'train', 'tvmonitor'};
+
+cls = {'car'};
 
 for i = 1:numel(cls)
     switch cls{i}
@@ -14,8 +16,10 @@ for i = 1:numel(cls)
         case 'bottle'
             N = 8;
         case 'bus'
-            N = 6;           
+            N = 6;     
         case 'car'
+            N = 10;
+        case 'car_kitti'
             N = 7;
         case 'chair'
             N = 10;
