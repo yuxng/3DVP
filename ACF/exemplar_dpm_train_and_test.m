@@ -45,7 +45,7 @@ end
 
 for i = index
     fprintf('%d/%d: Train DPM for center %d\n', i, num, centers(i));
-%     exemplar_kitti_train(cls, data, i, centers(i), is_train, is_continue, is_pascal);
+    exemplar_kitti_train(cls, data, i, centers(i), is_train, is_continue, is_pascal);
     exemplar_kitti_test(cls, i, centers(i), is_train, is_continue, is_pascal);
 end
 
