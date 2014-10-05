@@ -1,10 +1,18 @@
-function detector = exemplar_kitti_train(cls, data, ind, cid, is_train, is_continue)
+function detector = exemplar_kitti_train(cls, data, ind, cid, is_train, is_continue, is_pascal)
 
 exemplar_globals;
 
-[pos, neg] = exemplar_kitti_data(cls, data, cid, is_train, is_continue);
+if is_pascal
+    [pos, neg] = exemplar_pascal_data(cls, data, cid, is_train, is_continue);
+else
+    [pos, neg] = exemplar_kitti_data(cls, data, cid, is_train, is_continue);
+end
 
-is_truncated = data.truncation(cid) > 0.1;
+if is_pascal
+    is_truncated = data.trunc_per(cid) > 0.1;    
+else
+    is_truncated = data.truncation(cid) > 0.1;
+end
 
 % set up opts for training detector (see acfTrain)
 opts = exemplar_acf_train();
@@ -24,7 +32,11 @@ opts.pLoad = {'squarify', {3,.41}};
 opts.name = sprintf('%s%s_%d', cachedir, cls, cid);
 opts.cascThr = -1;
 opts.is_continue = is_continue;
-opts.overlap_neg = max(0, 0.6 - data.truncation(cid));
+if is_pascal
+    opts.overlap_neg = max(0, 0.4 - data.trunc_per(cid));
+else
+    opts.overlap_neg = max(0, 0.6 - data.truncation(cid));
+end
 opts.is_truncated = is_truncated;
 opts.is_hadoop = is_hadoop;
 

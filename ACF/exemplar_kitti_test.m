@@ -1,4 +1,4 @@
-function exemplar_kitti_test(cls, ind, cid, is_train, is_continue)
+function exemplar_kitti_test(cls, ind, cid, is_train, is_continue, is_pascal)
 
 exemplar_globals;
 
@@ -24,25 +24,35 @@ pad = pPyramid.pad;
 separate = nDs > 1 && isfield(pNms, 'separate') && pNms.separate;
 is_hadoop = opts.is_hadoop;
 
-% KITTI path
-root_dir = KITTIroot;
-if is_train == 1
-    data_set = 'training';
+if is_pascal
+    if is_train
+        ids = textread(sprintf(VOCopts.imgsetpath, 'val'), '%s');
+    else
+        ids = textread(sprintf(VOCopts.imgsetpath, 'test'), '%s');
+    end
+    opt.VOCopts = VOCopts;
+    image_dir = [];
 else
-    data_set = 'testing';
-end
+    % KITTI path
+    root_dir = KITTIroot;
+    if is_train == 1
+        data_set = 'training';
+    else
+        data_set = 'testing';
+    end
 
-% get sub-directories
-cam = 2; % 2 = left color camera
-image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]); 
+    % get sub-directories
+    cam = 2; % 2 = left color camera
+    image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]); 
 
-% get test image ids
-filename = fullfile(SLMroot, 'ACF/kitti_ids.mat');
-object = load(filename);
-if is_train == 1
-    ids = object.ids_val;
-else
-    ids = object.ids_test;
+    % get test image ids
+    filename = fullfile(SLMroot, 'ACF/kitti_ids.mat');
+    object = load(filename);
+    if is_train == 1
+        ids = object.ids_val;
+    else
+        ids = object.ids_test;
+    end
 end
 
 filename = fullfile(resultdir, sprintf('%s_%d_test.mat', cls, ind));
@@ -55,8 +65,11 @@ else
     boxes = cell(1, N);
     parfor id = 1:N
         fprintf('%s: center %d: %d/%d\n', cls, cid, id, N);
-        img_idx = ids(id);
-        file_img = sprintf('%s/%06d.png', image_dir, img_idx);
+        if is_pascal
+            file_img = sprintf(opt.VOCopts.imgpath, ids{id});
+        else
+            file_img = sprintf('%s/%06d.png', image_dir, ids(id));
+        end
         I = feval(imreadf, file_img, imreadp{:});
         
         P = chnsPyramid(I, pPyramid);
@@ -83,7 +96,7 @@ else
         boxes{id} = bbs;
         % no non-maximum suppression
         if is_hadoop
-            tempstring = sprintf('%d objects detected in image %d', size(bbs,1), img_idx);
+            tempstring = sprintf('%d objects detected in image %d', size(bbs,1), id);
             stdout_withFlush(tempstring);        
         end
     end  

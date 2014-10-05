@@ -53,3 +53,21 @@ for i = 1:numel(SLMpaths)
         break;
     end
 end
+
+PASCAL3Dpaths = {'/home/yuxiang/Projects/Pose_Dataset/PASCAL3D+_release1.1', ...
+    '/scratch/yuxiang/Projects/PASCAL3D+_release1.1'};
+
+for i = 1:numel(PASCAL3Dpaths)
+    if exist(PASCAL3Dpaths{i}, 'dir')
+        PASCAL3Droot = PASCAL3Dpaths{i};
+        path_pascal = [PASCAL3Droot '/PASCAL/VOCdevkit'];
+        break;
+    end
+end
+
+% pascal init
+tmp = pwd;
+cd(path_pascal);
+addpath([cd '/VOCcode']);
+VOCinit;
+cd(tmp);

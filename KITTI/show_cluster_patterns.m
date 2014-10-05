@@ -9,13 +9,13 @@ cam = 2; % 2 = left color camera
 image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 
 % load data
-object = load('data.mat');
+object = load('data_all.mat');
 data = object.data;
 idx = data.idx_ap;
 
 % load the mean CAD model
 cls = 'car';
-filename = sprintf('%s/%s_mean.mat', opt.path_slm_geometry, cls);
+filename = sprintf('%s/%s_kitti_mean.mat', opt.path_slm_geometry, cls);
 object = load(filename);
 cad = object.(cls);
 index = cad.grid == 1;

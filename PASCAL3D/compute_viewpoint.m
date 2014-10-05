@@ -1,8 +1,11 @@
 % compute the viewpoints for pascal objects
 function compute_viewpoint
 
+matlabpool open;
+
 opt = globals();
 pascal_init;
+opt.VOCopts = VOCopts;
 pad_size = 1000;
 use_nonvisible = 1;
 clear_nonvisible = 0;
@@ -14,10 +17,11 @@ cads = object.cads;
 classes = cads.classes;
 rescales = cads.rescales;
 models = cads.models;
+models_mean = cads.models_mean;
 
 ids = textread(sprintf(VOCopts.imgsetpath, 'trainval'), '%s');
 
-for i = 1:length(ids)
+parfor i = 1:length(ids)
     fprintf('%d %s\n', i, ids{i});
     object = load(sprintf('Annotations/%s.mat', ids{i}));
     record = object.record;
@@ -42,7 +46,7 @@ for i = 1:length(ids)
     end     
 
     % read image
-    filename = sprintf(VOCopts.imgpath, ids{i});
+    filename = sprintf(opt.VOCopts.imgpath, ids{i});
     I = imread(filename);
     [h, w, ~] = size(I);
     % occlusion mask
@@ -72,10 +76,10 @@ for i = 1:length(ids)
             end
             face = models{cls_index}(cad_index).faces;
             
-            flag = min(x2d(:,1)) < 0 & max(x2d(:,1)) > w;
-            if flag == 1
-                continue;
-            end            
+%             flag = min(x2d(:,1)) < 0 & max(x2d(:,1)) > w;
+%             if flag == 1
+%                 continue;
+%             end            
 
             x2d = x2d + pad_size;
             vertices = [x2d(face(:,1),2) x2d(face(:,1),1) ...
@@ -130,18 +134,18 @@ for i = 1:length(ids)
         % 3D occlusion mask
         cls_index = strcmp(objects(j).class, classes) == 1;
         cad_index = objects(j).cad_index;  
-        [visibility_grid, visibility_ind] = check_visibility(models{cls_index}(cad_index), azimuth, elevation);
+        [visibility_grid, visibility_ind] = check_visibility(models_mean{cls_index}, azimuth, elevation);
 
         % check the occlusion status of visible voxels
         index = find(visibility_ind == 1);
-        x3d = models{cls_index}(cad_index).x3d(index,:) * rescales{cls_index}(cad_index);
+        x3d = models_mean{cls_index}.x3d(index,:) * rescales{cls_index}(cad_index);
         x2d = project_3d(x3d, objects(j));
         x2d = x2d + pad_size;
         occludee = find(index_object == j);
         for k = 1:numel(index)
             x = round(x2d(k,1));
             y = round(x2d(k,2));
-            ind = models{cls_index}(cad_index).ind(index(k),:);
+            ind = models_mean{cls_index}.ind(index(k),:);
             if x > pad_size && x <= size(mask,2)-pad_size && y > pad_size && y <= size(mask,1)-pad_size
                 if mask(y,x) > 0 && mask(y,x) ~= j % occluded by other objects
                     occluder = find(index_object == mask(y,x));
@@ -158,5 +162,10 @@ for i = 1:length(ids)
 
     % save annotation
     record.objects = objects;
-    save(sprintf('Annotations/%s.mat', ids{i}), 'record');
+    parsave(sprintf('Annotations/%s.mat', ids{i}), record);
 end
+
+matlabpool close;
+
+function parsave(fname, record)
+save(fname, 'record')
