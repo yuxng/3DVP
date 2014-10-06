@@ -8,4 +8,4 @@
 echo "I ran on:"
 cat $PBS_NODEFILE
 cd /scail/scratch/u/yuxiang/SLM/ACF
-matlab.new -nodesktop -nosplash -r "exemplar_dpm_train_and_test(39:40); exit;"
+matlab.new -nodesktop -nosplash -r "exemplar_dpm_train_and_test(27); exit;"
