@@ -25,6 +25,7 @@ elevation = [];
 distance = [];
 occ_per = [];
 trunc_per = [];
+difficult = [];
 pattern = [];
 grid = [];
 for i = 1:N
@@ -51,6 +52,7 @@ for i = 1:N
             distance(count) = object.distance;
             occ_per(count) = object.occ_per;
             trunc_per(count) = object.trunc_per;
+            difficult(count) = object.difficult;
             pattern{count} = object.pattern;
             grid{count} = object.grid(models_mean{cls_index}.grid == 1);
         end
@@ -69,5 +71,6 @@ data.elevation = elevation;
 data.distance = distance;
 data.occ_per = occ_per;
 data.trunc_per = trunc_per;
+data.difficult = difficult;
 data.pattern = pattern;
 data.grid = grid;

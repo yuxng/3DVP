@@ -2,16 +2,25 @@ function exemplar_combine_detections
 
 cls = 'car';
 threshold = -inf;
-is_train = 0;
+is_train = 1;
 is_calibration = 0;
 is_filtering = 1;
-result_dir = 'kitti_test_acf_3d_169';
+is_pascal = 1;
+result_dir = 'data';
 
 % load data
-if is_train == 1
-    object = load('../KITTI/data.mat');
+if is_pascal
+    if is_train == 1
+        object = load('../PASCAL3D/data.mat');
+    else
+        object = load('../PASCAL3D/data_all.mat');
+    end    
 else
-    object = load('../KITTI/data_all.mat');
+    if is_train == 1
+        object = load('../KITTI/data.mat');
+    else
+        object = load('../KITTI/data_all.mat');
+    end
 end
 data = object.data;
 idx = data.idx_ap;

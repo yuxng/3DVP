@@ -13,7 +13,7 @@ switch algorithm
         
         % select the clustering data
         cls_ind = find(strcmp(cls, data.classes) == 1);
-        flag = data.cls_ind == cls_ind;
+        flag = data.cls_ind == cls_ind & data.difficult == 0;
         fprintf('%d %s examples in clustering\n', sum(flag), cls);
         
         % collect patterns
