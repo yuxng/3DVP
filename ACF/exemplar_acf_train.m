@@ -298,6 +298,9 @@ while i < nImg && k < n
     parfor j = 1:batch
       ij = i + j;
       I = feval(opts.imreadf, ex(ij).im, opts.imreadp{:});
+      if isfield(ex(ij), 'is_flip') && ex(ij).is_flip == 1
+          I = I(:, end:-1:1, :);
+      end
       bbox = ex(ij).bbox;
       if isempty(bbox) == 0
           gt = [bbox(:,1) bbox(:,2) bbox(:,3)-bbox(:,1) bbox(:,4)-bbox(:,2)];

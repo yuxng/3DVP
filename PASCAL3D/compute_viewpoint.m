@@ -101,12 +101,14 @@ parfor i = 1:length(ids)
     index_object = index;
     for j = 1:num
         if isempty(BWs{j}) == 1
+            objects(j).is_flip = 0;
             objects(j).pattern = [];
             objects(j).occ_per = 0;
             objects(j).trunc_per = 0;
             objects(j).grid = [];
             continue;
         end        
+        objects(j).is_flip = 0;
         
         azimuth = objects(j).viewpoint.azimuth;
         elevation = objects(j).viewpoint.elevation;
@@ -159,9 +161,73 @@ parfor i = 1:length(ids)
         end
         objects(j).grid = visibility_grid;
     end
+    record.objects = objects;
+    
+    % flip the mask
+    mask_flip = mask(:,end:-1:1);
+    record.mask_flip = mask_flip;
+    
+    % add flipped objects
+    objects_flip = objects;
+    for j = 1:num
+        objects_flip(j).is_flip = 1;
+        % flip bbox
+        oldx1 = objects(j).bbox(1);
+        oldx2 = objects(j).bbox(3);        
+        objects_flip(j).bbox(1) = w - oldx2 + 1;
+        objects_flip(j).bbox(3) = w - oldx1 + 1;        
+        
+        if isempty(objects(j).grid) == 1
+            continue;
+        end        
+        
+        % flip viewpoint
+        azimuth = objects(j).viewpoint.azimuth;
+        azimuth = 360 - azimuth;
+        if azimuth >= 360
+            azimuth = 360 - azimuth;
+        end
+        objects_flip(j).azimuth = azimuth;
+        objects_flip(j).viewpoint.azimuth = azimuth;
+        objects_flip(j).viewpoint.px = w - objects(j).viewpoint.px + 1;
+        objects_flip(j).viewpoint.theta = -1 * objects(j).viewpoint.theta;
+        elevation = objects(j).elevation;
+
+        % flip pattern
+        pattern = objects(j).pattern;
+        objects_flip(j).pattern = pattern(:,end:-1:1);
+
+        % 3D occlusion mask
+        cls_index = strcmp(objects(j).class, classes) == 1;
+        cad_index = objects(j).cad_index;  
+        [visibility_grid, visibility_ind] = check_visibility(models_mean{cls_index}, azimuth, elevation);
+
+        % check the occlusion status of visible voxels
+        index = find(visibility_ind == 1);
+        x3d = models_mean{cls_index}.x3d(index,:) * rescales{cls_index}(cad_index);
+        x2d = project_3d(x3d, objects_flip(j));
+        x2d = x2d + pad_size;
+        occludee = find(index_object == j);
+        for k = 1:numel(index)
+            x = round(x2d(k,1));
+            y = round(x2d(k,2));
+            ind = models_mean{cls_index}.ind(index(k),:);
+            if x > pad_size && x <= size(mask_flip,2)-pad_size && y > pad_size && y <= size(mask_flip,1)-pad_size
+                if mask_flip(y,x) > 0 && mask_flip(y,x) ~= j % occluded by other objects
+                    occluder = find(index_object == mask_flip(y,x));
+                    if occluder > occludee
+                        visibility_grid(ind(1), ind(2), ind(3)) = 2;
+                    end
+                end
+            else
+                visibility_grid(ind(1), ind(2), ind(3)) = 3;  % truncated
+            end
+        end
+        objects_flip(j).grid = visibility_grid;        
+    end
 
     % save annotation
-    record.objects = objects;
+    record.objects_flip = objects_flip;
     parsave(sprintf('Annotations/%s.mat', ids{i}), record);
 end
 

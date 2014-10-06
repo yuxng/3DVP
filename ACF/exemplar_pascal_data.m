@@ -29,7 +29,7 @@ else
         pos(numpos).x2 = bbox(3);
         pos(numpos).y2 = bbox(4);
         pos(numpos).bbox = bbox';
-        pos(numpos).flip = false;
+        pos(numpos).is_flip = data.is_flip(ind);
     end
   end
 

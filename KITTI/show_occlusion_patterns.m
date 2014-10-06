@@ -7,7 +7,7 @@ N = numel(files);
 
 % load the mean CAD model
 cls = 'car';
-filename = sprintf('../Geometry/%s_mean.mat', cls);
+filename = sprintf('../Geometry/%s_kitti_mean.mat', cls);
 object = load(filename);
 cad = object.(cls);
 

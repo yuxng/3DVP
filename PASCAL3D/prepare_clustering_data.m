@@ -28,13 +28,14 @@ trunc_per = [];
 difficult = [];
 pattern = [];
 grid = [];
+is_flip = [];
 for i = 1:N
     % load annotation
     filename = sprintf('Annotations/%s.mat', ids{i});
     disp(filename);
     object = load(filename);
     record = object.record;
-    objects = record.objects;
+    objects = [record.objects record.objects_flip];
     
     for j = 1:numel(objects)
         object = objects(j);
@@ -55,6 +56,7 @@ for i = 1:N
             difficult(count) = object.difficult;
             pattern{count} = object.pattern;
             grid{count} = object.grid(models_mean{cls_index}.grid == 1);
+            is_flip(count) = object.is_flip;
         end
     end
 end
@@ -74,3 +76,4 @@ data.trunc_per = trunc_per;
 data.difficult = difficult;
 data.pattern = pattern;
 data.grid = grid;
+data.is_flip = is_flip;
