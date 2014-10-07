@@ -1,4 +1,4 @@
-for (( i = 1; i <= 27; i++))
+for (( i = 1; i <= 17; i++))
 do
   /usr/local/bin/qsub run$i.sh
   sleep 5

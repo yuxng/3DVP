@@ -26,7 +26,7 @@ for i = 1:N
     for j = 1:numel(objects)
         object = objects(j);
         cls_index = find(strcmp(object.class, classes) == 1);
-        if isempty(cls_index) == 0 && isempty(object.grid) == 0 && cls_index == 6 % && object.occ_per > 0.05 && object.occ_per < 0.95 
+        if isempty(cls_index) == 0 && isempty(object.grid) == 0 % && object.occ_per > 0.05 && object.occ_per < 0.95 
             cad = models_mean{cls_index};
             
             % show pattern
