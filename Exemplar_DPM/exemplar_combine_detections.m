@@ -4,16 +4,30 @@ cls = 'car';
 threshold = -inf;
 is_train = 1;
 is_calibration = 0;
+is_filtering = 1;
+is_pascal = 1;
+result_dir = 'data';
 
 % load data
-if is_train == 1
-    object = load('../KITTI/data.mat');
+% load data
+if is_pascal
+    if is_train == 1
+        object = load('../PASCAL3D/data.mat');
+    else
+        object = load('../PASCAL3D/data_all.mat');
+    end    
 else
-    object = load('../KITTI/data_trainval.mat');
+    if is_train == 1
+        object = load('../KITTI/data.mat');
+    else
+        object = load('../KITTI/data_all.mat');
+    end
 end
 data = object.data;
-idx = data.idx;
+idx = data.idx_ap;
+
 centers = double(unique(idx));
+centers(centers == -1) = [];
 N = numel(centers);
 
 % load detections
@@ -25,22 +39,22 @@ for i = 1:N
     
     % compute the range of this cluster
     % compute the range of bounding box center, width and height
-    bbox = data.bbox(:, idx == cid);
-    x = (bbox(1,:) + bbox(3,:)) / 2;
-    y = (bbox(2,:) + bbox(4,:)) / 2;
-    w = bbox(3,:) - bbox(1,:);
-    h = bbox(4,:) - bbox(2,:);
-    r = [x; y; w; h];
-    rmin = min(r, [], 2);
-    rmax = max(r, [], 2);
-    rlen = rmax - rmin;
-    lim = [rmin - 0.1*rlen rmax + 0.1*rlen];
-    
-    if is_train == 1
-        filename = sprintf('kitti_train/%s_%d_test.mat', cls, cid);
+    if is_filtering
+        bbox = data.bbox(:, idx == cid);
+        x = (bbox(1,:) + bbox(3,:)) / 2;
+        y = (bbox(2,:) + bbox(4,:)) / 2;
+        w = bbox(3,:) - bbox(1,:);
+        h = bbox(4,:) - bbox(2,:);
+        r = [x; y; w; h];
+        rmin = min(r, [], 2);
+        rmax = max(r, [], 2);
+        rlen = rmax - rmin;
+        lim = [rmin - 0.1*rlen rmax + 0.1*rlen];
     else
-        filename = sprintf('kitti_test/%s_%d_test.mat', cls, cid);
+        lim = [];
     end
+    
+    filename = sprintf('%s/%s_%d_test.mat', result_dir, cls, cid);
     object = load(filename);
     boxes1 = object.boxes1;
     
@@ -69,11 +83,7 @@ for i = 1:N
     end
 end
 
-if is_train == 1
-    filename = sprintf('kitti_train/%s_test.mat', cls);
-else
-    filename = sprintf('kitti_test/%s_test.mat', cls);
-end
+filename = sprintf('%s/%s_test.mat', result_dir, cls);
 save(filename, 'dets', '-v7.3');
 
 
@@ -86,9 +96,14 @@ else
     y = (boxes(:,2) + boxes(:,4)) / 2;
     w = boxes(:,3) - boxes(:,1);
     h = boxes(:,4) - boxes(:,2);    
-    
-    index= find((boxes(:, 5) > threshold & x > lim(1,1) & x < lim(1,2) & ...
-        y > lim(2,1) & y < lim(2,2) & w > lim(3,1) & w < lim(3,2) & h > lim(4,1) & h < lim(4,2)) == 1);
+
+    if isempty(lim) == 1
+        index = 1:size(boxes,1);
+        index = index';
+    else
+        index= find((boxes(:, 5) > threshold & x > lim(1,1) & x < lim(1,2) & ...
+            y > lim(2,1) & y < lim(2,2) & w > lim(3,1) & w < lim(3,2) & h > lim(4,1) & h < lim(4,2)) == 1);
+    end
     if isempty(index) == 1
         boxes_new = [];
     else

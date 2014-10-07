@@ -44,6 +44,7 @@ VOCpaths = {'/net/acadia/workplace/yuxiang/Projects/PASCAL3D+_release1.1/PASCAL'
     '/afs/cs.stanford.edu/group/cvgl/rawdata/PASCAL3D+_release1.1/PASCAL'};
 for i = 1:numel(VOCpaths)
     if exist(VOCpaths{i}, 'dir')
+        PASCAL3Droot = [VOCpaths{i} '/../']; 
         VOCdevkit = [ VOCpaths{i} '/VOCdevkit/'];
         break;
     end
