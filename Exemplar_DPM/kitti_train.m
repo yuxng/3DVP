@@ -1,4 +1,4 @@
-function model = kitti_train(cls, data, cid, note)
+function model = kitti_train(cls, data, cid, note, is_train, is_continue, is_pascal)
 
 % model = kitti_train(cls, data, cid, note)
 % Train a model with 1 component using the KITTI dataset.
@@ -10,44 +10,47 @@ function model = kitti_train(cls, data, cid, note)
 % reproducible.
 initrand();
 
-if nargin < 4
-  note = '';
+globals; 
+if is_pascal
+    [pos, neg] = exemplar_pascal_data(cls, data, cid, is_train, is_continue);
+else
+    [pos, neg] = kitti_data(cls, data, cid, false, is_train, is_continue);
 end
 
-globals; 
-[pos, neg] = kitti_data(cls, data, cid, false);
-
 cachesize = 24000;
-maxneg = 200;
+maxneg = min(200, numel(neg));
 
 % train root filter using warped positives & random negatives
-try
-  load([cachedir cls '_' num2str(cid) '_wrap']);
-catch
+filename = [cachedir cls '_' num2str(cid) '_wrap.mat'];
+if is_continue && exist(filename, 'file')
+  load(filename);
+else
   initrand();
   name = [cls '_' num2str(cid)];
   model = initmodel(name, pos, note, 'N');
   model.symmetric = 0;
   model = train(name, model, pos, neg, 1, 1, 1, 1, ...
                       cachesize, true, 0.7, false, 'wrap');
-  save([cachedir cls '_' num2str(cid) '_wrap'], 'model');
+  save(filename, 'model');
 end
 
 % train root filter using latent detections & hard negatives
-try 
-  load([cachedir cls '_' num2str(cid) '_latent']);
-catch
+filename = [cachedir cls '_' num2str(cid) '_latent.mat'];
+if is_continue && exist(filename, 'file')
+  load(filename);
+else
   initrand();
   name = [cls '_' num2str(cid)];
   model = train(name, model, pos, neg(1:maxneg), 0, 0, 1, 5, ...
                 cachesize, true, 0.7, false, 'latent');
-  save([cachedir cls '_' num2str(cid) '_latent'], 'model');
+  save(filename, 'model');
 end
 
 % add parts and update model using latent detections & hard negatives.
-try 
-  load([cachedir cls '_' num2str(cid) '_parts']);
-catch
+filename = [cachedir cls '_' num2str(cid) '_parts.mat'];
+if is_continue && exist(filename, 'file')
+  load(filename);
+else
   initrand();
   if min(model.filters(1).size) > 3
     model = model_addparts(model, model.start, 1, 1, 8, [6 6]);
@@ -59,7 +62,7 @@ catch
                 cachesize, true, 0.7, false, 'parts_1');
   model = train(name, model, pos, neg, 0, 0, 1, 5, ...
                 cachesize, true, 0.7, true, 'parts_2');
-  save([cachedir cls '_' num2str(cid) '_parts'], 'model');
+  save(filename, 'model');
 end
 
-save([cachedir cls '_' num2str(cid) '_final'], 'model');
+save([resultdir cls '_' num2str(cid) '_final.mat'], 'model');

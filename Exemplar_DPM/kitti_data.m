@@ -1,17 +1,14 @@
-function [pos, neg] = kitti_data(cls, data, cid, flippedpos)
+function [pos, neg] = kitti_data(cls, data, cid, flippedpos, is_train, is_continue)
 
 % Get training data from the KITTI dataset.
 
 globals; 
 pascal_init;
 
-if nargin < 2
-  flippedpos = false;
-end
-
-try
-  load([cachedir cls '_train_' num2str(cid)]);
-catch
+filename = [cachedir cls '_train_' num2str(cid) '.mat'];
+if is_continue == 1 && exist(filename, 'file') ~= 0
+  load(filename);
+else
   % positive examples from kitti
   root_dir = KITTIroot;
   data_set = 'training';
@@ -22,7 +19,7 @@ catch
   label_dir = fullfile(root_dir, [data_set '/label_' num2str(cam)]);
   
   % get number of images for this dataset
-  index = find(data.idx2 == cid);
+  index = find(data.idx == cid);
   num_train = numel(index);
   
   pos = [];
@@ -64,7 +61,11 @@ catch
           fprintf('undefined classes for negatives\n');
   end
   object = load('kitti_ids.mat');
-  ids = object.ids_train;
+  if is_train
+      ids = object.ids_train;
+  else
+      ids = [object.ids_train object.ids_val];
+  end
   neg = [];
   numneg = 0;
   for i = 1:length(ids);

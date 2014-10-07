@@ -15,17 +15,19 @@ else
 end
 
 % directory for caching models, intermediate data, and results
-cachedir = 'data/';
+cachedir = '/scratch/yuxiang/Projects/data/';
+resultdir = 'data/';
 
 if exist(cachedir) == 0
   unix(['mkdir -p ' cachedir]);
-  if exist([cachedir 'learnlog/']) == 0
+end
+
+if exist([cachedir 'learnlog/']) == 0
     unix(['mkdir -p ' cachedir 'learnlog/']);
-  end
 end
 
 % directory for LARGE temporary files created during training
-tmpdir = 'data/';
+tmpdir = '/scratch/yuxiang/Projects/data/';
 
 if exist(tmpdir) == 0
   unix(['mkdir -p ' tmpdir]);
@@ -37,6 +39,7 @@ cleantmpdir = true;
 % directory with PASCAL VOC development kit and dataset
 VOCpaths = {'/net/acadia/workplace/yuxiang/Projects/PASCAL3D+_release1.1/PASCAL', ...
     '/home/yuxiang/Projects/Pose_Dataset/PASCAL3D+_release1.1/PASCAL', ...
+    '/scratch/yuxiang/Projects/PASCAL3D+_release1.1/PASCAL', ...
     '/scail/scratch/u/yuxiang/PASCAL3D+_release1.1/PASCAL', ...
     '/afs/cs.stanford.edu/group/cvgl/rawdata/PASCAL3D+_release1.1/PASCAL'};
 for i = 1:numel(VOCpaths)
@@ -49,6 +52,7 @@ end
 % directory with KITTI development kit and dataset
 KITTIpaths = {'/net/acadia/workplace/yuxiang/Projects/KITTI', ...
     '/home/yuxiang/Projects/KITTI_Dataset', ...
+    '/scratch/yuxiang/Projects/KITTI_Dataset', ...
     '/scail/scratch/u/yuxiang/KITTI_Dataset', ...
     '/afs/cs.stanford.edu/group/cvgl/rawdata/KITTI_Dataset'};
 for i = 1:numel(KITTIpaths)

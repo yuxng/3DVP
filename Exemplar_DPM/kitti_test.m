@@ -1,4 +1,4 @@
-function kitti_test(cls, cid)
+function kitti_test(cls, cid, is_train, is_continue, is_pascal)
 
 % load model
 model_name = sprintf('data/%s_%d_final.mat', cls, cid);
@@ -8,30 +8,54 @@ model.thresh = min(-1, model.thresh);
 
 % KITTI path
 globals;
-root_dir = KITTIroot;
-data_set = 'training';
 
-% get sub-directories
-cam = 2; % 2 = left color camera
-image_dir = fullfile(root_dir,[data_set '/image_' num2str(cam)]); 
+if is_pascal
+    pascal_init;
+    if is_train
+        ids = textread(sprintf(VOCopts.imgsetpath, 'val'), '%s');
+    else
+        ids = textread(sprintf(VOCopts.imgsetpath, 'test'), '%s');
+    end
+    opt.VOCopts = VOCopts;
+    image_dir = [];
+else
+    root_dir = KITTIroot;
 
-% get test image ids
-object = load('kitti_ids.mat');
-ids_train = object.ids_train;
-ids_val = object.ids_val;
-ids = [ids_train ids_val];
+    if is_train == 1
+        data_set = 'training';
+    else
+        data_set = 'testing';
+    end
+
+    % get sub-directories
+    cam = 2; % 2 = left color camera
+    image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]); 
+
+    % get test image ids
+    object = load('kitti_ids.mat');
+    if is_train == 1
+        ids = object.ids_val;
+    else
+        ids = object.ids_test;
+    end
+end
 
 filename = sprintf('data/%s_%d_test.mat', cls, cid);
 
 % run detector in each image
-try
+if is_continue && exist(filename, 'file')
     load(filename);
-catch
+else
     N = numel(ids);
     parfor i = 1:N
         fprintf('%s: center %d: %d/%d\n', cls, cid, i, N);
-        img_idx = ids(i);
-        file_img = sprintf('%s/%06d.png', image_dir, img_idx);
+        
+        if is_pascal
+            file_img = sprintf(opt.VOCopts.imgpath, ids{i});
+        else
+            file_img = sprintf('%s/%06d.png', image_dir, ids(i));
+        end        
+        
         im = imread(file_img);
         [dets, boxes] = imgdetect(im, model, model.thresh);
     
@@ -46,5 +70,5 @@ catch
             parts1{i} = [];
         end
     end  
-    save(filename, 'boxes1', 'parts1');
+    save(filename, 'boxes1', 'parts1', '-v7.3');
 end
