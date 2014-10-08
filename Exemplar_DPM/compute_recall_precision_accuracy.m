@@ -22,7 +22,7 @@ M = numel(ids);
 result_dir = 'data';
 filename = sprintf('%s/%s_test.mat', result_dir, cls);
 object = load(filename);
-dets_all = object.dets;
+dets_all = object.boxes1;
 fprintf('load detection done\n');
 
 energy = [];

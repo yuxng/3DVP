@@ -31,6 +31,6 @@ centers(centers == -1) = [];
 fprintf('%d clusters\n', numel(centers));
 
 exemplar_train_joint(cls, data, centers, '', is_train, is_continue, is_pascal);
-exemplar_test_joint(cls, centers, is_train, is_continue, is_pascal);
+exemplar_test_joint(cls, is_train, is_continue, is_pascal);
 
 matlabpool close;
