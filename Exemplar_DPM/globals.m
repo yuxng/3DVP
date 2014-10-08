@@ -22,6 +22,10 @@ if exist(cachedir) == 0
   unix(['mkdir -p ' cachedir]);
 end
 
+if exist(resultdir) == 0
+  unix(['mkdir -p ' resultdir]);
+end
+
 if exist([cachedir 'learnlog/']) == 0
     unix(['mkdir -p ' cachedir 'learnlog/']);
 end

@@ -28,6 +28,7 @@ data.idx = data.idx_ap;
 % cluster centers
 centers = unique(data.idx);
 centers(centers == -1) = [];
+fprintf('%d clusters\n', numel(centers));
 
 exemplar_train_joint(cls, data, centers, '', is_train, is_continue, is_pascal);
 exemplar_test_joint(cls, centers, is_train, is_continue, is_pascal);
