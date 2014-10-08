@@ -1,32 +1,48 @@
-function exemplar_kitti_test(cls, cid)
+function exemplar_kitti_test(cls, cid, is_train, is_continue, is_pascal)
+
+if is_pascal
+    resultdir = 'PASCAL/';
+else
+    resultdir = 'KITTI/';
+end
 
 % load model
-model_name = sprintf('KITTI/%s_%d_final.mat', cls, cid);
+model_name = sprintf('%s/%s_%d_final.mat', resultdir, cls, cid);
 object = load(model_name);
 model = object.model;
 model.thresh = min(-1, model.thresh);
 
 % KITTI path
 conf = voc_config;
-root_dir = conf.kitti.root;
-data_set = 'training';
 
-% get sub-directories
-cam = 2; % 2 = left color camera
-image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]); 
+if is_pascal
+else
+    root_dir = conf.kitti.root;
+    if is_train == 1
+        data_set = 'training';
+    else
+        data_set = 'testing';
+    end
 
-% get test image ids
-object = load('kitti_ids.mat');
-ids_train = object.ids_train;
-ids_val = object.ids_val;
-ids = [ids_train ids_val];
+    % get sub-directories
+    cam = 2; % 2 = left color camera
+    image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]); 
 
-filename = sprintf('KITTI/%s_%d_test.mat', cls, cid);
+    % get test image ids
+    object = load('kitti_ids.mat');
+    if is_train == 1
+        ids = object.ids_val;
+    else
+        ids = object.ids_test;
+    end
+end
+
+filename = sprintf('%s/%s_%d_test.mat', resultdir, cls, cid);
 
 % run detector in each image
-try
+if is_continue && exist(filename, 'file')
     load(filename);
-catch
+else
     N = numel(ids);
     parfor i = 1:N
         fprintf('%s: center %d: %d/%d\n', cls, cid, i, N);

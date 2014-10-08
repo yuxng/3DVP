@@ -1,4 +1,4 @@
-function model = exemplar_kitti_train(cls, data, cid, note)
+function model = exemplar_kitti_train(cls, data, cid, note, is_train, is_continue, is_pascal)
 % Train a model.
 %   model = pascal_train(cls, n, note)
 %
@@ -25,7 +25,11 @@ conf = voc_config();
 cachedir = conf.paths.model_dir;
 
 % Load the training data
-[pos, neg, impos] = exemplar_kitti_data(cls, data, cid, false);
+if is_pascal
+    [pos, neg, impos] = exemplar_pascal_data(cls, data, cid, false, is_train, is_continue);
+else
+    [pos, neg, impos] = exemplar_kitti_data(cls, data, cid, false, is_train, is_continue);
+end
 
 max_num_examples = conf.training.cache_example_limit;
 num_fp           = conf.training.wlssvm_M;
@@ -42,34 +46,37 @@ neg_large = neg; % use all of the negative images
 
 % Train one asymmetric root filter for each aspect ratio group
 % using warped positives and random negatives
-try
-  load([cachedir cls '_' num2str(cid) '_wrap']);
-catch
+filename = [cachedir cls '_' num2str(cid) '_wrap.mat'];
+if is_continue && exist(filename, 'file')
+  load(filename);
+else
   seed_rand();
   
   model = root_model(cls, pos, note);
 
   model = train(model, pos, neg_large, true, true, 1, 1, ...
                 max_num_examples, fg_overlap, 0, false, [num2str(cid) '_wrap']);
-  save([cachedir cls '_' num2str(cid) '_wrap'], 'model');
+  save(filename, 'model');
 end
 
 % train root filter using latent detections & hard negatives
-try 
-  load([cachedir cls '_' num2str(cid) '_latent']);
-catch
+filename = [cachedir cls '_' num2str(cid) '_latent.mat'];
+if is_continue && exist(filename, 'file')
+  load(filename);
+else
   seed_rand();
 
   model = train(model, impos, neg_small, false, false, 1, 5, ...
                 max_num_examples, fg_overlap, num_fp, false, [num2str(cid) '_latent']);
-  save([cachedir cls '_' num2str(cid) '_latent'], 'model');
+  save(filename, 'model');
 end
 
 % Train a mixture model with 2x resolution parts using latent positives
 % and hard negatives
-try 
-  load([cachedir cls '_' num2str(cid) '_parts']);
-catch
+filename = [cachedir cls '_' num2str(cid) '_parts.mat'];
+if is_continue && exist(filename, 'file')
+  load(filename);
+else
   seed_rand();
   
   % Add parts to each mixture component
@@ -105,7 +112,15 @@ catch
   % Finish training by data mining on all of the negative images
   model = train(model, impos, neg_large, false, false, 1, 5, ...
                 max_num_examples, fg_overlap, num_fp, true, [num2str(cid) '_parts_2']);
-  save([cachedir cls '_' num2str(cid) '_parts'], 'model');
+  save(filename, 'model');
 end
 
-save([cachedir cls '_' num2str(cid) '_final'], 'model');
+if is_pascal
+    resultdir = 'PASCAL/';
+else
+    resultdir = 'KITTI/';
+end
+if exist(resultdir, 'dir') == 0
+    unix(['mkdir -p ' resultdir]);
+end
+save([resultdir cls '_' num2str(cid) '_final'], 'model');

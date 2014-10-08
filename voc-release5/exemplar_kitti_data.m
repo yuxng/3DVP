@@ -1,4 +1,4 @@
-function [pos, neg, impos] = exemplar_kitti_data(cls, data, cid, flippedpos)
+function [pos, neg, impos] = exemplar_kitti_data(cls, data, cid, flippedpos, is_train, is_continue)
 
 % Get training data from the KITTI dataset.
 
@@ -6,13 +6,10 @@ conf       = voc_config;
 dataset_fg = conf.training.train_set_fg;
 cachedir   = conf.paths.model_dir;
 
-if nargin < 4
-  flippedpos = false;
-end
-
-try
-  load([cachedir cls '_' dataset_fg '_' num2str(cid)]);
-catch
+filename = [cachedir cls '_' dataset_fg '_' num2str(cid) '.mat'];
+if is_continue == 1 && exist(filename, 'file') ~= 0
+  load(filename);
+else
   % positive examples from kitti
   root_dir = conf.kitti.root;
   data_set = 'training';
@@ -23,7 +20,7 @@ catch
   label_dir = fullfile(root_dir, [data_set '/label_' num2str(cam)]);
   
   % get number of images for this dataset
-  index = find(data.idx_ap == cid);
+  index = find(data.idx == cid);
   num_train = numel(index);
   
   pos      = [];
@@ -115,7 +112,11 @@ catch
           fprintf('undefined classes for negatives\n');
   end
   object = load('kitti_ids.mat');
-  ids = object.ids_train;
+  if is_train
+      ids = object.ids_train;
+  else
+      ids = [object.ids_train object.ids_val];
+  end
   neg = [];
   numneg = 0;
   for i = 1:length(ids);
@@ -139,5 +140,5 @@ catch
     neg(numneg).bbox = bbox;
   end
   
-  save([cachedir cls '_' dataset_fg '_' num2str(cid)], 'pos', 'neg', 'impos');
+  save(filename, 'pos', 'neg', 'impos');
 end  

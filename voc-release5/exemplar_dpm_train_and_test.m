@@ -1,8 +1,9 @@
 function exemplar_dpm_train_and_test(index)
 
-% matlabpool open;
+matlabpool open;
 
 cls = 'car';
+startup;
 is_continue = 0;
 is_train = 1;
 is_pascal = 0;
@@ -38,8 +39,8 @@ end
 
 for i = index
     fprintf('%d/%d: Train DPM for center %d\n', i, num, centers(i));
-    kitti_train(cls, data, centers(i), '', is_train, is_continue, is_pascal);
-    kitti_test(cls, centers(i), is_train, is_continue, is_pascal);
+    exemplar_kitti_train(cls, data, centers(i), '', is_train, is_continue, is_pascal);
+    exemplar_kitti_test(cls, centers(i), is_train, is_continue, is_pascal);
 end
 
 matlabpool close;
