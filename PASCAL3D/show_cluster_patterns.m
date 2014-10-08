@@ -26,9 +26,9 @@ else
 end
 N = numel(centers);
 
-azimuth = data.azimuth(centers);
-[~, ind] = sort(azimuth);
-centers = centers(ind);
+% azimuth = data.azimuth(centers);
+% [~, ind] = sort(azimuth);
+% centers = centers(ind);
 
 figure;
 nplot = 8;

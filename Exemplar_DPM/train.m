@@ -384,7 +384,7 @@ for i = 1:batchsize:numneg
         flag = zeros(1,n);
         for ind = 1:n
             o = boxoverlap(neg(jj).bbox, dets(ind,1:4));
-            if max(o) < 0.2
+            if max(o) < model.overlap_neg
                 flag(ind) = 1;
             end
         end

@@ -8,7 +8,7 @@ fprintf('load CAD models from file\n');
 object = load('cads.mat');
 cads = object.cads;
 classes = cads.classes;
-models_mean = cads.models_mean;
+models = cads.models;
 
 ids = textread(sprintf(VOCopts.imgsetpath, 'train'), '%s');
 N = numel(ids);
@@ -27,12 +27,13 @@ for i = 1:N
         object = objects(j);
         cls_index = find(strcmp(object.class, classes) == 1);
         if isempty(cls_index) == 0 && isempty(object.grid) == 0 % && object.occ_per > 0.05 && object.occ_per < 0.95 
-            cad = models_mean{cls_index};
+            cad_index = object.cad_index;
+            cad = models{cls_index}(cad_index);
             
             % show pattern
             subplot(4, 4, ind_plot);
             cla;
-            draw_cad(cad, object.grid);
+            draw_cad(cad, object.grid_origin);
             view(object.azimuth, object.elevation);
             til = sprintf('%s, object %d, occ=%.2f', ids{i}, j, object.occ_per);
             title(til);
@@ -53,7 +54,7 @@ for i = 1:N
             subplot(4, 4, ind_plot);
             cla;
             object_flip = record.objects_flip(j);
-            draw_cad(cad, object_flip.grid);
+            draw_cad(cad, object_flip.grid_origin);
             view(object_flip.azimuth, object_flip.elevation);
             til = sprintf('%s, object %d, occ=%.2f', ids{i}, j, object_flip.occ_per);
             title(til);

@@ -29,6 +29,7 @@ else
   name = [cls '_' num2str(cid)];
   model = initmodel(name, pos, note, 'N');
   model.symmetric = 0;
+  model.overlap_neg = max(0, 0.4 - data.trunc_per(cid));
   model = train(name, model, pos, neg, 1, 1, 1, 1, ...
                       cachesize, true, 0.7, false, 'wrap');
   save(filename, 'model');
