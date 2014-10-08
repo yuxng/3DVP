@@ -1,4 +1,4 @@
-function exemplar_dpm_train_and_test(index)
+function exemplar_dpm_train_and_test_joint
 
 matlabpool open;
 
@@ -29,17 +29,7 @@ data.idx = data.idx_ap;
 centers = unique(data.idx);
 centers(centers == -1) = [];
 
-% train an exemplar DPM for each cluster
-num = numel(centers);
-
-if nargin < 1
-    index = 1:num;
-end
-
-for i = index
-    fprintf('%d/%d: Train DPM for center %d\n', i, num, centers(i));
-    kitti_train(cls, data, centers(i), '', is_train, is_continue, is_pascal);
-    kitti_test(cls, centers(i), is_train, is_continue, is_pascal);
-end
+exemplar_train_joint(cls, data, centers, '', is_train, is_continue, is_pascal);
+exemplar_test_joint(cls, centers, is_train, is_continue, is_pascal);
 
 matlabpool close;
