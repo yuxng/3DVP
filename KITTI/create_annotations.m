@@ -1,17 +1,19 @@
 % create annotations with occlusion masks for KITTI dataset
 function create_annotations
 
+matlabpool open;
+
 opt = globals();
 pad_size = 1000;
 
 % load PASCAL3D+ cad models
 cls = 'car';
-filename = sprintf('../Geometry/%s.mat', cls);
+filename = sprintf('../Geometry/%s_kitti.mat', cls);
 object = load(filename);
 cads = object.(cls);
 
 % load mean model
-filename = sprintf('../Geometry/%s_mean.mat', cls);
+filename = sprintf('../Geometry/%s_kitti_mean.mat', cls);
 object = load(filename);
 cad_mean = object.(cls);
 
@@ -28,8 +30,9 @@ calib_dir = fullfile(root_dir,[data_set '/calib']);
 nimages = length(dir(fullfile(image_dir, '*.png')));
 
 % main loop
-for img_idx = 0:nimages-1
+parfor img_idx = 0:nimages-1
   fprintf('image %06d\n', img_idx);
+  record = [];
   record.folder = data_set;
   record.filename = sprintf('%06d.png', img_idx);
   
@@ -69,6 +72,7 @@ for img_idx = 0:nimages-1
         x2d = projectToImage(x3d, P);
         face = cads(cad_index).faces;
         x2d = x2d';
+        objects(obj_idx).cad_index = cad_index;
         
         flag = min(x2d(:,1)) < 0 & max(x2d(:,1)) > w;
         if flag == 1
@@ -105,11 +109,13 @@ for img_idx = 0:nimages-1
       elevation = asind(objects(i).t(2)/distance);
       objects(i).azimuth = azimuth;
       objects(i).elevation = elevation;
-      objects(i).distance = distance;      
+      objects(i).distance = distance;
+      objects(i).is_flip = 0;
       
       if isempty(BWs{i}) == 1
           objects(i).pattern = [];
           objects(i).occ_per = 0;
+          objects(i).trunc_per = 0;
           objects(i).grid = [];
           continue;
       end
@@ -129,7 +135,7 @@ for img_idx = 0:nimages-1
       trunc = numel(find(pattern == 3)) / numel(find(pattern > 0));
       objects(i).trunc_per = trunc;
       
-      % 3D occlusion mask
+      % 3D occlusion mask for mean shape
       [visibility_grid, visibility_ind] = check_visibility(cad_mean, azimuth, elevation);
       
       % check the occlusion status of visible voxels
@@ -154,10 +160,139 @@ for img_idx = 0:nimages-1
           end
       end
       objects(i).grid = visibility_grid;
+      
+      % 3D occlusion mask for original shape
+      cad_index = objects(i).cad_index;
+      cad = cads(cad_index);
+      [visibility_grid, visibility_ind] = check_visibility(cad, azimuth, elevation);
+      
+      % check the occlusion status of visible voxels
+      index = find(visibility_ind == 1);
+      x3d = compute_3d_points(cad.x3d(index,:), objects(i));
+      x2d = projectToImage(x3d, P);
+      x2d = x2d' + pad_size;
+      occludee = find(index_object == i);
+      for j = 1:numel(index)
+          x = round(x2d(j,1));
+          y = round(x2d(j,2));
+          ind = cad.ind(index(j),:);
+          if x > pad_size && x <= size(mask,2)-pad_size && y > pad_size && y <= size(mask,1)-pad_size
+              if mask(y,x) > 0 && mask(y,x) ~= i % occluded by other objects
+                  occluder = find(index_object == mask(y,x));
+                  if occluder > occludee
+                    visibility_grid(ind(1), ind(2), ind(3)) = 2;
+                  end
+              end
+          else
+              visibility_grid(ind(1), ind(2), ind(3)) = 3;  % truncated
+          end
+      end
+      objects(i).grid_origin = visibility_grid;      
   end
+  record.objects = objects;
+  
+  % flip the mask
+  mask_flip = mask(:,end:-1:1);
+  record.mask_flip = mask_flip;
+  
+  % add flipped objects
+  objects_flip = objects;
+  for i = 1:num
+      objects_flip(i).is_flip = 1;
+      % flip bbox
+      oldx1 = objects(i).x1;
+      oldx2 = objects(i).x2;        
+      objects_flip(i).x1 = w - oldx2 + 1;
+      objects_flip(i).x2 = w - oldx1 + 1;        
+        
+      % flip viewpoint
+      azimuth = objects(i).azimuth;
+      azimuth = 360 - azimuth;
+      if azimuth >= 360
+          azimuth = 360 - azimuth;
+      end
+      objects_flip(i).azimuth = azimuth;
+      alpha = azimuth + 90;
+      if alpha >= 360
+          alpha = alpha - 360;
+      end
+      alpha = alpha*pi/180;
+      if alpha > pi
+          alpha = alpha - 2*pi;
+      end
+      objects_flip(i).alpha = alpha;
+      elevation = objects(i).elevation;
+      
+      if isempty(objects(i).grid) == 1
+          continue;
+      end          
+
+      % flip pattern
+      pattern = objects(i).pattern;
+      objects_flip(i).pattern = pattern(:,end:-1:1);
+
+      % 3D occlusion mask for mean shape
+      [visibility_grid, visibility_ind] = check_visibility(cad_mean, azimuth, elevation);
+      
+      % check the occlusion status of visible voxels
+      index = find(visibility_ind == 1);
+      x3d = compute_3d_points(cad_mean.x3d(index,:), objects_flip(i));
+      x2d = projectToImage(x3d, P);
+      x2d = x2d' + pad_size;
+      occludee = find(index_object == i);
+      for j = 1:numel(index)
+          x = round(x2d(j,1));
+          y = round(x2d(j,2));
+          ind = cad_mean.ind(index(j),:);
+          if x > pad_size && x <= size(mask_flip,2)-pad_size && y > pad_size && y <= size(mask_flip,1)-pad_size
+              if mask_flip(y,x) > 0 && mask_flip(y,x) ~= i % occluded by other objects
+                  occluder = find(index_object == mask_flip(y,x));
+                  if occluder > occludee
+                    visibility_grid(ind(1), ind(2), ind(3)) = 2;
+                  end
+              end
+          else
+              visibility_grid(ind(1), ind(2), ind(3)) = 3;  % truncated
+          end
+      end
+      objects_flip(i).grid = visibility_grid;
+      
+      % 3D occlusion mask for original shape
+      cad_index = objects_flip(i).cad_index;
+      cad = cads(cad_index);
+      [visibility_grid, visibility_ind] = check_visibility(cad, azimuth, elevation);
+      
+      % check the occlusion status of visible voxels
+      index = find(visibility_ind == 1);
+      x3d = compute_3d_points(cad.x3d(index,:), objects_flip(i));
+      x2d = projectToImage(x3d, P);
+      x2d = x2d' + pad_size;
+      occludee = find(index_object == i);
+      for j = 1:numel(index)
+          x = round(x2d(j,1));
+          y = round(x2d(j,2));
+          ind = cad.ind(index(j),:);
+          if x > pad_size && x <= size(mask_flip,2)-pad_size && y > pad_size && y <= size(mask_flip,1)-pad_size
+              if mask_flip(y,x) > 0 && mask_flip(y,x) ~= i % occluded by other objects
+                  occluder = find(index_object == mask_flip(y,x));
+                  if occluder > occludee
+                    visibility_grid(ind(1), ind(2), ind(3)) = 2;
+                  end
+              end
+          else
+              visibility_grid(ind(1), ind(2), ind(3)) = 3;  % truncated
+          end
+      end
+      objects_flip(i).grid_origin = visibility_grid;        
+  end  
   
   % save annotation
-  record.objects = objects;
+  record.objects_flip = objects_flip;
   filename = sprintf('Annotations/%06d.mat', img_idx);
-  save(filename, 'record');
+  parsave(filename, record);
 end
+
+matlabpool close;
+
+function parsave(fname, record)
+save(fname, 'record')

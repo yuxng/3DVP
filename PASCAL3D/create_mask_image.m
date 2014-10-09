@@ -14,4 +14,10 @@ for j = 1:3
     tmp(pattern == 2) = color(j);
     im(:,:,j) = tmp;
 end
+color = [0 255 255];
+for j = 1:3
+    tmp = im(:,:,j);
+    tmp(pattern == 3) = color(j);
+    im(:,:,j) = tmp;
+end
 im = uint8(im);  

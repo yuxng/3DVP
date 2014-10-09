@@ -3,7 +3,7 @@ function show_occlusion_patterns
 opt = globals();
 pascal_init;
 is_flip = 0;
-is_save = 0;
+is_save = 1;
 
 % load PASCAL3D+ cad models
 fprintf('load CAD models from file\n');
@@ -18,7 +18,7 @@ N = numel(ids);
 hf = figure;
 ind_plot = 1;
 mplot = 1;
-nplot = 2;
+nplot = 3;
 for i = 1:N
     % load annotation
     filename = sprintf('Annotations/%s.mat', ids{i});
@@ -34,7 +34,7 @@ for i = 1:N
             cad_index = object.cad_index;
             cad = models{cls_index}(cad_index);
             
-            % show pattern
+            % show 3D pattern
             subplot(mplot, nplot, ind_plot);
             cla;
             draw_cad(cad, object.grid_origin);
@@ -43,11 +43,22 @@ for i = 1:N
 %             title(til);
             ind_plot = ind_plot + 1;
             
+            % show 2D pattern
+            subplot(mplot, nplot, ind_plot);
+            cla;
+            pattern = object.pattern;
+            im = create_mask_image(pattern);
+            imshow(im);
+            ind_plot = ind_plot + 1;
+            axis on;
+            xlabel('x');
+            ylabel('y');
+            
             % show the image patch
             filename = sprintf(VOCopts.imgpath, ids{i});
             I = imread(filename);
-            bbox = object.bbox;
-            rect = [bbox(1) bbox(2) bbox(3)-bbox(1) bbox(4)-bbox(2)];
+            bbox_gt = object.bbox;
+            rect = [bbox_gt(1) bbox_gt(2) bbox_gt(3)-bbox_gt(1) bbox_gt(4)-bbox_gt(2)];
             I1 = imcrop(I, rect);
             subplot(mplot, nplot, ind_plot);
             cla;
@@ -79,7 +90,11 @@ for i = 1:N
             if ind_plot > mplot*nplot
                 ind_plot = 1;
                 if is_save
-                    filename = fullfile('Patterns', sprintf('%s_%d.png', ids{i}, j));
+                    filepath = sprintf('Patterns/%s', classes{cls_index});
+                    if exist(filepath, 'dir') == 0
+                        unix(['mkdir -p ' filepath]);
+                    end
+                    filename = fullfile('Patterns', classes{cls_index}, sprintf('%s_%d.png', ids{i}, j));
                     saveas(hf, filename);
                 else
                     pause;
