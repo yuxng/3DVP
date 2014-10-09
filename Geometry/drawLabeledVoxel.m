@@ -13,7 +13,8 @@ end
 tL3  = L3 - 1;
 tL3(tL3==0) = NaN;
 colormap('default');
-cmap = colormap;
+% cmap = colormap;
+cmap = [0 0 1; 0 1 0; 1 0 0; 0 1 1];
 PATCH_3Darray(tL3+1, cmap, 'col');
 
 xlim([0 size(L3,1)]);

@@ -2,6 +2,8 @@ function show_occlusion_patterns
 
 opt = globals();
 pascal_init;
+is_flip = 0;
+is_save = 0;
 
 % load PASCAL3D+ cad models
 fprintf('load CAD models from file\n');
@@ -13,8 +15,10 @@ models = cads.models;
 ids = textread(sprintf(VOCopts.imgsetpath, 'train'), '%s');
 N = numel(ids);
 
-figure;
+hf = figure;
 ind_plot = 1;
+mplot = 1;
+nplot = 2;
 for i = 1:N
     % load annotation
     filename = sprintf('Annotations/%s.mat', ids{i});
@@ -31,12 +35,12 @@ for i = 1:N
             cad = models{cls_index}(cad_index);
             
             % show pattern
-            subplot(4, 4, ind_plot);
+            subplot(mplot, nplot, ind_plot);
             cla;
             draw_cad(cad, object.grid_origin);
             view(object.azimuth, object.elevation);
-            til = sprintf('%s, object %d, occ=%.2f', ids{i}, j, object.occ_per);
-            title(til);
+%             til = sprintf('%s, object %d, occ=%.2f', ids{i}, j, object.occ_per);
+%             title(til);
             ind_plot = ind_plot + 1;
             
             % show the image patch
@@ -45,34 +49,41 @@ for i = 1:N
             bbox = object.bbox;
             rect = [bbox(1) bbox(2) bbox(3)-bbox(1) bbox(4)-bbox(2)];
             I1 = imcrop(I, rect);
-            subplot(4, 4, ind_plot);
+            subplot(mplot, nplot, ind_plot);
             cla;
             ind_plot = ind_plot + 1;
             imshow(I1);
             
-            % show flipped pattern
-            subplot(4, 4, ind_plot);
-            cla;
-            object_flip = record.objects_flip(j);
-            draw_cad(cad, object_flip.grid_origin);
-            view(object_flip.azimuth, object_flip.elevation);
-            til = sprintf('%s, object %d, occ=%.2f', ids{i}, j, object_flip.occ_per);
-            title(til);
-            ind_plot = ind_plot + 1;
+            if is_flip
+                % show flipped pattern
+                subplot(mplot, nplot, ind_plot);
+                cla;
+                object_flip = record.objects_flip(j);
+                draw_cad(cad, object_flip.grid_origin);
+                view(object_flip.azimuth, object_flip.elevation);
+                til = sprintf('%s, object %d, occ=%.2f', ids{i}, j, object_flip.occ_per);
+                title(til);
+                ind_plot = ind_plot + 1;
+
+                % show flipped image patch
+                I = I(:, end:-1:1, :);
+                bbox = object_flip.bbox;
+                rect = [bbox(1) bbox(2) bbox(3)-bbox(1) bbox(4)-bbox(2)];
+                I1 = imcrop(I, rect);
+                subplot(mplot, nplot, ind_plot);
+                cla;
+                ind_plot = ind_plot + 1;
+                imshow(I1);
+            end
             
-            % show flipped image patch
-            I = I(:, end:-1:1, :);
-            bbox = object_flip.bbox;
-            rect = [bbox(1) bbox(2) bbox(3)-bbox(1) bbox(4)-bbox(2)];
-            I1 = imcrop(I, rect);
-            subplot(4, 4, ind_plot);
-            cla;
-            ind_plot = ind_plot + 1;
-            imshow(I1);            
-            
-            if ind_plot > 16
+            if ind_plot > mplot*nplot
                 ind_plot = 1;
-                pause;
+                if is_save
+                    filename = fullfile('Patterns', sprintf('%s_%d.png', ids{i}, j));
+                    saveas(hf, filename);
+                else
+                    pause;
+                end
             end
         end
     end

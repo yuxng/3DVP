@@ -157,7 +157,7 @@ end
 %Set defaults for colormap and colorbar options
 colYN = 0;
 cbar  = 0;
-clim = [2 4]; % Byung
+clim = [2 5]; % Byung
 alpha = 1;
 
 %Check for character inputs
