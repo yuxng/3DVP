@@ -13,12 +13,12 @@ vnum = 8;
 
 % load PASCAL3D+ cad models
 cls = 'car';
-filename = sprintf('../Geometry/%s.mat', cls);
+filename = sprintf('../Geometry/%s_kitti.mat', cls);
 object = load(filename);
 cads = object.(cls);
 
 % load mean model
-filename = sprintf('../Geometry/%s_mean.mat', cls);
+filename = sprintf('../Geometry/%s_kitti_mean.mat', cls);
 object = load(filename);
 cad_mean = object.(cls);
 
@@ -47,6 +47,9 @@ for img_idx = 0:nimages-1
   [h, w, ~] = size(I);
   mask = zeros(h, w);
   mask = padarray(mask, [pad_size pad_size]);
+  
+  mask_image = ones(h, w, 3);
+  mask_image = padarray(mask_image, [pad_size pad_size 0]);  
   
   if issave == 0
     subplot(nplot, mplot, 1:mplot/2);
@@ -101,10 +104,17 @@ for img_idx = 0:nimages-1
         BWs{obj_idx} = mesh_test(vertices, h+2*pad_size, w+2*pad_size);
         
         mask(BWs{obj_idx}) = obj_idx;
+        
+        for j = 1:3
+            tmp = mask_image(:,:,j);
+            tmp(BWs{obj_idx}) = cmap(index_color,j);
+            mask_image(:,:,j) = tmp;
+        end        
     end
   end
   mask = mask(pad_size+1:h+pad_size, pad_size+1:w+pad_size);
   mask = padarray(mask, [pad_size pad_size]);
+  mask_image = mask_image(pad_size+1:h+pad_size, pad_size+1:w+pad_size,:);
   
   if issave == 0
     hold off;
@@ -156,18 +166,20 @@ for img_idx = 0:nimages-1
       end
       distance = norm(objects(i).t);
       elevation = asind(objects(i).t(2)/distance);
-      [visibility_grid, visibility_ind] = check_visibility(cad_mean, azimuth, elevation);
+      cad_index = find_closest_cad(cads, objects(i));
+      cad = cads(cad_index);
+      [visibility_grid, visibility_ind] = check_visibility(cad, azimuth, elevation);
       
       % check the occlusion status of visible voxels
       index = find(visibility_ind == 1);
-      x3d = compute_3d_points(cad_mean.x3d(index,:), objects(i));
+      x3d = compute_3d_points(cad.x3d(index,:), objects(i));
       x2d = projectToImage(x3d, P);
       x2d = x2d' + pad_size;
       occludee = find(index_object == i);
       for j = 1:numel(index)
           x = round(x2d(j,1));
           y = round(x2d(j,2));
-          ind = cad_mean.ind(index(j),:);
+          ind = cad.ind(index(j),:);
           if x > pad_size && x <= size(mask,2)-pad_size && y > pad_size && y <= size(mask,1)-pad_size
               if mask(y,x) > 0 && mask(y,x) ~= i % occluded by other objects
                   occluder = find(index_object == mask(y,x));
@@ -176,7 +188,7 @@ for img_idx = 0:nimages-1
                   end
               end
           else
-              visibility_grid(ind(1), ind(2), ind(3)) = 2;
+              visibility_grid(ind(1), ind(2), ind(3)) = 3;
           end
       end
       
@@ -207,7 +219,7 @@ for img_idx = 0:nimages-1
           subplot(nplot, mplot, index_plot);
           cla;
           index_plot = index_plot + 1;
-          draw_cad(cad_mean, visibility_grid);
+          draw_cad(cad, visibility_grid);
           view(azimuth, elevation);
           axis on;
       end
@@ -222,8 +234,7 @@ for img_idx = 0:nimages-1
       end
       
       subplot(nplot, mplot, mplot/2+1:mplot);
-      mask = mask(pad_size+1:h+pad_size, pad_size+1:w+pad_size);
-      imagesc(mask);
+      imagesc(mask_image);
       axis off;  
       axis equal;
       pause;
