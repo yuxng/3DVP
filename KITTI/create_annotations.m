@@ -1,7 +1,7 @@
 % create annotations with occlusion masks for KITTI dataset
 function create_annotations
 
-matlabpool open;
+% matlabpool open;
 
 opt = globals();
 pad_size = 1000;
@@ -30,7 +30,7 @@ calib_dir = fullfile(root_dir,[data_set '/calib']);
 nimages = length(dir(fullfile(image_dir, '*.png')));
 
 % main loop
-parfor img_idx = 0:nimages-1
+for img_idx = 3826:nimages-1
   fprintf('image %06d\n', img_idx);
   record = [];
   record.folder = data_set;
@@ -117,6 +117,7 @@ parfor img_idx = 0:nimages-1
           objects(i).occ_per = 0;
           objects(i).trunc_per = 0;
           objects(i).grid = [];
+          objects(i).grid_origin = [];
           continue;
       end
       
@@ -292,7 +293,7 @@ parfor img_idx = 0:nimages-1
   parsave(filename, record);
 end
 
-matlabpool close;
+% matlabpool close;
 
 function parsave(fname, record)
 save(fname, 'record')

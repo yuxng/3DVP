@@ -1,6 +1,6 @@
 function show_occlusion_patterns
 
-is_save = 0;
+is_save = 1;
 
 opt = globals();
 root_dir = opt.path_kitti_root;
@@ -21,11 +21,12 @@ cads = object.(cls);
 
 hf = figure;
 ind_plot = 1;
-mplot = 3;
-nplot = 6;
-for i = 1:N
+mplot = 1;
+nplot = 3;
+for i = 3825:N
     % load annotation
     filename = fullfile(path_ann, files(i).name);
+    disp(filename);
     object = load(filename);
     record = object.record;
     objects = record.objects;
