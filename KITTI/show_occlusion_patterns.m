@@ -23,7 +23,7 @@ hf = figure;
 ind_plot = 1;
 mplot = 1;
 nplot = 3;
-for i = 3825:N
+for i = 6174:N
     % load annotation
     filename = fullfile(path_ann, files(i).name);
     disp(filename);

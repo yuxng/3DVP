@@ -3,7 +3,7 @@ function show_occlusion_patterns
 opt = globals();
 pascal_init;
 is_flip = 0;
-is_save = 0;
+is_save = 1;
 
 % load PASCAL3D+ cad models
 fprintf('load CAD models from file\n');
@@ -30,7 +30,7 @@ for i = 1:N
     for j = 1:numel(objects)
         object = objects(j);
         cls_index = find(strcmp(object.class, classes) == 1);
-        if isempty(cls_index) == 0 && isempty(object.grid) == 0 && cls_index == 10 % && object.occ_per > 0.05 && object.occ_per < 0.95 
+        if isempty(cls_index) == 0 && isempty(object.grid) == 0 % && object.occ_per > 0.05 && object.occ_per < 0.95 
             cad_index = object.cad_index;
             cad = models{cls_index}(cad_index);
             
@@ -57,7 +57,11 @@ for i = 1:N
             % show the image patch
             filename = sprintf(VOCopts.imgpath, ids{i});
             I = imread(filename);
-            bbox_gt = object.bbox;
+            if object.occ_per > 0
+                bbox_gt = [object.x1 object.y1 object.x2 object.y2];
+            else
+                bbox_gt = object.bbox;
+            end
             rect = [bbox_gt(1) bbox_gt(2) bbox_gt(3)-bbox_gt(1) bbox_gt(4)-bbox_gt(2)];
             I1 = imcrop(I, rect);
             subplot(mplot, nplot, ind_plot);

@@ -47,7 +47,11 @@ for i = 1:N
             cls_ind(count) = cls_index;
             imgname{count} = record.filename;
             cad_index(count) = object.cad_index;
-            bbox(:,count) = object.bbox;
+            if object.occ_per > 0
+                bbox(:,count) = [object.x1 object.y1 object.x2 object.y2];
+            else
+                bbox(:,count) = object.bbox;
+            end
             azimuth(count) = object.azimuth;
             elevation(count) = object.elevation;
             distance(count) = object.distance;

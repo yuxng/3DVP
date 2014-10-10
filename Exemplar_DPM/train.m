@@ -282,9 +282,9 @@ for i = 1:numpos
   fprintf('%s %s: iter %d: warped positive: %d/%d\n', procid(), name, t, i, numpos);
   bbox = [pos(i).x1 pos(i).y1 pos(i).x2 pos(i).y2];
   % skip small examples
-  if (bbox(3)-bbox(1)+1)*(bbox(4)-bbox(2)+1) < minsize
-    continue
-  end    
+%   if (bbox(3)-bbox(1)+1)*(bbox(4)-bbox(2)+1) < minsize
+%     continue
+%   end    
   % get example
   im = warped{i};
   feat = features(im, model.sbin);
@@ -320,13 +320,13 @@ for i = 1:batchsize:numpos
     fprintf('%s %s: iter %d/%d: latent positive: %d/%d', procid(), name, t, iter, j, numpos);
     bbox = [pos(j).x1 pos(j).y1 pos(j).x2 pos(j).y2];
     % skip small examples
-    if (bbox(3)-bbox(1)+1)*(bbox(4)-bbox(2)+1) < minsize
-      data{k}.bs = [];
-      data{k}.pyra = [];
-      data{k}.info = [];
-      fprintf(' (too small)\n');
-      continue;
-    end
+%     if (bbox(3)-bbox(1)+1)*(bbox(4)-bbox(2)+1) < minsize
+%       data{k}.bs = [];
+%       data{k}.pyra = [];
+%       data{k}.info = [];
+%       fprintf(' (too small)\n');
+%       continue;
+%     end
     % get example
     im = color(imreadx(pos(j)));
     [im, bbox] = croppos(im, bbox);

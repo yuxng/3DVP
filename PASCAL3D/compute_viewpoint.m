@@ -65,6 +65,10 @@ parfor i = 1:length(ids)
     for j = 1:num
         obj_idx = index(j);
         object = objects(obj_idx);
+        objects(obj_idx).x1 = [];
+        objects(obj_idx).y1 = [];
+        objects(obj_idx).x2 = [];
+        objects(obj_idx).y2 = [];        
 
         cls_index = find(strcmp(object.class, classes) == 1);
         if isempty(cls_index) == 0
@@ -75,6 +79,12 @@ parfor i = 1:length(ids)
                 continue;
             end
             face = models{cls_index}(cad_index).faces;
+            
+            % compute the new bounding box
+            objects(obj_idx).x1 = max(1, min(x2d(:,1)));
+            objects(obj_idx).y1 = max(1, min(x2d(:,2)));
+            objects(obj_idx).x2 = min(w, max(x2d(:,1)));
+            objects(obj_idx).y2 = min(h, max(x2d(:,2)));
             
 %             flag = min(x2d(:,1)) < 0 & max(x2d(:,1)) > w;
 %             if flag == 1
@@ -106,6 +116,7 @@ parfor i = 1:length(ids)
             objects(j).occ_per = 0;
             objects(j).trunc_per = 0;
             objects(j).grid = [];
+            objects(j).grid_origin = [];
             continue;
         end        
         objects(j).is_flip = 0;
@@ -201,11 +212,16 @@ parfor i = 1:length(ids)
         oldx1 = objects(j).bbox(1);
         oldx2 = objects(j).bbox(3);        
         objects_flip(j).bbox(1) = w - oldx2 + 1;
-        objects_flip(j).bbox(3) = w - oldx1 + 1;        
+        objects_flip(j).bbox(3) = w - oldx1 + 1;    
         
         if isempty(objects(j).grid) == 1
             continue;
         end        
+        
+        oldx1 = objects(j).x1;
+        oldx2 = objects(j).x2;        
+        objects_flip(j).x1 = w - oldx2 + 1;
+        objects_flip(j).x2 = w - oldx1 + 1;          
         
         % flip viewpoint
         azimuth = objects(j).viewpoint.azimuth;
