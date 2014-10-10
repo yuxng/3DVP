@@ -2,7 +2,7 @@ function exemplar_dpm_train_and_test(index)
 
 matlabpool open;
 
-cls = 'car';
+cls = 'bicycle';
 is_continue = 0;
 is_train = 1;
 is_pascal = 1;

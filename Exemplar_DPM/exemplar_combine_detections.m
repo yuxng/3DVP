@@ -1,29 +1,47 @@
 function exemplar_combine_detections
 
+globals; 
+pascal_init;
+
 cls = 'car';
 threshold = -inf;
 is_train = 1;
 is_calibration = 0;
 is_filtering = 1;
 is_pascal = 1;
+is_pattern = 1;
 result_dir = 'data';
 
-% load data
 % load data
 if is_pascal
     if is_train == 1
         object = load('../PASCAL3D/data.mat');
+        ids = textread(sprintf(VOCopts.imgsetpath, 'val'), '%s');
     else
         object = load('../PASCAL3D/data_all.mat');
-    end    
+        ids = textread(sprintf(VOCopts.imgsetpath, 'test'), '%s');
+    end
+    data = object.data;
 else
     if is_train == 1
         object = load('../KITTI/data.mat');
     else
         object = load('../KITTI/data_all.mat');
     end
+    data = object.data;
+    
+    object = load('kitti_ids.mat');
+    if is_train
+        ids = object.ids_val;
+    else
+        ids = object.ids_test;
+    end    
+    
+    root_dir = KITTIroot;
+    data_set = 'training';
+    cam = 2; % 2 = left color camera
+    image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);    
 end
-data = object.data;
 idx = data.idx_ap;
 
 centers = double(unique(idx));
@@ -83,8 +101,74 @@ for i = 1:N
     end
 end
 
+if is_pattern
+    % apply the segmentation pattern
+    M = numel(ids);
+    patterns = cell(1, M);
+    for i = 1:M
+        if isempty(dets{i}) == 1
+            continue;
+        end
+        % read image
+        if is_pascal
+            file_img = sprintf(VOCopts.imgpath, ids{i});
+        else
+            file_img = sprintf('%s/%06d.png', image_dir, ids(i));
+        end
+        disp(file_img);
+        I = imread(file_img); 
+
+        % compute the occlusion patterns
+        det = dets{i};
+
+        num = size(det, 1);
+        pats = cell(1, num);
+        for k = 1:num
+            % get predicted bounding box
+            bbox_pr = det(k,1:4);
+            bbox = zeros(1,4);
+            bbox(1) = max(1, floor(bbox_pr(1)));
+            bbox(2) = max(1, floor(bbox_pr(2)));
+            bbox(3) = min(size(I,2), floor(bbox_pr(3)));
+            bbox(4) = min(size(I,1), floor(bbox_pr(4)));
+            w = bbox(3) - bbox(1) + 1;
+            h = bbox(4) - bbox(2) + 1;
+
+            % apply the 2D occlusion mask to the bounding box
+            % check if truncated pattern
+            cid = det(k,5);
+            pattern = data.pattern{cid};                
+            index = find(pattern == 1);
+            if is_pascal
+                trunc_per = data.trunc_per(cid);
+            else
+                trunc_per = data.truncation(cid);
+            end
+            if trunc_per > 0 && isempty(index) == 0
+                [y, x] = ind2sub(size(pattern), index);                
+                pattern = pattern(min(y):max(y), min(x):max(x));
+            end
+            pattern = imresize(pattern, [h w], 'nearest');
+            
+            % modify the bbox
+            if is_pascal == 1 && data.occ_per(cid) > 0
+                [y, x] = find(pattern == 1);
+                dets{i}(k,1) = bbox(1) + min(x) - 1;
+                dets{i}(k,2) = bbox(2) + min(y) - 1;
+                dets{i}(k,3) = bbox(1) + max(x) - 1;
+                dets{i}(k,4) = bbox(2) + max(y) - 1;
+            end
+            
+            pats{k} = pattern;
+        end
+        patterns{i} = pats;
+    end
+else
+    patterns = [];
+end
+
 filename = sprintf('%s/%s_test.mat', result_dir, cls);
-save(filename, 'dets', '-v7.3');
+save(filename, 'dets', 'patterns', '-v7.3');
 
 
 function boxes_new = process_boxes(boxes, cid, threshold, lim, beta)

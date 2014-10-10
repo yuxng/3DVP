@@ -1,14 +1,14 @@
 function exemplar_display_result_pascal
 
 cls = 'car';
-threshold = -0.5;
+threshold = -0.8;
 is_train = 1;
 threshold_overlap = 0.5;
 result_dir = 'data';
 
 % read detection results
 filename = sprintf('%s/%s_test.mat', result_dir, cls);
-object = load(filename);
+object = load(filename, 'dets');
 dets = object.dets;
 fprintf('load detection done\n');
 

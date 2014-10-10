@@ -2,7 +2,7 @@ function show_cluster_patterns(cid)
 
 opt = globals();
 pascal_init;
-cls = 'car';
+cls = 'bicycle';
 
 % load PASCAL3D+ cad models
 fprintf('load CAD models from file\n');

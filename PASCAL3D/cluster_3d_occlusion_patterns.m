@@ -2,7 +2,7 @@ function cluster_3d_occlusion_patterns
 
 data_file = 'data.mat';
 is_save = 1;
-cls = 'car';
+cls = 'bicycle';
 algorithm = 'ap';
 
 switch algorithm

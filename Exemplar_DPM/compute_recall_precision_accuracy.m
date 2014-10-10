@@ -21,7 +21,7 @@ M = numel(ids);
 % read detection results
 result_dir = 'data';
 filename = sprintf('%s/%s_test.mat', result_dir, cls);
-object = load(filename);
+object = load(filename, 'dets');
 dets_all = object.dets;
 fprintf('load detection done\n');
 
