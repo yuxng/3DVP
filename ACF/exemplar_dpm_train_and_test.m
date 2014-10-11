@@ -9,7 +9,7 @@ if is_hadoop == 0
     matlabpool open;
 end
 
-cls = 'car';
+cls = 'bicycle';
 is_continue = 0;
 is_train = 1;
 is_pascal = 1;

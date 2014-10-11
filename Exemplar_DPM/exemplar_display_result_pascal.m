@@ -1,10 +1,14 @@
 function exemplar_display_result_pascal
 
-cls = 'car';
+cls = 'bicycle';
 threshold = -0.8;
 is_train = 1;
 threshold_overlap = 0.5;
 result_dir = 'data';
+
+% load clustering data
+object = load('../PASCAL3D/data.mat');
+data = object.data;
 
 % read detection results
 filename = sprintf('%s/%s_test.mat', result_dir, cls);
@@ -108,7 +112,9 @@ for i = 1:N
             else
                 rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);
             end
-            text(bbox_pr(1), bbox_pr(2), num2str(det(k,5)), 'FontSize', 16, 'BackgroundColor', 'r');
+            azimuth = data.azimuth(det(k,5));
+            str = sprintf('%d: %.1f', det(k,5), azimuth);
+            text(bbox_pr(1), bbox_pr(2), str, 'FontSize', 16, 'BackgroundColor', 'r');
         end
     end
     
