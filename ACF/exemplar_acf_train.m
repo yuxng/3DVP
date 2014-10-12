@@ -298,6 +298,13 @@ while i < nImg && k < n
     parfor j = 1:batch
       ij = i + j;
       I = feval(opts.imreadf, ex(ij).im, opts.imreadp{:});
+      if size(I,3) == 1
+          im = [];
+          im(:,:,1) = I;
+          im(:,:,2) = I;
+          im(:,:,3) = I;
+          I = uint8(im);
+      end
       if isfield(ex(ij), 'is_flip') && ex(ij).is_flip == 1
           I = I(:, end:-1:1, :);
       end
