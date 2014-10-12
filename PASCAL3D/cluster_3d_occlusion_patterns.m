@@ -2,6 +2,7 @@ function cluster_3d_occlusion_patterns
 
 data_file = 'data_all.mat';
 is_save = 1;
+is_continue = 0;
 cls = 'car';
 algorithm = 'ap';
 
@@ -17,11 +18,11 @@ switch algorithm
         occlusion = data.occ_per;
         truncation = data.trunc_per;
         flag = data.cls_ind == cls_ind & data.difficult == 0 & ...
-            height > 25 & occlusion < 0.7 & truncation < 0.5;
+            height > 25 & occlusion < 0.7 & truncation < 0.5 & data.is_pascal == 1;
         fprintf('%d %s examples in clustering\n', sum(flag), cls);
         
         % try to load similarity scores
-        if exist('similarity.mat', 'file') ~= 0
+        if is_continue == 1 && exist('similarity.mat', 'file') ~= 0
             fprintf('load similarity scores from file\n');
             object = load('similarity.mat');
             scores = object.scores;

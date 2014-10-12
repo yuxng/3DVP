@@ -1,7 +1,7 @@
 function exemplar_display_result_pascal
 
 cls = 'car';
-threshold = -20;
+threshold = 0;
 is_train = 1;
 threshold_overlap = 0.5;
 result_dir = 'data';
@@ -49,7 +49,7 @@ for i = 1:N
         continue;
     end
     if isempty(det) == 0
-        I = nms_new(det, threshold_overlap);
+        I = nms(det, threshold_overlap);
         det = det(I, :);    
     end
     num = size(det, 1);
