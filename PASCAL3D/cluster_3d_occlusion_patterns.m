@@ -1,8 +1,8 @@
 function cluster_3d_occlusion_patterns
 
-data_file = 'data.mat';
+data_file = 'data_all.mat';
 is_save = 1;
-cls = 'bicycle';
+cls = 'car';
 algorithm = 'ap';
 
 switch algorithm
@@ -20,16 +20,25 @@ switch algorithm
             height > 25 & occlusion < 0.7 & truncation < 0.5;
         fprintf('%d %s examples in clustering\n', sum(flag), cls);
         
-        % collect patterns
-        index = find(flag == 1);
-        num = numel(index);
-        X = [];
-        for i = 1:num
-            X(:,i) = data.grid{index(i)};
-        end
+        % try to load similarity scores
+        if exist('similarity.mat', 'file') ~= 0
+            fprintf('load similarity scores from file\n');
+            object = load('similarity.mat');
+            scores = object.scores;
+        else
+            % collect patterns
+            index = find(flag == 1);
+            num = numel(index);
+            X = [];
+            for i = 1:num
+                X(:,i) = data.grid{index(i)};
+            end
 
-        fprintf('computing similarity scores...\n');
-        scores = compute_similarity(X);
+            fprintf('computing similarity scores...\n');
+            scores = compute_similarity(X);
+            save('similarity.mat', 'scores', '-v7.3');
+            fprintf('save similarity scores\n');
+        end        
         
         N = size(scores, 1);
         M = N*N-N;
@@ -54,23 +63,39 @@ switch algorithm
         fprintf('Fitness (net similarity): %f\n', netsim);
         
         % construct idx
-        num = numel(data.imgname);
-        idx = zeros(num, 1);
-        idx(flag == 0) = -1;
-        index_all = find(flag == 1);
-        
-        cids = unique(idx_ap);
-        K = numel(cids);
-        for i = 1:K
-            index = idx_ap == cids(i);
-            cid = index_all(cids(i));
-            idx(index_all(index)) = cid;
-        end        
+%         num = numel(data.imgname);
+%         idx = zeros(num, 1);
+%         idx(flag == 0) = -1;
+%         index_all = find(flag == 1);
+%         
+%         cids = unique(idx_ap);
+%         K = numel(cids);
+%         for i = 1:K
+%             index = idx_ap == cids(i);
+%             cid = index_all(cids(i));
+%             idx(index_all(index)) = cid;
+%         end        
         
         % save results
         if is_save == 1
-            data.idx_ap = idx;
-            save(data_file, 'data');
+            data.id = data.id(flag);
+            data.cls = data.cls(flag);
+            data.cls_ind = data.cls_ind(flag);
+            data.imgname = data.imgname(flag);
+            data.cad_index = data.cad_index(flag);
+            data.bbox = data.bbox(:,flag);
+            data.azimuth = data.azimuth(flag);
+            data.elevation = data.elevation(flag);
+            data.distance = data.distance(flag);
+            data.occ_per = data.occ_per(flag);
+            data.trunc_per = data.trunc_per(flag);
+            data.difficult = data.difficult(flag);
+            data.pattern = data.pattern(flag);
+            data.grid = data.grid(flag);
+            data.is_flip = data.is_flip(flag);
+            data.is_pascal = data.is_pascal(flag);
+            data.idx_ap = idx_ap;
+            save('data.mat', 'data');
         end        
         
     case 'kmeans'

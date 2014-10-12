@@ -12,7 +12,17 @@ cads = object.cads;
 classes = cads.classes;
 models = cads.models;
 
-ids = textread(sprintf(VOCopts.imgsetpath, 'train'), '%s');
+ids_pascal = textread(sprintf(VOCopts.imgsetpath, 'trainval'), '%s');
+ids_all = [];
+for k = 1:numel(classes)
+    cls = classes{k};
+    ids_train = textread(sprintf(opt.path_set_imagenet_train, cls), '%s');
+    ids_val = textread(sprintf(opt.path_set_imagenet_val, cls), '%s');
+    ids = [ids_train; ids_val];    
+    ids_all = [ids_all; ids];
+end
+ids = [ids_pascal; ids_all];
+
 N = numel(ids);
 
 hf = figure;
@@ -55,7 +65,12 @@ for i = 1:N
             ylabel('y');
             
             % show the image patch
-            filename = sprintf(VOCopts.imgpath, ids{i});
+            if isfield(record, 'cls') == 0
+                filename = sprintf(VOCopts.imgpath, ids{i});
+            else
+                cls = record.cls;
+                filename = [sprintf(opt.path_img_imagenet, cls) '/' ids{i} '.JPEG'];
+            end
             I = imread(filename);
             if object.occ_per > 0
                 bbox_gt = [object.x1 object.y1 object.x2 object.y2];

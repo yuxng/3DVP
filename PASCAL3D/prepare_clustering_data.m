@@ -3,8 +3,6 @@ function data = prepare_clustering_data
 % PASCAL path
 opt = globals();
 pascal_init;
-ids = textread(sprintf(VOCopts.imgsetpath, 'train'), '%s');
-N = numel(ids);
 
 % load PASCAL3D+ cad models
 fprintf('load CAD models from file\n');
@@ -12,6 +10,20 @@ object = load('cads.mat');
 cads = object.cads;
 classes = cads.classes;
 models_mean = cads.models_mean;
+
+% load ids
+ids_pascal = textread(sprintf(VOCopts.imgsetpath, 'train'), '%s');
+ids_all = [];
+for k = 1:numel(classes)
+    cls = classes{k};
+    ids_train = textread(sprintf(opt.path_set_imagenet_train, cls), '%s');
+    ids_val = textread(sprintf(opt.path_set_imagenet_val, cls), '%s');
+    ids = [ids_train; ids_val];    
+    ids_all = [ids_all; ids];
+end
+ids = [ids_pascal; ids_all];
+
+N = numel(ids);
 
 count = 0;
 id = [];
@@ -29,6 +41,7 @@ difficult = [];
 pattern = [];
 grid = [];
 is_flip = [];
+is_pascal = [];
 for i = 1:N
     % load annotation
     filename = sprintf('Annotations/%s.mat', ids{i});
@@ -61,6 +74,11 @@ for i = 1:N
             pattern{count} = object.pattern;
             grid{count} = object.grid(models_mean{cls_index}.grid == 1);
             is_flip(count) = object.is_flip;
+            if isfield(record, 'cls') == 1
+                is_pascal(count) = 0;
+            else
+                is_pascal(count) = 1;
+            end
         end
     end
 end
@@ -81,3 +99,4 @@ data.difficult = difficult;
 data.pattern = pattern;
 data.grid = grid;
 data.is_flip = is_flip;
+data.is_pascal = is_pascal;

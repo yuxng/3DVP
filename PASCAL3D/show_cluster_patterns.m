@@ -2,7 +2,7 @@ function show_cluster_patterns(cid)
 
 opt = globals();
 pascal_init;
-cls = 'bicycle';
+cls = 'car';
 
 % load PASCAL3D+ cad models
 fprintf('load CAD models from file\n');
@@ -76,7 +76,12 @@ for i = 1:N
     view(data.azimuth(ind), data.elevation(ind));
     
     % show the image patch
-    filename = sprintf(VOCopts.imgpath, data.id{ind});
+    if data.is_pascal(ind) == 1
+        filename = sprintf(VOCopts.imgpath, data.id{ind});
+    else
+        cls = data.cls{ind};
+        filename = [sprintf(opt.path_img_imagenet, cls) '/' data.id{ind} '.JPEG'];
+    end
     I = imread(filename);
     if data.is_flip(ind) == 1
         I = I(:, end:-1:1, :);
@@ -87,13 +92,14 @@ for i = 1:N
     subplot(nplot, mplot, ind_plot);
     ind_plot = ind_plot + 1;
     imshow(I1);
-    til = sprintf('w:%d, h:%d', size(I1,2), size(I1,1));
+    til = sprintf('w:%d, h:%d, %s', size(I1,2), size(I1,1), data.id{ind});
     title(til);
     
     % show several members
     member = find(idx == ind);
     member(member == ind) = [];
     num = numel(member);
+    fprintf('%d examples\n', num+1);
     for j = 1:min((nplot-1)*mplot/2-1, num)
         ind = member(j);
         grid = data.grid{ind};
@@ -107,7 +113,12 @@ for i = 1:N
         view(data.azimuth(ind), data.elevation(ind));
         
         % show the image patch
-        filename = sprintf(VOCopts.imgpath, data.id{ind});
+        if data.is_pascal(ind) == 1
+            filename = sprintf(VOCopts.imgpath, data.id{ind});
+        else
+            cls = data.cls{ind};
+            filename = [sprintf(opt.path_img_imagenet, cls) '/' data.id{ind} '.JPEG'];
+        end        
         I = imread(filename);
         if data.is_flip(ind) == 1
             I = I(:, end:-1:1, :);

@@ -61,6 +61,7 @@ for i = 1:numel(PASCAL3Dpaths)
     if exist(PASCAL3Dpaths{i}, 'dir')
         PASCAL3Droot = PASCAL3Dpaths{i};
         path_pascal = [PASCAL3Droot '/PASCAL/VOCdevkit'];
+        path_img_imagenet = [PASCAL3Droot '/Images/%s_imagenet'];
         break;
     end
 end

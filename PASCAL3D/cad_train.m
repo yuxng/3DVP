@@ -6,7 +6,7 @@ classes = {'aeroplane', 'bicycle', 'boat', 'bottle', 'bus', 'car', 'chair', ...
     'diningtable', 'motorbike', 'sofa', 'train', 'tvmonitor'};
 
 rescales = {
-    [5, 5, 2, 2, 4, 2, 2], ... aeroplane
+    [5, 5, 2, 2, 4, 2, 2, 5], ... aeroplane
     0.4 * ones(1,6), ... bicycle
     [2, 1, 2, 5, 1, 5], ... boat
     0.01 * ones(1,8), ... bottle

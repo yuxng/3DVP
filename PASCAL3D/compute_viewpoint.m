@@ -9,6 +9,7 @@ opt.VOCopts = VOCopts;
 pad_size = 1000;
 use_nonvisible = 1;
 clear_nonvisible = 0;
+is_pascal = 0;
 
 % load PASCAL3D+ cad models
 fprintf('load CAD models from file\n');
@@ -19,7 +20,19 @@ rescales = cads.rescales;
 models = cads.models;
 models_mean = cads.models_mean;
 
-ids = textread(sprintf(VOCopts.imgsetpath, 'trainval'), '%s');
+if is_pascal
+    ids = textread(sprintf(VOCopts.imgsetpath, 'trainval'), '%s');
+else
+    ids_all = [];
+    for k = 1:numel(classes)
+        cls = classes{k};
+        ids_train = textread(sprintf(opt.path_set_imagenet_train, cls), '%s');
+        ids_val = textread(sprintf(opt.path_set_imagenet_val, cls), '%s');
+        ids = [ids_train; ids_val];    
+        ids_all = [ids_all; ids];
+    end
+    ids = ids_all;
+end
 
 parfor i = 1:length(ids)
     fprintf('%d %s\n', i, ids{i});
@@ -46,7 +59,12 @@ parfor i = 1:length(ids)
     end     
 
     % read image
-    filename = sprintf(opt.VOCopts.imgpath, ids{i});
+    if is_pascal
+        filename = sprintf(opt.VOCopts.imgpath, ids{i});
+    else
+        cls = record.cls;
+        filename = [sprintf(opt.path_img_imagenet, cls) '/' ids{i} '.JPEG'];
+    end
     I = imread(filename);
     [h, w, ~] = size(I);
     % occlusion mask
@@ -75,7 +93,7 @@ parfor i = 1:length(ids)
             cad_index = object.cad_index;
             x3d = models{cls_index}(cad_index).vertices * rescales{cls_index}(cad_index);
             x2d = project_3d(x3d, object);
-            if isempty(x2d)
+            if isempty(x2d) || h > 1000  % skip very large image in ImageNet
                 continue;
             end
             face = models{cls_index}(cad_index).faces;
