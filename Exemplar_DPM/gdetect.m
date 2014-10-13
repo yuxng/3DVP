@@ -94,7 +94,7 @@ if latent && ~isempty(dets)
   clipdets(:,3) = min(clipdets(:,3), pyra.imsize(2));
   clipdets(:,4) = min(clipdets(:,4), pyra.imsize(1));
   if boxoverlap(clipdets, bbox) < overlap
-    error('overlap requirement failed');
+    fprintf(' overlap requirement failed ');
   end
 end
 
