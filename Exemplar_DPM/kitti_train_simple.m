@@ -42,8 +42,10 @@ if is_continue && exist(filename, 'file')
 else
   initrand();
   name = [cls '_' num2str(cid)];
-  model = train_simple(name, model, pos, neg, 0, 0, 1, 1, ...
-                cachesize, true, 0.7, true, 'latent');
+  model = train_simple(name, model, pos, neg(1:maxneg), 0, 0, 8, 10, ...
+                cachesize, true, 0.7, true, 'latent_1');  
+  model = train_simple(name, model, pos, neg, 0, 0, 1, 5, ...
+                cachesize, true, 0.7, true, 'latent_2');
   save(filename, 'model');
 end
 
