@@ -2,7 +2,7 @@ function cluster_3d_occlusion_patterns
 
 data_file = 'data_all.mat';
 is_save = 1;
-is_continue = 0;
+is_continue = 1;
 cls = 'car';
 algorithm = 'ap';
 
@@ -54,7 +54,7 @@ switch algorithm
             end
         end       
 
-        p = min(s(:,3));
+        p = min(s(:,3)) * 0.5;
 
         % clustering
         fprintf('Start AP clustering\n');

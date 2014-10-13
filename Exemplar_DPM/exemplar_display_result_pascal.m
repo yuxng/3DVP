@@ -1,7 +1,7 @@
-function exemplar_display_result_pascal
+function exemplar_display_result_pascal(cid)
 
-cls = 'bicycle';
-threshold = -0.8;
+cls = 'car';
+threshold = -0.9;
 is_train = 1;
 threshold_overlap = 0.5;
 result_dir = 'data';
@@ -11,10 +11,24 @@ object = load('../PASCAL3D/data.mat');
 data = object.data;
 
 % read detection results
-filename = sprintf('%s/%s_test.mat', result_dir, cls);
-object = load(filename, 'dets');
-dets = object.dets;
-fprintf('load detection done\n');
+if nargin < 1
+    filename = sprintf('%s/%s_test.mat', result_dir, cls);
+    object = load(filename, 'dets');
+    dets = object.dets;
+    fprintf('load detection done\n');
+else
+    filename = sprintf('%s/%s_%d_test.mat', result_dir, cls, cid);
+    object = load(filename, 'boxes1');
+    dets = object.boxes1;
+    for i = 1:numel(dets)
+        det = dets{i};
+        if isempty(det) == 0
+            num = size(det, 1);
+            dets{i} = [det(:,1) det(:,2) det(:,3) det(:,4) cid*ones(num,1) det(:,5)];
+        end
+    end
+    fprintf('load detection done\n');
+end
 
 % PASCAL path
 globals;
@@ -113,7 +127,7 @@ for i = 1:N
                 rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);
             end
             azimuth = data.azimuth(det(k,5));
-            str = sprintf('%d: %.1f', det(k,5), azimuth);
+            str = sprintf('%d: %.1f, %f', det(k,5), azimuth, det(k,6));
             text(bbox_pr(1), bbox_pr(2), str, 'FontSize', 16, 'BackgroundColor', 'r');
         end
     end
