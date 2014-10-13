@@ -24,7 +24,11 @@ else
     h = bbox(4) - bbox(2);
     if w > 1 && h > 1 
         numpos = numpos+1;
-        pos(numpos).im = sprintf(VOCopts.imgpath, id);
+        if data.is_pascal(ind) == 1
+            pos(numpos).im = sprintf(VOCopts.imgpath, id);
+        else
+            pos(numpos).im = [sprintf(path_img_imagenet, cls) '/' id '.JPEG'];
+        end        
         pos(numpos).x1 = bbox(1);
         pos(numpos).y1 = bbox(2);
         pos(numpos).x2 = bbox(3);

@@ -50,6 +50,7 @@ for i = 1:numel(VOCpaths)
     if exist(VOCpaths{i}, 'dir')
         PASCAL3Droot = [VOCpaths{i} '/../']; 
         VOCdevkit = [ VOCpaths{i} '/VOCdevkit/'];
+        path_img_imagenet = [PASCAL3Droot '/Images/%s_imagenet'];
         break;
     end
 end

@@ -18,7 +18,7 @@ switch algorithm
         occlusion = data.occ_per;
         truncation = data.trunc_per;
         flag = data.cls_ind == cls_ind & data.difficult == 0 & ...
-            height > 25 & occlusion < 0.7 & truncation < 0.5 & data.is_pascal == 1;
+            height > 25 & occlusion < 0.7 & truncation < 0.5;
         fprintf('%d %s examples in clustering\n', sum(flag), cls);
         
         % try to load similarity scores
