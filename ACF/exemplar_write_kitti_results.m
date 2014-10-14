@@ -1,9 +1,9 @@
 function exemplar_write_kitti_results
 
 cls = 'car';
-is_train = 0;
+is_train = 1;
 threshold_overlap = 0.6;
-result_dir = 'kitti_test_acf_3d_169';
+result_dir = 'data';
 
 % read detection results
 filename = sprintf('%s/%s_test.mat', result_dir, cls);
@@ -20,7 +20,7 @@ end
 data = object.data;
 
 % read ids of validation images
-object = load('kitti_ids.mat');
+object = load('kitti_ids_new.mat');
 if is_train == 1
     ids = object.ids_val;
 else

@@ -14,7 +14,7 @@ STATIC EVALUATION PARAMETERS
 =======================================================================*/
 
 // holds the number of test images on the server
-const int32_t N_TESTIMAGES = 3741;
+int32_t N_TESTIMAGES = 3741;
 
 // easy, moderate and hard evaluation level
 enum DIFFICULTY{EASY=0, MODERATE=1, HARD=2};
@@ -650,13 +650,23 @@ bool eval(string result_sha)
   // and which labels where provided by this submission
   bool compute_aos=true, eval_car=false, eval_pedestrian=false, eval_cyclist=false;
 
+  // read image ids
+  FILE *fp = fopen("kitti_ids_val.txt", "r");
+  assert(fp != NULL);
+  fscanf(fp, "%d", &N_TESTIMAGES);
+  printf("%d test images\n", N_TESTIMAGES);
+  int *ids = (int*)malloc(sizeof(int) * N_TESTIMAGES);
+  for(int i = 0; i < N_TESTIMAGES; i++)
+    fscanf(fp, "%d", ids+i);
+  fclose(fp);
+
   // for all images read groundtruth and detections
   for (int32_t i = 0; i < N_TESTIMAGES; i++)
   {
 
     // file name
     char file_name[256];
-    sprintf(file_name, "%06d.txt", i+3740);
+    sprintf(file_name, "%06d.txt", ids[i]);
 
     // read ground truth and result poses
     bool gt_success, det_success;
@@ -743,6 +753,7 @@ bool eval(string result_sha)
   }
 
   // success
+  free(ids);
   return true;
 }
 

@@ -5,7 +5,7 @@ threshold = -inf;
 is_train = 1;
 is_calibration = 0;
 is_filtering = 1;
-is_pascal = 1;
+is_pascal = 0;
 result_dir = 'data';
 
 % load data
