@@ -1,7 +1,7 @@
 % create annotations with occlusion masks for KITTI dataset
 function create_annotations
 
-% matlabpool open;
+matlabpool open;
 
 opt = globals();
 pad_size = 1000;
@@ -30,8 +30,7 @@ calib_dir = fullfile(root_dir,[data_set '/calib']);
 nimages = length(dir(fullfile(image_dir, '*.png')));
 
 % main loop
-for img_idx = 3826:nimages-1
-  fprintf('image %06d\n', img_idx);
+parfor img_idx = 0:nimages-1
   record = [];
   record.folder = data_set;
   record.filename = sprintf('%06d.png', img_idx);
@@ -224,6 +223,26 @@ for img_idx = 3826:nimages-1
       objects_flip(i).alpha = alpha;
       elevation = objects(i).elevation;
       
+      % find the 3d location of the flipped object
+
+        % use the object center instead of bounding box center
+        x3d = compute_3d_points_noscaling([0 0 0], objects(i));
+        x2d = projectToImage(x3d, P);
+        x2d(1) = w - x2d(1) + 1;
+        c = [x2d; 1];
+            
+        % backprojection
+        X = pinv(P) * c;
+        X = X ./ X(4);
+        if X(3) < 0
+            X = -1 * X;
+        end
+        X(4) = [];
+        X = X ./ norm(X);  
+        objects_flip(i).ry = objects_flip(i).alpha + atan(X(1)/X(3));
+        objects_flip(i).t = norm(objects(i).t) .* X';
+        objects_flip(i).t(2) = objects_flip(i).t(2) + objects(i).h/2;
+      
       if isempty(objects(i).grid) == 1
           continue;
       end          
@@ -266,7 +285,7 @@ for img_idx = 3826:nimages-1
       % check the occlusion status of visible voxels
       index = find(visibility_ind == 1);
       x3d = compute_3d_points(cad.x3d(index,:), objects_flip(i));
-      x2d = projectToImage(x3d, P);
+      x2d = projectToImage(x3d, P);     
       x2d = x2d' + pad_size;
       occludee = find(index_object == i);
       for j = 1:numel(index)
@@ -290,10 +309,11 @@ for img_idx = 3826:nimages-1
   % save annotation
   record.objects_flip = objects_flip;
   filename = sprintf('Annotations/%06d.mat', img_idx);
+  disp(filename);
   parsave(filename, record);
 end
 
-% matlabpool close;
+matlabpool close;
 
 function parsave(fname, record)
 save(fname, 'record')

@@ -1,6 +1,7 @@
 function show_occlusion_patterns
 
-is_save = 1;
+is_save = 0;
+is_flip = 1;
 
 opt = globals();
 root_dir = opt.path_kitti_root;
@@ -21,9 +22,9 @@ cads = object.(cls);
 
 hf = figure;
 ind_plot = 1;
-mplot = 1;
-nplot = 3;
-for i = 6174:N
+mplot = 6;
+nplot = 6;
+for i = 1:N
     % load annotation
     filename = fullfile(path_ann, files(i).name);
     disp(filename);
@@ -63,7 +64,40 @@ for i = 6174:N
             subplot(mplot, nplot, ind_plot);
             cla;
             ind_plot = ind_plot + 1;
-            imshow(I1);            
+            imshow(I1);
+            
+            if is_flip
+                % show flipped pattern
+                subplot(mplot, nplot, ind_plot);
+                cla;
+                object_flip = record.objects_flip(j);
+                draw_cad(cad, object_flip.grid_origin);
+                view(object_flip.azimuth, object_flip.elevation);
+%                 til = sprintf('%s, object %d, occ=%.2f', files(i).name, j, object_flip.occ_per);
+%                 title(til);
+                ind_plot = ind_plot + 1;
+                
+                % show 2D pattern
+                subplot(mplot, nplot, ind_plot);
+                cla;
+                pattern = object_flip.pattern;
+                im = create_mask_image(pattern);
+                imshow(im);
+                ind_plot = ind_plot + 1;
+                axis on;
+                xlabel('x');
+                ylabel('y');                
+
+                % show flipped image patch
+                I = I(:, end:-1:1, :);
+                bbox = [object_flip.x1 object_flip.y1 object_flip.x2 object_flip.y2];
+                rect = [bbox(1) bbox(2) bbox(3)-bbox(1) bbox(4)-bbox(2)];
+                I1 = imcrop(I, rect);
+                subplot(mplot, nplot, ind_plot);
+                cla;
+                ind_plot = ind_plot + 1;
+                imshow(I1);
+            end            
             
             if ind_plot > mplot * nplot
                 ind_plot = 1;
