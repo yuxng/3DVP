@@ -1,5 +1,7 @@
 function data = prepare_clustering_data
 
+is_train = 1;
+
 % KITTI path
 opt = globals();
 root_dir = opt.path_kitti_root;
@@ -8,15 +10,18 @@ calib_dir = fullfile(root_dir,[data_set '/calib']);
 
 % load mean model
 cls = 'car';
-filename = sprintf('../Geometry/%s_mean.mat', cls);
+filename = sprintf('../Geometry/%s_kitti_mean.mat', cls);
 object = load(filename);
 cad = object.(cls);
 index = cad.grid == 1;
 
-% annotations
-path_ann = 'Annotations';
-files = dir(fullfile(path_ann, '*.mat'));
-N = numel(files);
+% load ids
+object = load('kitti_ids_new.mat');
+if is_train
+    ids = object.ids_train;
+else
+    ids = [object.ids_train ids_val];
+end
 
 count = 0;
 imgname = [];
@@ -34,8 +39,9 @@ occlusion = [];
 pattern = [];
 grid = [];
 translation = [];
-for i = 1:N%3740
-    img_idx = i - 1;
+
+for i = 1:numel(ids)
+    img_idx = ids(i);
     
     % load the velo_to_cam matrix
     R0_rect = readCalibration(calib_dir, img_idx, 4);
@@ -48,7 +54,7 @@ for i = 1:N%3740
     Pv2c = [Pv2c; 0 0 0 1];    
     
     % load annotation
-    filename = fullfile(path_ann, files(i).name);
+    filename = fullfile('Annotations', sprintf('%06d.mat', img_idx));
     disp(filename);
     object = load(filename);
     record = object.record;

@@ -1,7 +1,13 @@
 function exemplar_make_pbs_scripts
 
+is_pascal = 0;
+
 % load occlusion patterns
-filename = '../../PASCAL3D/data.mat';
+if is_pascal
+    filename = '../../PASCAL3D/data.mat';
+else
+    filename = '../../KITTI/data.mat';
+end
 object = load(filename);
 data = object.data;
 

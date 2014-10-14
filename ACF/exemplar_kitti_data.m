@@ -50,7 +50,7 @@ else
           fprintf('undefined classes for negatives\n');
   end
   
-  filename = fullfile(SLMroot, 'ACF/kitti_ids.mat');
+  filename = fullfile(SLMroot, 'ACF/kitti_ids_new.mat');
   object = load(filename);
   if is_train
       ids = object.ids_train;

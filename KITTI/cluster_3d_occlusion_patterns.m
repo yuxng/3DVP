@@ -1,7 +1,8 @@
 function cluster_3d_occlusion_patterns
 
-data_file = 'data_all.mat';
+data_file = 'data.mat';
 is_save = 1;
+is_continue = 0;
 algorithm = 'ap';
 
 switch algorithm
@@ -11,7 +12,7 @@ switch algorithm
         data = object.data;       
 
         % try to load similarity scores
-        if exist('similarity.mat', 'file') ~= 0
+        if is_continue == 1 && exist('similarity.mat', 'file') ~= 0
             fprintf('load similarity scores from file\n');
             object = load('similarity.mat');
             scores = object.scores;

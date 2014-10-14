@@ -1,7 +1,7 @@
  function [cids, cluster_sizes, width_mean, height_mean] = compute_cluster_statistics
 
 % load data
-object = load('data_all.mat');
+object = load('data.mat');
 data = object.data;
 
 idx = data.idx_ap;

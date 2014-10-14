@@ -46,13 +46,14 @@ else
     image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]); 
 
     % get test image ids
-    filename = fullfile(SLMroot, 'ACF/kitti_ids.mat');
+    filename = fullfile(SLMroot, 'ACF/kitti_ids_new.mat');
     object = load(filename);
     if is_train == 1
         ids = object.ids_val;
     else
         ids = object.ids_test;
     end
+    opt = [];
 end
 
 filename = fullfile(resultdir, sprintf('%s_%d_test.mat', cls, ind));

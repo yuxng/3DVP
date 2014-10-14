@@ -12,7 +12,7 @@ end
 cls = 'car';
 is_continue = 0;
 is_train = 1;
-is_pascal = 1;
+is_pascal = 0;
 
 if is_pascal
     if is_train
