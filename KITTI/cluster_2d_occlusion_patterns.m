@@ -1,20 +1,12 @@
-function cluster_2d_occlusion_patterns
+function idx = cluster_2d_occlusion_patterns(data, algorithm, K)
 
 opt = globals;
-data_file = 'data.mat';
-is_save = 1;
-K = 350;
-algorithm = 'ap';
 
 % get image directory
 root_dir = opt.path_kitti_root;
 data_set = 'training';
 cam = 2; % 2 = left color camera
 image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
-
-% load data
-object = load(data_file);
-data = object.data;
 
 % select the clustering data
 height = data.bbox(4,:) - data.bbox(2,:) + 1;
@@ -40,6 +32,9 @@ else
         % read the image
         filename = fullfile(image_dir, data.imgname{ind});
         I = imread(filename);
+        if data.is_flip(ind) == 1
+            I = I(:, end:-1:1, :);
+        end           
         % crop image
         bbox = data.bbox(:,ind);
         gt = [bbox(1) bbox(2) bbox(3)-bbox(1) bbox(4)-bbox(2)];
@@ -55,6 +50,7 @@ end
 switch algorithm
     case 'kmeans'
         % kmeans clustering
+        fprintf('2d kmeans %d\n', K);
         opts = struct('maxiters', 1000, 'mindelta', eps, 'verbose', 1);
         [center, sse] = vgg_kmeans(X, K, opts);
         [idx_kmeans, d] = vgg_nearest_neighbour(X, center);
@@ -69,11 +65,6 @@ switch algorithm
             [~, ind] = min(d(index));
             cid = index_all(index(ind));
             idx(index_all(index)) = cid;
-        end
-
-        if is_save
-            data.idx_kmeans = idx;
-            save(data_file, 'data');
         end
     case 'ap'
         % try to load similarity scores
@@ -101,7 +92,7 @@ switch algorithm
             end
         end       
 
-        p = min(s(:,3)) * 1.6;
+        p = min(s(:,3));
 
         % clustering
         fprintf('Start AP clustering\n');
@@ -122,13 +113,7 @@ switch algorithm
             index = idx_ap == cids(i);
             cid = index_all(cids(i));
             idx(index_all(index)) = cid;
-        end        
-        
-        % save results
-        if is_save
-            data.idx_ap = idx;
-            save(data_file, 'data');
-        end        
+        end       
 end
 
 function modelDs = compute_model_size(bbox)

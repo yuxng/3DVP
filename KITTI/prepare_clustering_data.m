@@ -24,6 +24,7 @@ else
 end
 
 count = 0;
+id = [];
 imgname = [];
 bbox = [];
 l = [];
@@ -39,6 +40,7 @@ occlusion = [];
 pattern = [];
 grid = [];
 translation = [];
+is_flip = [];
 
 for i = 1:numel(ids)
     img_idx = ids(i);
@@ -58,12 +60,13 @@ for i = 1:numel(ids)
     disp(filename);
     object = load(filename);
     record = object.record;
-    objects = record.objects;
+    objects = [record.objects record.objects_flip];
     
     for j = 1:numel(objects)
         object = objects(j);
         if strcmp(object.type, 'Car') == 1 && isempty(object.grid) == 0
             count = count + 1;
+            id(count) = img_idx;
             imgname{count} = record.filename;
             bbox(:,count) = [object.x1; object.y1; object.x2; object.y2];
             l(count) = object.l;
@@ -83,10 +86,12 @@ for i = 1:numel(ids)
             X = Pv2c\X;
             X(4) = [];
             translation(:,count) = X;
+            is_flip(count) = object.is_flip;
         end
     end
 end
 
+data.id = id;
 data.imgname = imgname;
 data.bbox = bbox;
 data.l = l;
@@ -102,3 +107,4 @@ data.occlusion = occlusion;
 data.pattern = pattern;
 data.grid = grid;
 data.translation = translation;
+data.is_flip = is_flip;

@@ -79,6 +79,9 @@ for i = 1:N
     % show the image patch
     filename = fullfile(image_dir, data.imgname{ind});
     I = imread(filename);
+    if data.is_flip(ind) == 1
+        I = I(:, end:-1:1, :);
+    end    
     bbox = data.bbox(:,ind);
     rect = [bbox(1) bbox(2) bbox(3)-bbox(1) bbox(4)-bbox(2)];
     I1 = imcrop(I, rect);
@@ -105,6 +108,9 @@ for i = 1:N
         % show the image patch
         filename = fullfile(image_dir, data.imgname{ind});
         I = imread(filename);
+        if data.is_flip(ind) == 1
+            I = I(:, end:-1:1, :);
+        end        
         bbox = data.bbox(:,ind);
         rect = [bbox(1) bbox(2) bbox(3)-bbox(1) bbox(4)-bbox(2)];
         I1 = imcrop(I, rect);

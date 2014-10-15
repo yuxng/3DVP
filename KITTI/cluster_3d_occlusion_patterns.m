@@ -1,16 +1,16 @@
-function cluster_3d_occlusion_patterns
+function idx = cluster_3d_occlusion_patterns(data, algorithm, K)
 
-data_file = 'data.mat';
-is_save = 1;
 is_continue = 1;
-algorithm = 'ap';
+
+% select the clustering data
+height = data.bbox(4,:) - data.bbox(2,:) + 1;
+occlusion = data.occlusion;
+truncation = data.truncation;
+flag = height > 25 & occlusion < 3 & truncation < 0.5;
+fprintf('%d examples in clustering\n', sum(flag));    
 
 switch algorithm
     case 'ap'
-        % load data
-        object = load(data_file);
-        data = object.data;       
-
         % try to load similarity scores
         if is_continue == 1 && exist('similarity.mat', 'file') ~= 0
             fprintf('load similarity scores from file\n');
@@ -18,19 +18,11 @@ switch algorithm
             scores = object.scores;
         else
             fprintf('computing similarity scores...\n');
-            scores = compute_similarity(data.grid);
+            scores = compute_similarity(data.grid(:,flag));
             save('similarity.mat', 'scores', '-v7.3');
             fprintf('save similarity scores\n');
         end
         
-        % select the clustering data
-        height = data.bbox(4,:) - data.bbox(2,:) + 1;
-        occlusion = data.occlusion;
-        truncation = data.truncation;
-        flag = height > 25 & occlusion < 3 & truncation < 0.5;
-        fprintf('%d examples in clustering\n', sum(flag));        
-        
-        scores = scores(flag, flag);
         N = size(scores, 1);
         M = N*N-N;
         s = zeros(M,3); % Make ALL N^2-N similarities
@@ -44,7 +36,7 @@ switch algorithm
             end
         end       
 
-        p = min(s(:,3)) * 0.5;
+        p = min(s(:,3));
 
         % clustering
         fprintf('Start AP clustering\n');
@@ -65,49 +57,29 @@ switch algorithm
             index = idx_ap == cids(i);
             cid = index_all(cids(i));
             idx(index_all(index)) = cid;
-        end        
-        
-        % save results
-        if is_save == 1
-            object = load(data_file);
-            data = object.data;
-            data.idx_ap = idx;
-            save(data_file, 'data');
-        end        
-        
+        end
     case 'kmeans'
-        % load data
-        object = load(data_file);
-        data = object.data;
-        
+        fprintf('3d kmeans %d\n', K);
         % try to load distances
         if exist('distances.mat', 'file') ~= 0
             fprintf('load distances from file\n');
             object = load('distances.mat');
             distances = object.distances;
-            for i = 1:size(distances,1)
-                distances(i,i) = 0;
-            end
         else
             fprintf('computing distances...\n');
-            scores = compute_similarity(data.grid);
+            scores = compute_similarity(data.grid(:,flag));
             distances = 1 - scores;
+            for i = 1:size(distances,1)
+                distances(i,i) = 0;
+            end            
 
             save('distances.mat', 'distances', '-v7.3');
             fprintf('save distances\n');
         end
         
-        % select the clustering data
-        height = data.bbox(4,:) - data.bbox(2,:) + 1;
-        occlusion = data.occlusion;
-        truncation = data.truncation;
-        flag = height > 25 & occlusion < 3 & truncation < 0.5;
-        fprintf('%d examples in clustering\n', sum(flag));
-        
         % load data
-        K = 350;
         opts = struct('maxiters', 1000, 'mindelta', eps, 'verbose', 1);
-        idx_kmeans = kmeans_hamming(distances(flag, flag), K, opts);
+        idx_kmeans = kmeans_hamming(distances, K, opts);
         
         % construct idx
         num = numel(data.imgname);
@@ -121,26 +93,7 @@ switch algorithm
             cid = index_all(cids(i));
             idx(index_all(index)) = cid;
         end        
-        
-        % save results
-        if is_save == 1
-            object = load(data_file);
-            data = object.data;
-            data.idx_kmeans = idx;
-            save(data_file, 'data');
-        end
-    case 'pose'
-        % load data
-        object = load(data_file);
-        data = object.data;
-        
-        % select the clustering data
-        height = data.bbox(4,:) - data.bbox(2,:) + 1;
-        occlusion = data.occlusion;
-        truncation = data.truncation;
-        flag = height > 40 & occlusion == 0 & truncation < 0.15;
-        fprintf('%d examples in clustering\n', sum(flag));
-        
+    case 'pose'        
         % split the azimuth
         vnum = 16;
         azimuth = data.azimuth(flag);
@@ -161,15 +114,6 @@ switch algorithm
             cid = index_all(index(ind));
             idx(index_all(index)) = cid;
         end
-        
-        % save results
-        if is_save == 1
-            object = load(data_file);
-            data = object.data;
-            data.idx_pose = idx;
-            save(data_file, 'data');
-        end        
-        
     otherwise
         fprintf('algorithm %s not supported\n', algorithm);
 end

@@ -1,12 +1,12 @@
-function exemplar_kitti_test(cls, ind, cid, is_train, is_continue, is_pascal)
+function exemplar_kitti_test(cls, name, ind, cid, threshold, is_train, is_continue, is_pascal)
 
 exemplar_globals;
 
 % load detector
-model_name = fullfile(resultdir, sprintf('%s_%d_final.mat', cls, ind));
+model_name = fullfile(resultdir, sprintf('%s_%s_%d_final.mat', cls, name, ind));
 object = load(model_name);
 detector = object.detector;
-detector = acfModify(detector, 'cascThr', -50);
+detector = acfModify(detector, 'cascThr', threshold);
 
 Ds = detector;
 if ~iscell(Ds)
@@ -56,7 +56,7 @@ else
     opt = [];
 end
 
-filename = fullfile(resultdir, sprintf('%s_%d_test.mat', cls, ind));
+filename = fullfile(resultdir, sprintf('%s_%s_%d_test.mat', cls, name, ind));
 
 % run detector in each image
 if is_continue == 1 && exist(filename, 'file')
@@ -65,7 +65,7 @@ else
     N = numel(ids);
     boxes = cell(1, N);
     parfor id = 1:N
-        fprintf('%s: center %d: %d/%d\n', cls, cid, id, N);
+        fprintf('%s %s: center %d: %d/%d\n', cls, name, cid, id, N);
         if is_pascal
             file_img = sprintf(opt.VOCopts.imgpath, ids{id});
         else
