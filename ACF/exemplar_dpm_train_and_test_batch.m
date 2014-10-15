@@ -37,12 +37,14 @@ for i = index
         name = sprintf('3d_kmeans_%d', K);
     end
     
-    if K <= 20
+    if K == 5
         threshold = -5;
-    elseif K <= 100
+    elseif K == 10
         threshold = -10;
+    elseif K <= 50
+        threshold = -20;
     else
-        threshold = -30;
+        threshold = -50;
     end
     
     % cluster centers

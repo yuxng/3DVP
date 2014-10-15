@@ -11,7 +11,7 @@ image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 % load data
 object = load('data.mat');
 data = object.data;
-idx = data.idx_ap;
+idx = data.idx_2d_kmeans{2};
 
 % load the mean CAD model
 cls = 'car';
@@ -95,6 +95,7 @@ for i = 1:N
     member = find(idx == ind);
     member(member == ind) = [];
     num = numel(member);
+    fprintf('%d examples\n', num+1);
     for j = 1:min((nplot-1)*mplot/2-1, num)
         ind = member(j);
         grid = data.grid(:,ind);
