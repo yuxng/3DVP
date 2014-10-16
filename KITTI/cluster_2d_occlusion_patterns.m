@@ -1,4 +1,4 @@
-function idx = cluster_2d_occlusion_patterns(data, algorithm, K)
+function idx = cluster_2d_occlusion_patterns(data, algorithm, K, pscale)
 
 opt = globals;
 
@@ -67,6 +67,7 @@ switch algorithm
             idx(index_all(index)) = cid;
         end
     case 'ap'
+        fprintf('2d AP %f\n', pscale);
         % try to load similarity scores
         if exist('similarity_2d.mat', 'file') ~= 0
             fprintf('load similarity scores from file\n');
@@ -92,7 +93,7 @@ switch algorithm
             end
         end       
 
-        p = min(s(:,3));
+        p = min(s(:,3)) * pscale;
 
         % clustering
         fprintf('Start AP clustering\n');
