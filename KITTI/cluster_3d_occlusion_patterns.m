@@ -11,7 +11,7 @@ fprintf('%d examples in clustering\n', sum(flag));
 
 switch algorithm
     case 'ap'
-        fprintf('3d AP\n');
+        fprintf('3d AP %f\n', pscale);
         % try to load similarity scores
         if is_continue == 1 && exist('similarity.mat', 'file') ~= 0
             fprintf('load similarity scores from file\n');
@@ -36,39 +36,29 @@ switch algorithm
                 j = j+1;
             end
         end
+
+        p = min(s(:,3)) * pscale;
+
+        % clustering
+        fprintf('Start AP clustering\n');
+        [idx_ap, netsim, dpsim, expref] = apclustermex(s, p);
+
+        fprintf('Number of clusters: %d\n', length(unique(idx_ap)));
+        fprintf('Fitness (net similarity): %f\n', netsim);
         
-        num = numel(pscale);
-        idx_aps = cell(1, num);
+        % construct idx
+        num = numel(data.imgname);
+        idx = zeros(num, 1);
+        idx(flag == 0) = -1;
+        index_all = find(flag == 1);
         
-        for k = 1:num
-            fprintf('pscale %.2f\n', pscale(k));
-            p = min(s(:,3)) * pscale(k);
-
-            % clustering
-            fprintf('Start AP clustering\n');
-            [idx_ap, netsim, dpsim, expref] = apclustermex(s, p);
-
-            fprintf('Number of clusters: %d\n', length(unique(idx_ap)));
-            fprintf('Fitness (net similarity): %f\n', netsim);
-
-            % construct idx
-            num = numel(data.imgname);
-            idx = zeros(num, 1);
-            idx(flag == 0) = -1;
-            index_all = find(flag == 1);
-
-            cids = unique(idx_ap);
-            K = numel(cids);
-            for i = 1:K
-                index = idx_ap == cids(i);
-                cid = index_all(cids(i));
-                idx(index_all(index)) = cid;
-            end
-            
-            idx_aps{k} = idx;
+        cids = unique(idx_ap);
+        K = numel(cids);
+        for i = 1:K
+            index = idx_ap == cids(i);
+            cid = index_all(cids(i));
+            idx(index_all(index)) = cid;
         end
-        
-        idx = idx_aps;
     case 'kmeans'
         fprintf('3d kmeans %d\n', K);
         % try to load distances

@@ -1,8 +1,9 @@
-function cluster_occlusion_patterns_batch
+function cluster_occlusion_patterns_batch(index)
 
 data_file = 'data.mat';
 object = load(data_file);
 data = object.data;
+ps_3d = data.ps_3d;
 
 % algorithm = 'kmeans';
 % K = [5, 10, 20, 30, 40, 50, 100, 150, 200, 250, 300, 350];
@@ -22,9 +23,8 @@ data = object.data;
 
 
 algorithm = 'ap';
-ps_3d = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4];
-idx_3d_aps = cluster_3d_occlusion_patterns(data, algorithm, [], ps_3d);
+% ps_3d = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4];
+idx_3d_ap = cluster_3d_occlusion_patterns(data, algorithm, [], ps_3d(index));
 
-data.ps_3d = ps_3d;
-data.idx_3d_aps = idx_3d_aps;
-save(data_file, 'data');
+filename = sprintf('Clusters/idx_3d_ap_%d.mat', index);
+save(filename, 'idx_3d_ap');
