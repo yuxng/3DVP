@@ -3,8 +3,8 @@ function exemplar_make_pbs_scripts
 filename = '../data.mat';
 object = load(filename);
 data = object.data;
-ps_2d = data.ps_2d;
-num = numel(ps_2d);
+job_indexes = data.job_indexes;
+num = size(job_indexes, 1);
 
 is_multiple = 0;
 if is_multiple
