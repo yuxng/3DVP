@@ -2,18 +2,19 @@ function exemplar_display_result_kitti
 
 cls = 'car';
 threshold = -20;
-is_train = 0;
+is_train = 1;
 threshold_overlap = 0.6;
-result_dir = 'kitti_test_acf_3d_169';
+result_dir = 'kitti_train_kmeans_new';
+name = '3d_kmeans_200_combined';
 
 % read detection results
-filename = sprintf('%s/%s_test.mat', result_dir, cls);
+filename = sprintf('%s/%s_%s_test.mat', result_dir, cls, name);
 object = load(filename);
 dets = object.dets;
 fprintf('load detection done\n');
 
 % read ids of validation images
-object = load('kitti_ids.mat');
+object = load('kitti_ids_new.mat');
 if is_train
     ids = object.ids_val;
 else
@@ -52,7 +53,7 @@ for i = 1:N
     end
     
     % get predicted bounding box
-    det = dets{img_idx + 1};
+    det = dets{i};
     if isempty(det) == 1
         fprintf('no detection for image %d\n', img_idx);
         continue;
@@ -93,10 +94,10 @@ for i = 1:N
     imshow(I);
     hold on;
     
-    for k = 1:size(dets{img_idx + 1},1)
-        if dets{img_idx + 1}(k,6) > threshold
+    for k = 1:size(dets{i},1)
+        if dets{i}(k,6) > threshold
             % get predicted bounding box
-            bbox_pr = dets{img_idx + 1}(k,1:4);
+            bbox_pr = dets{i}(k,1:4);
             bbox_draw = [bbox_pr(1), bbox_pr(2), bbox_pr(3)-bbox_pr(1), bbox_pr(4)-bbox_pr(2)];
             rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);
         end
