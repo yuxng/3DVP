@@ -3,8 +3,8 @@ function exemplar_make_pbs_scripts
 filename = '../data.mat';
 object = load(filename);
 data = object.data;
-ps_3d = data.ps_3d;
-num = numel(ps_3d);
+ps_2d = data.ps_2d;
+num = numel(ps_2d);
 
 is_multiple = 0;
 if is_multiple
@@ -21,7 +21,7 @@ for o_i = 1:num_job
   fprintf(fid, '#!/bin/bash\n');
   fprintf(fid, '#PBS -S /bin/bash\n');
   fprintf(fid, '#PBS -N run_it%d\n', o_i);
-  fprintf(fid, '#PBS -l nodes=1:ppn=2\n');
+  fprintf(fid, '#PBS -l nodes=1:ppn=1\n');
   fprintf(fid, '#PBS -l mem=32gb\n');
   fprintf(fid, '#PBS -l walltime=12:00:00\n');
   fprintf(fid, '#PBS -q cvgl\n');
