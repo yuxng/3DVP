@@ -46,7 +46,7 @@ for o_i = 1:num_job
   else
       s = num2str(o_i);
   end
-  fprintf(fid, ['matlab.new -nodesktop -nosplash -r "exemplar_dpm_train_and_test_batch(' s '); exit;"']);
+  fprintf(fid, ['matlab.new -nodesktop -nosplash -r "exemplar_dpm_train_and_test_batch_aps(' s '); exit;"']);
   fclose(fid);
 end
 
