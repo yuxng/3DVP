@@ -5,8 +5,14 @@ threshold = -inf;
 is_train = 1;
 is_filtering = 1;
 is_pascal = 0;
-is_2d = 0;
-result_dir = 'kitti_train_kmeans_new';
+is_2d = 1;
+is_kmeans = 0;
+
+if is_kmeans
+    result_dir = 'kitti_train_kmeans_new';
+else
+    result_dir = 'kitti_train_aps_new';
+end
 
 % load data
 if is_pascal
@@ -23,18 +29,38 @@ else
     end
 end
 data = object.data;
-K = data.K;
 
-for k = 1:numel(K)
+if is_kmeans
+    K = data.K;
+    num = numel(K);
+else
     if is_2d
-        idx = data.idx_2d_kmeans{k};
-        name = sprintf('2d_kmeans_%d', K(k));
-        if K(k) == 5
-            threshold = 1;
+        num = numel(data.idx_2d_aps);
+    else
+        num = numel(data.idx_3d_aps);
+    end
+end
+
+for k = 1:num
+    if is_kmeans
+        if is_2d
+            idx = data.idx_2d_kmeans{k};
+            name = sprintf('2d_kmeans_%d', K(k));
+            if K(k) == 5
+                threshold = 1;
+            end
+        else
+            idx = data.idx_3d_kmeans{k};
+            name = sprintf('3d_kmeans_%d', K(k));
         end
     else
-        idx = data.idx_3d_kmeans{k};
-        name = sprintf('3d_kmeans_%d', K(k));
+        if is_2d
+            idx = data.idx_2d_aps{k};
+            name = sprintf('2d_aps_%d', k);
+        else
+            idx = data.idx_3d_aps{k};
+            name = sprintf('3d_aps_%d', k);
+        end
     end
 
     centers = double(unique(idx));
@@ -71,6 +97,14 @@ for k = 1:numel(K)
         end
         object = load(filename);
         boxes1 = object.boxes;
+        
+        if is_2d
+            if size(boxes1{1},1) > 1000
+                threshold = -1;
+            else
+                threshold = -50;
+            end
+        end
 
         % load the calibration weights
         beta = [];
