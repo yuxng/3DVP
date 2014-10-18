@@ -62,21 +62,21 @@ switch algorithm
     case 'kmeans'
         fprintf('3d kmeans %d\n', K);
         % try to load distances
-        if exist('distances.mat', 'file') ~= 0
-            fprintf('load distances from file\n');
-            object = load('distances.mat');
-            distances = object.distances;
+        if is_continue == 1 && exist('similarity.mat', 'file') ~= 0
+            fprintf('load similarity scores from file\n');
+            object = load('similarity.mat');
+            scores = object.scores;
         else
-            fprintf('computing distances...\n');
+            fprintf('computing similarity scores...\n');
             scores = compute_similarity(data.grid(:,flag));
-            distances = 1 - scores;
-            for i = 1:size(distances,1)
-                distances(i,i) = 0;
-            end            
-
-            save('distances.mat', 'distances', '-v7.3');
-            fprintf('save distances\n');
+            save('similarity.mat', 'scores', '-v7.3');
+            fprintf('save similarity scores\n');
         end
+        
+        distances = 1 - scores;
+        for i = 1:size(distances,1)
+            distances(i,i) = 0;
+        end            
         
         % load data
         opts = struct('maxiters', 1000, 'mindelta', eps, 'verbose', 1);
