@@ -11,7 +11,7 @@ end
 
 cls = 'car';
 is_continue = 0;
-is_train = 1;
+is_train = 0;
 is_pascal = 0;
 
 if is_pascal
@@ -24,13 +24,13 @@ else
     if is_train
         filename = fullfile(SLMroot, 'KITTI/data.mat');
     else
-        filename = fullfile(SLMroot, 'KITTI/data_all.mat');
+        filename = fullfile(SLMroot, 'KITTI/data_kitti.mat');
     end
 end
 
 object = load(filename);
 data = object.data;
-data.idx = data.idx_ap;
+data.idx = data.idx_kmeans;
 
 % cluster centers
 centers = unique(data.idx);
@@ -38,7 +38,7 @@ centers(centers == -1) = [];
 
 % train an exemplar DPM for each cluster
 num = numel(centers);
-name = sprintf('3d_aps_%d', num);
+name = sprintf('3d_kmeans_%d', num);
 threshold = -50;
 
 if nargin < 1

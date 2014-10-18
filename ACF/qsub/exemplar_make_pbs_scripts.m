@@ -6,12 +6,12 @@ is_pascal = 0;
 if is_pascal
     filename = '../../PASCAL3D/data.mat';
 else
-    filename = '../../KITTI/data.mat';
+    filename = '../../KITTI/data_kitti.mat';
 end
 object = load(filename);
 data = object.data;
 
-cids = unique(data.idx_ap);
+cids = unique(data.idx_kmeans);
 cids(cids == -1) = [];
 num = numel(cids);
 
