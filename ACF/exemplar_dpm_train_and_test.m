@@ -39,6 +39,7 @@ centers(centers == -1) = [];
 % train an exemplar DPM for each cluster
 num = numel(centers);
 name = sprintf('3d_aps_%d', num);
+threshold = -50;
 
 if nargin < 1
     index = 1:num;
@@ -47,7 +48,7 @@ end
 for i = index
     fprintf('%d/%d: Train DPM for center %d\n', i, num, centers(i));
     exemplar_kitti_train(cls, name, data, i, centers(i), is_train, is_continue, is_pascal);
-    exemplar_kitti_test(cls, name, i, centers(i), is_train, is_continue, is_pascal);
+    exemplar_kitti_test(cls, name, i, centers(i), threshold, is_train, is_continue, is_pascal);
 end
 
 if is_hadoop == 0
