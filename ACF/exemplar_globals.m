@@ -8,7 +8,7 @@ if is_hadoop
     cachedir = fullfile(rootdir, 'cache/');
     resultdir = fullfile(rootdir, 'data/');
 else
-    rootdir = '/scratch/yuxiang/Projects';
+    rootdir = '/tmp/yuxiang/Projects';
     cachedir = fullfile(rootdir, 'data/');
     resultdir = 'data/';
 end
@@ -29,7 +29,8 @@ end
 KITTIpaths = {'/net/skyserver10/workplace/yxiang/KITTI_Dataset', ...
     '/net/acadia/workplace/yuxiang/Projects/KITTI', ...
     '/home/yuxiang/Projects/KITTI_Dataset', ...
-    '/scratch/yuxiang/Projects/KITTI_Dataset'};
+    '/scratch/yuxiang/Projects/KITTI_Dataset', ...
+    '/scail/scratch/u/yuxiang/KITTI_Dataset'};
 
 for i = 1:numel(KITTIpaths)
     if exist(KITTIpaths{i}, 'dir')
@@ -55,7 +56,8 @@ for i = 1:numel(SLMpaths)
 end
 
 PASCAL3Dpaths = {'/home/yuxiang/Projects/Pose_Dataset/PASCAL3D+_release1.1', ...
-    '/scratch/yuxiang/Projects/PASCAL3D+_release1.1'};
+    '/scratch/yuxiang/Projects/PASCAL3D+_release1.1', ...
+    '/scail/scratch/u/yuxiang/PASCAL3D+_release1.1'};
 
 for i = 1:numel(PASCAL3Dpaths)
     if exist(PASCAL3Dpaths{i}, 'dir')
