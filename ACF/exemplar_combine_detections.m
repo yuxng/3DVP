@@ -28,6 +28,7 @@ idx = data.idx_ap;
 centers = double(unique(idx));
 centers(centers == -1) = [];
 N = numel(centers);
+name = sprintf('3d_aps_%d', N);
 
 % load detections
 dets = [];
@@ -53,11 +54,7 @@ for i = 1:N
         lim = [];
     end
     
-    if is_train == 1
-        filename = sprintf('%s/%s_%d_test.mat', result_dir, cls, i);
-    else
-        filename = sprintf('%s/%s_%d_test.mat', result_dir, cls, i);
-    end
+    filename = sprintf('%s/%s_%s_%d_test.mat', result_dir, cls, name, i);
     if exist(filename, 'file') == 0
         continue;
     end
@@ -89,11 +86,7 @@ for i = 1:N
     end
 end
 
-if is_train == 1
-    filename = sprintf('%s/%s_test.mat', result_dir, cls);
-else
-    filename = sprintf('%s/%s_test.mat', result_dir, cls);
-end
+filename = sprintf('%s/%s_%s_combined_test.mat', result_dir, cls, name);
 save(filename, 'dets', '-v7.3');
 
 

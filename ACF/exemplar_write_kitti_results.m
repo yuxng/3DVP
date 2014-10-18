@@ -4,9 +4,10 @@ cls = 'car';
 is_train = 1;
 threshold_overlap = 0.6;
 result_dir = 'data';
+name = '3d_aps_125';
 
 % read detection results
-filename = sprintf('%s/%s_test.mat', result_dir, cls);
+filename = sprintf('%s/%s_%s_combined_test.mat', result_dir, cls, name);
 object = load(filename);
 dets = object.dets;
 fprintf('load detection done\n');
