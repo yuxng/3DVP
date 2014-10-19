@@ -1,10 +1,10 @@
  function [cids, cluster_sizes, width_mean, height_mean] = compute_cluster_statistics
 
 % load data
-object = load('data.mat');
+object = load('data_kitti.mat');
 data = object.data;
 
-idx = data.idx_ap;
+idx = data.idx_kmeans;
 cids = unique(idx);
 cids(cids == -1) = [];
 num = numel(cids);

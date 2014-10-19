@@ -24,24 +24,16 @@ switch algorithm
             fprintf('save similarity scores\n');
         end
         
-        N = size(scores, 1);
-        M = N*N-N;
-        s = zeros(M,3); % Make ALL N^2-N similarities
-        j = 1;
-        for i = 1:N
-            for k = [1:i-1,i+1:N]
-                s(j,1) = i;
-                s(j,2) = k;
-                s(j,3) = scores(i,k);
-                j = j+1;
-            end
+        for i = 1:size(scores,1)
+            scores(i,i) = 1;
         end
 
-        p = min(s(:,3)) * pscale;
+        p = min(min(scores)) * pscale;
+        disp(p);
 
         % clustering
         fprintf('Start AP clustering\n');
-        [idx_ap, netsim, dpsim, expref] = apclustermex(s, p);
+        [idx_ap, netsim, dpsim, expref] = apclustermex(scores, p);
 
         fprintf('Number of clusters: %d\n', length(unique(idx_ap)));
         fprintf('Fitness (net similarity): %f\n', netsim);
