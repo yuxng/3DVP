@@ -1,10 +1,10 @@
 function exemplar_write_kitti_results
 
 cls = 'car';
-is_train = 1;
+is_train = 0;
 threshold_overlap = 0.6;
 result_dir = 'data';
-name = '3d_aps_125';
+name = '3d_ap_227';
 
 % read detection results
 filename = sprintf('%s/%s_%s_combined_test.mat', result_dir, cls, name);
@@ -16,7 +16,7 @@ fprintf('load detection done\n');
 if is_train == 1
     object = load('../KITTI/data.mat');
 else
-    object = load('../KITTI/data_all.mat');
+    object = load('../KITTI/data_kitti.mat');
 end
 data = object.data;
 

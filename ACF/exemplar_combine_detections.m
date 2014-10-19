@@ -6,7 +6,7 @@ is_train = 0;
 is_calibration = 0;
 is_filtering = 1;
 is_pascal = 0;
-result_dir = 'kitti_test_kmeans_3d_200';
+result_dir = 'data';
 
 % load data
 if is_pascal
@@ -23,12 +23,12 @@ else
     end
 end
 data = object.data;
-idx = data.idx_kmeans;
+idx = data.idx_ap;
 
 centers = double(unique(idx));
 centers(centers == -1) = [];
 N = numel(centers);
-name = sprintf('3d_kmeans_%d', N);
+name = sprintf('3d_ap_%d', N);
 
 % load detections
 dets = [];
