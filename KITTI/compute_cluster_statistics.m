@@ -4,7 +4,7 @@
 object = load('data_kitti.mat');
 data = object.data;
 
-idx = data.idx_kmeans;
+idx = data.idx_ap;
 cids = unique(idx);
 cids(cids == -1) = [];
 num = numel(cids);

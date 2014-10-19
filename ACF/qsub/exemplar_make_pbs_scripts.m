@@ -11,7 +11,7 @@ end
 object = load(filename);
 data = object.data;
 
-cids = unique(data.idx_kmeans);
+cids = unique(data.idx_ap);
 cids(cids == -1) = [];
 num = numel(cids);
 

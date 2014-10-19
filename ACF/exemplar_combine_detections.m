@@ -2,11 +2,11 @@ function exemplar_combine_detections
 
 cls = 'car';
 threshold = -inf;
-is_train = 1;
+is_train = 0;
 is_calibration = 0;
 is_filtering = 1;
 is_pascal = 0;
-result_dir = 'data';
+result_dir = 'kitti_test_kmeans_3d_200';
 
 % load data
 if is_pascal
@@ -19,16 +19,16 @@ else
     if is_train == 1
         object = load('../KITTI/data.mat');
     else
-        object = load('../KITTI/data_all.mat');
+        object = load('../KITTI/data_kitti.mat');
     end
 end
 data = object.data;
-idx = data.idx_ap;
+idx = data.idx_kmeans;
 
 centers = double(unique(idx));
 centers(centers == -1) = [];
 N = numel(centers);
-name = sprintf('3d_aps_%d', N);
+name = sprintf('3d_kmeans_%d', N);
 
 % load detections
 dets = [];

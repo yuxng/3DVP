@@ -30,7 +30,7 @@ end
 
 object = load(filename);
 data = object.data;
-data.idx = data.idx_kmeans;
+data.idx = data.idx_ap;
 
 % cluster centers
 centers = unique(data.idx);
@@ -38,7 +38,7 @@ centers(centers == -1) = [];
 
 % train an exemplar DPM for each cluster
 num = numel(centers);
-name = sprintf('3d_kmeans_%d', num);
+name = sprintf('3d_ap_%d', num);
 threshold = -50;
 
 if nargin < 1
