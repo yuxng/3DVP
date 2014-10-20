@@ -1,45 +1,23 @@
-function cluster_3d_occlusion_patterns
+function idx = cluster_3d_occlusion_patterns(cls, data, algorithm, K, pscale)
 
-data_file = 'data_all.mat';
-is_save = 1;
-is_continue = 0;
-cls = 'car';
-algorithm = 'ap';
+% select the clustering data        
+cls_ind = find(strcmp(cls, data.classes) == 1);
+flag = data.cls_ind == cls_ind & data.difficult == 0 & data.is_pascal == 1;
+fprintf('%d %s examples in clustering\n', sum(flag), cls);
 
 switch algorithm
     case 'ap'
-        % load data
-        object = load(data_file);
-        data = object.data;
-        
-        % select the clustering data        
-        cls_ind = find(strcmp(cls, data.classes) == 1);
-        height = data.bbox(4,:) - data.bbox(2,:) + 1;
-        occlusion = data.occ_per;
-        truncation = data.trunc_per;
-        flag = data.cls_ind == cls_ind & data.difficult == 0 & ...
-            height > 25 & occlusion < 0.7 & truncation < 0.5 & data.is_pascal == 1;
-        fprintf('%d %s examples in clustering\n', sum(flag), cls);
-        
-        % try to load similarity scores
-        if is_continue == 1 && exist('similarity.mat', 'file') ~= 0
-            fprintf('load similarity scores from file\n');
-            object = load('similarity.mat');
-            scores = object.scores;
-        else
-            % collect patterns
-            index = find(flag == 1);
-            num = numel(index);
-            X = [];
-            for i = 1:num
-                X(:,i) = data.grid{index(i)};
-            end
+        % collect patterns
+        index = find(flag == 1);
+        num = numel(index);
+        X = [];
+        for i = 1:num
+            X(:,i) = data.grid{index(i)};
+        end
 
-            fprintf('computing similarity scores...\n');
-            scores = compute_similarity(X);
-            save('similarity.mat', 'scores', '-v7.3');
-            fprintf('save similarity scores\n');
-        end        
+        fprintf('computing similarity scores...\n');
+        scores = compute_similarity(X);
+        fprintf('done\n');
         
         N = size(scores, 1);
         M = N*N-N;
@@ -54,7 +32,7 @@ switch algorithm
             end
         end       
 
-        p = min(s(:,3));
+        p = min(s(:,3)) * pscale;
 
         % clustering
         fprintf('Start AP clustering\n');
@@ -64,74 +42,39 @@ switch algorithm
         fprintf('Fitness (net similarity): %f\n', netsim);
         
         % construct idx
-%         num = numel(data.imgname);
-%         idx = zeros(num, 1);
-%         idx(flag == 0) = -1;
-%         index_all = find(flag == 1);
-%         
-%         cids = unique(idx_ap);
-%         K = numel(cids);
-%         for i = 1:K
-%             index = idx_ap == cids(i);
-%             cid = index_all(cids(i));
-%             idx(index_all(index)) = cid;
-%         end        
+        num = numel(data.imgname);
+        idx = zeros(num, 1);
+        idx(flag == 0) = -1;
+        index_all = find(flag == 1);
         
-        % save results
-        if is_save == 1
-            data.id = data.id(flag);
-            data.cls = data.cls(flag);
-            data.cls_ind = data.cls_ind(flag);
-            data.imgname = data.imgname(flag);
-            data.cad_index = data.cad_index(flag);
-            data.bbox = data.bbox(:,flag);
-            data.azimuth = data.azimuth(flag);
-            data.elevation = data.elevation(flag);
-            data.distance = data.distance(flag);
-            data.occ_per = data.occ_per(flag);
-            data.trunc_per = data.trunc_per(flag);
-            data.difficult = data.difficult(flag);
-            data.pattern = data.pattern(flag);
-            data.grid = data.grid(flag);
-            data.is_flip = data.is_flip(flag);
-            data.is_pascal = data.is_pascal(flag);
-            data.idx_ap = idx_ap;
-            save('data.mat', 'data');
-        end        
-        
-    case 'kmeans'
-        % load data
-        object = load(data_file);
-        data = object.data;
-        
-        % try to load distances
-        if exist('distances.mat', 'file') ~= 0
-            fprintf('load distances from file\n');
-            object = load('distances.mat');
-            distances = object.distances;
-            for i = 1:size(distances,1)
-                distances(i,i) = 0;
-            end
-        else
-            fprintf('computing distances...\n');
-            scores = compute_similarity(data.grid);
-            distances = 1 - scores;
-
-            save('distances.mat', 'distances', '-v7.3');
-            fprintf('save distances\n');
+        cids = unique(idx_ap);
+        K = numel(cids);
+        for i = 1:K
+            index = idx_ap == cids(i);
+            cid = index_all(cids(i));
+            idx(index_all(index)) = cid;
         end
-        
-        % select the clustering data
-        height = data.bbox(4,:) - data.bbox(2,:) + 1;
-        occlusion = data.occlusion;
-        truncation = data.truncation;
-        flag = height > 25 & occlusion < 3 & truncation < 0.5;
-        fprintf('%d examples in clustering\n', sum(flag));
+    case 'kmeans'
+        fprintf('%s 3d kmeans %d\n', cls, K);
+        % collect patterns
+        index = find(flag == 1);
+        num = numel(index);
+        X = [];
+        for i = 1:num
+            X(:,i) = data.grid{index(i)};
+        end
+
+        fprintf('computing similarity scores...\n');
+        scores = compute_similarity(X);
+        distances = 1 - scores;
+        for i = 1:size(distances,1)
+            distances(i,i) = 0;
+        end           
+        fprintf('done\n');
         
         % load data
-        K = 350;
         opts = struct('maxiters', 1000, 'mindelta', eps, 'verbose', 1);
-        idx_kmeans = kmeans_hamming(distances(flag, flag), K, opts);
+        idx_kmeans = kmeans_hamming(distances, K, opts);
         
         % construct idx
         num = numel(data.imgname);
@@ -144,27 +87,8 @@ switch algorithm
             index = idx_kmeans == cids(i);
             cid = index_all(cids(i));
             idx(index_all(index)) = cid;
-        end        
-        
-        % save results
-        if is_save == 1
-            object = load(data_file);
-            data = object.data;
-            data.idx_kmeans = idx;
-            save(data_file, 'data');
         end
     case 'pose'
-        % load data
-        object = load(data_file);
-        data = object.data;
-        
-        % select the clustering data
-        height = data.bbox(4,:) - data.bbox(2,:) + 1;
-        occlusion = data.occlusion;
-        truncation = data.truncation;
-        flag = height > 40 & occlusion == 0 & truncation < 0.15;
-        fprintf('%d examples in clustering\n', sum(flag));
-        
         % split the azimuth
         vnum = 16;
         azimuth = data.azimuth(flag);
@@ -185,15 +109,6 @@ switch algorithm
             cid = index_all(index(ind));
             idx(index_all(index)) = cid;
         end
-        
-        % save results
-        if is_save == 1
-            object = load(data_file);
-            data = object.data;
-            data.idx_pose = idx;
-            save(data_file, 'data');
-        end        
-        
     otherwise
         fprintf('algorithm %s not supported\n', algorithm);
 end

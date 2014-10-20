@@ -1,7 +1,7 @@
-function exemplar_test_joint(cls, is_train, is_continue, is_pascal)
+function exemplar_test_joint(cls, name, is_train, is_continue, is_pascal)
 
 % load model
-model_name = sprintf('data/%s_final.mat', cls);
+model_name = sprintf('data/%s_%s_final.mat', cls, name);
 object = load(model_name);
 model = object.model;
 model.thresh = min(-1, model.thresh);
@@ -32,7 +32,7 @@ else
     image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]); 
 
     % get test image ids
-    object = load('kitti_ids.mat');
+    object = load('kitti_ids_new.mat');
     if is_train == 1
         ids = object.ids_val;
     else
@@ -40,7 +40,7 @@ else
     end
 end
 
-filename = sprintf('data/%s_test.mat', cls);
+filename = sprintf('data/%s_%s_test.mat', cls, name);
 
 % run detector in each image
 if is_continue && exist(filename, 'file')
@@ -48,7 +48,7 @@ if is_continue && exist(filename, 'file')
 else
     N = numel(ids);
     parfor i = 1:N
-        fprintf('%s: %d/%d\n', cls, i, N);
+        fprintf('%s %s: %d/%d\n', cls, name, i, N);
         
         if is_pascal
             file_img = sprintf(opt.VOCopts.imgpath, ids{i});

@@ -1,11 +1,11 @@
-function [pos, neg, spos] = exemplar_pascal_data_joint(cls, data, centers, is_train, is_continue)
+function [pos, neg, spos] = exemplar_pascal_data_joint(cls, name, data, centers, is_train, is_continue)
 
 % Get training data from the PASCAL3D+ dataset.
 
 globals; 
 pascal_init;
 
-filename = [cachedir cls '_train.mat'];
+filename = [cachedir cls '_' name '_train.mat'];
 if is_continue == 1 && exist(filename, 'file') ~= 0
   load(filename);
 else
@@ -17,7 +17,7 @@ else
   cids = [];
   numpos = 0;
   for i = 1:num_train
-    fprintf('%s : parsing positives: %d/%d\n', cls, i, num_train);
+    fprintf('%s %s : parsing positives: %d/%d\n', cls, name, i, num_train);
     ind = index(i);
     bbox = data.bbox(:,ind);
     id = data.id{ind};
@@ -54,7 +54,7 @@ else
   neg = [];
   numneg = 0;
   for i = 1:length(ids);
-    fprintf('%s : parsing negatives: %d/%d\n', cls, i, length(ids));
+    fprintf('%s %s : parsing negatives: %d/%d\n', cls, name, i, length(ids));
     numneg = numneg+1;
     neg(numneg).im = sprintf(VOCopts.imgpath, ids{i});
     neg(numneg).flip = false;

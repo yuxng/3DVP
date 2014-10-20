@@ -15,7 +15,7 @@ else
 end
 
 % directory for caching models, intermediate data, and results
-cachedir = '/scratch/yuxiang/Projects/data/';
+cachedir = '/tmp/yuxiang/Projects/data/';
 resultdir = 'data/';
 
 if exist(cachedir) == 0
