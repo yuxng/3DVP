@@ -29,8 +29,8 @@ else
   for i = 1:numel(spos)
     models{i} = initmodel(cls, spos{i}, note, 'N');
     models{i}.symmetric = 0;
-    models{i} = train(cls, models{i}, spos{i}, neg, i, 1, 1, 1, ...
-                      cachesize, true, 0.7, false, ['root_' name '_' num2str(i)]);
+    models{i} = train([cls '_' name], models{i}, spos{i}, neg, i, 1, 1, 1, ...
+                      cachesize, true, 0.7, false, ['root_' num2str(i)]);
   end
                   
   save(filename, 'models');
@@ -44,8 +44,8 @@ else
   initrand();
   model = mergemodels(models);
   model.overlap_neg = 0.1;
-  model = train(cls, model, pos, neg(1:maxneg), 0, 0, 1, 5, ...
-                cachesize, true, 0.7, false, ['mix_' name]);
+  model = train([cls '_' name], model, pos, neg(1:maxneg), 0, 0, 1, 5, ...
+                cachesize, true, 0.7, false, 'mix');
             
 %   model = train(cls, model, pos, neg(1:maxneg), 0, 0, 8, 10, ...
 %                 cachesize, true, 0.7, false, 'mix_1');
@@ -68,10 +68,10 @@ else
         model = model_addparts(model, model.start, i, i, 8, [3 3]);
       end
   end
-  model = train(cls, model, pos, neg(1:maxneg), 0, 0, 8, 10, ...
-                cachesize, true, 0.7, false, ['parts_1_' name]);
-  model = train(cls, model, pos, neg, 0, 0, 1, 5, ...
-                cachesize, true, 0.7, true, ['parts_2_' name]);
+  model = train([cls '_' name], model, pos, neg(1:maxneg), 0, 0, 8, 10, ...
+                cachesize, true, 0.7, false, 'parts_1');
+  model = train([cls '_' name], model, pos, neg, 0, 0, 1, 5, ...
+                cachesize, true, 0.7, true, 'parts_2');
   save(filename, 'model');
 end
 
