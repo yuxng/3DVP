@@ -1,15 +1,15 @@
 % compute recall and viewpoint accuracy
-function [recall, precision, accuracy, ap, aa] = compute_recall_precision_accuracy(cls, vnum_train, vnum_test)
+function [recall, precision, accuracy, ap, aa] = compute_recall_precision_accuracy(cls, data, is_2d, K, vnum_train, vnum_test)
 
-if nargin < 3
+if nargin < 6
     vnum_test = vnum_train;
 end
 
 azimuth_interval = [0 (360/(vnum_test*2)):(360/vnum_test):360-(360/(vnum_test*2))];
 
 % load clustering data
-object = load('../PASCAL3D/data.mat');
-data = object.data;
+% object = load('../PASCAL3D/data.mat');
+% data = object.data;
 
 % read ids of validation images
 globals;
@@ -20,9 +20,13 @@ M = numel(ids);
 
 % read detection results
 result_dir = 'data';
-filename = sprintf('%s/%s_test.mat', result_dir, cls);
-object = load(filename, 'dets');
-dets_all = object.dets;
+if is_2d
+    filename = sprintf('%s/%s_2d_kmeans_%d_test.mat', result_dir, cls, K);
+else
+    filename = sprintf('%s/%s_3d_kmeans_%d_test.mat', result_dir, cls, K);
+end
+object = load(filename, 'boxes1');
+dets_all = object.boxes1;
 fprintf('load detection done\n');
 
 energy = [];
@@ -33,7 +37,11 @@ count = zeros(M,1);
 num = zeros(M,1);
 num_pr = 0;
 for i = 1:M
-    fprintf('%s train view %d test view %d: %d/%d\n', cls, vnum_train, vnum_test, i, M);    
+    if is_2d
+        fprintf('%s 2d %d train view %d test view %d: %d/%d\n', cls, K, vnum_train, vnum_test, i, M);    
+    else
+        fprintf('%s 3d %d train view %d test view %d: %d/%d\n', cls, K, vnum_train, vnum_test, i, M);    
+    end
     % read ground truth bounding box
     rec = PASreadrecord(sprintf(VOCopts.annopath, ids{i}));
     clsinds = strmatch(cls, {rec.objects(:).class}, 'exact');

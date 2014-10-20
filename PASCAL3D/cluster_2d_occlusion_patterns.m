@@ -12,6 +12,11 @@ fprintf('%d %s examples in clustering\n', sum(flag), cls);
 modelDs = compute_model_size(data.bbox(:,flag));
 
 % compute features
+if strcmp(cls, 'bottle') == 1
+    sbin = 4;
+else
+    sbin = 8;
+end
 index = find(flag == 1);
 X = [];
 fprintf('computing features...\n');
@@ -32,7 +37,7 @@ for i = 1:numel(index)
     bbox = data.bbox(:,ind);
     gt = [bbox(1) bbox(2) bbox(3)-bbox(1) bbox(4)-bbox(2)];
     Is = bbApply('crop', I, gt, 'replicate', modelDs([2 1]));
-    C = features(double(Is{1}), 8);
+    C = features(double(Is{1}), sbin);
     X(:,i) = C(:);
 end
 fprintf('done\n');
