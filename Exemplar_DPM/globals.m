@@ -31,7 +31,7 @@ if exist([cachedir 'learnlog/']) == 0
 end
 
 % directory for LARGE temporary files created during training
-tmpdir = '/scratch/yuxiang/Projects/data/';
+tmpdir = '/tmp/yuxiang/Projects/data/';
 
 if exist(tmpdir) == 0
   unix(['mkdir -p ' tmpdir]);
