@@ -651,7 +651,7 @@ bool eval(string result_sha)
   bool compute_aos=true, eval_car=false, eval_pedestrian=false, eval_cyclist=false;
 
   // read image ids
-  FILE *fp = fopen("kitti_ids_val.txt", "r");
+  FILE *fp = fopen("kitti_ids_train.txt", "r");
   assert(fp != NULL);
   fscanf(fp, "%d", &N_TESTIMAGES);
   printf("%d test images\n", N_TESTIMAGES);

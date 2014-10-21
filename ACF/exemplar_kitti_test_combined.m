@@ -74,7 +74,7 @@ parfor id = 1:N
                 bb(:,6) = j;
             end
             num = size(bb,1);
-            bb = [bb(:,1) bb(:,2) bb(:,3) bb(:,4) Ds{j}.cid*ones(num,1) bb(:,5)];
+            bb = [bb(:,1) bb(:,2) bb(:,1)+bb(:,3) bb(:,2)+bb(:,4) Ds{j}.cid*ones(num,1) bb(:,5)];
             bbs{i,j} = bb;
         end
     end

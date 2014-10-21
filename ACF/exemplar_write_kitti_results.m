@@ -1,13 +1,13 @@
 function exemplar_write_kitti_results
 
 cls = 'car';
-is_train = 0;
+is_train = 1;
 threshold_overlap = 0.6;
-result_dir = 'data';
-name = '3d_ap_227';
+result_dir = 'kitti_train_ap_125';
+name = '3d_aps_125';
 
 % read detection results
-filename = sprintf('%s/%s_%s_combined_test.mat', result_dir, cls, name);
+filename = sprintf('%s/%s_%s_combined_train.mat', result_dir, cls, name);
 object = load(filename);
 dets = object.dets;
 fprintf('load detection done\n');
@@ -23,7 +23,7 @@ data = object.data;
 % read ids of validation images
 object = load('kitti_ids_new.mat');
 if is_train == 1
-    ids = object.ids_val;
+    ids = object.ids_train;
 else
     ids = object.ids_test;
 end
