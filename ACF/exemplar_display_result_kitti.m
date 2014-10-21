@@ -2,10 +2,10 @@ function exemplar_display_result_kitti
 
 cls = 'car';
 threshold = -20;
-is_train = 0;
+is_train = 1;
 threshold_overlap = 0.6;
-result_dir = 'data';
-name = '3d_ap_227_combined';
+result_dir = 'kitti_train_ap_125';
+name = '3d_aps_125_combined';
 
 % read detection results
 filename = sprintf('%s/%s_%s_test.mat', result_dir, cls, name);
