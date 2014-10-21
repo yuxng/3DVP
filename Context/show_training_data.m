@@ -5,7 +5,7 @@ K = 10;
 cache_dir = 'CACHED_DATA_TRAINVAL';
 
 % load ids
-object = load('kitti_ids.mat');
+object = load('kitti_ids_new.mat');
 if is_train
     ids = object.ids_train;
 else
@@ -31,7 +31,7 @@ for i = 1:N
     I = imread(file_img);
 
     % read detections
-    filename = fullfile(cache_dir, sprintf('%04d.mat', ids(i)));
+    filename = fullfile(cache_dir, sprintf('%06d.mat', ids(i)));
     object = load(filename);
     Detections = object.Detections;
     Scores = object.Scores;
@@ -49,12 +49,11 @@ for i = 1:N
         bbox(3) = min(size(I,2), round(bbox_pr(3)));
         bbox(4) = min(size(I,1), round(bbox_pr(4)));      
         
-        pattern = Patterns{ind};
+        pattern = Patterns(:,:,ind);
         im = create_mask_image(pattern);
-        Isub = I(bbox(2):bbox(4), bbox(1):bbox(3), :);
         index_pattern = im == 255;
-        im(index_pattern) = Isub(index_pattern);
-        I(bbox(2):bbox(4), bbox(1):bbox(3), :) = uint8(0.1*Isub + 0.9*im);
+        im(index_pattern) = I(index_pattern);
+        I = uint8(0.1*I + 0.9*im);
     end
     
     imshow(I);

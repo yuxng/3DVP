@@ -15,7 +15,7 @@ centers = unique(data.idx_ap);
 numClasses = numel(centers);
 
 % load ids
-object = load('kitti_ids.mat');
+object = load('kitti_ids_new.mat');
 if is_train
     ids = object.ids_train;
 else
@@ -28,12 +28,12 @@ Tdata = [];
 for i = 1:numel(ids)
     id = ids(i);
     % load groundtruth feature
-    filename = fullfile('FEAT_TRUE_TRAINVAL', sprintf('%04d.mat', id));
+    filename = fullfile('FEAT_TRUE_TRAINVAL', sprintf('%06d.mat', id));
     object = load(filename);
     Tdata(i).Feat_true = object.Feat_true;
 
     % load detections
-    filename = fullfile('CACHED_DATA_TRAINVAL', sprintf('%04d.mat', id));
+    filename = fullfile('CACHED_DATA_TRAINVAL', sprintf('%06d.mat', id));
     object = load(filename, 'Detections', 'Scores', 'Matching', 'Overlaps');
     Tdata(i).Detections = object.Detections;
     Tdata(i).Scores = object.Scores;
@@ -41,7 +41,7 @@ for i = 1:numel(ids)
     Tdata(i).Overlaps = object.Overlaps;
 
     % load loss
-    filename = fullfile('LOSS_TRAINVAL', sprintf('%04d.mat', id));
+    filename = fullfile('LOSS_TRAINVAL', sprintf('%06d.mat', id));
     object = load(filename);
     Tdata(i).loss = object.loss;
 end

@@ -21,7 +21,7 @@ if is_show
 end
 
 % load ids
-object = load('kitti_ids.mat');
+object = load('kitti_ids_new.mat');
 if is_train
     ids = object.ids_train;
 else
@@ -36,22 +36,18 @@ else
 end
 data = object.data;
 centers = unique(data.idx_ap);
-n = numel(data.imgname);
-img_idx = zeros(n, 1);
-for i = 1:n
-    imgname = data.imgname{i};
-    img_idx(i) = str2double(imgname(1:end-4));
-end
+img_idx = data.id;
+is_flip = data.is_flip;
 
 N = numel(ids);
 for id = 1:N
-    fprintf('%d\n', ids(id));
     if is_show
         file_img = sprintf('%s/%06d.png', image_dir, ids(id));
         Iimage = imread(file_img);
     end
     
-    filename = fullfile(cache_dir, sprintf('%04d.mat', ids(id)));
+    filename = fullfile(cache_dir, sprintf('%06d.mat', ids(id)));
+    disp(filename);
     object = load(filename);
     Detections = object.Detections;
     Detections(:, 6) = 0;
@@ -62,7 +58,7 @@ for id = 1:N
 
     % load the ground truth bounding boxes
     % index = find(img_idx == ids(id) & data.idx_ap ~= -1);
-    index = find(img_idx == ids(id));
+    index = find(img_idx == ids(id) & is_flip == 0);
     % for every GT bounding box
     for gi = 1:numel(index)
         ind = index(gi);
@@ -154,6 +150,6 @@ for id = 1:N
     % compute the ground truth features
     [PSI_true, PHI_true] = compute_feature(Detections(non_bg, :), Scores(non_bg), Matching(non_bg, non_bg), centers); 
     Feat_true = [PSI_true; PHI_true];
-    filename = fullfile(feature_dir, sprintf('%04d.mat', ids(id)));
+    filename = fullfile(feature_dir, sprintf('%06d.mat', ids(id)));
     save(filename, 'Feat_true');
 end

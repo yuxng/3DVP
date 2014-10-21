@@ -14,7 +14,7 @@ data = object.data;
 centers = unique(data.idx_ap);
 
 % load ids
-object = load('kitti_ids.mat');
+object = load('kitti_ids_new.mat');
 if is_train
     ids = object.ids_val;
 else
@@ -35,7 +35,7 @@ if is_show
 end
 
 % load weights
-object = load('wts_trainval_pascal');
+object = load('wts_trainval_pascal.mat');
 w = object.w;
 
 W_s = w(1:2);
@@ -45,7 +45,7 @@ for i = 1:numel(ids)
     disp(i);
     id = ids(i);
     % load detections
-    filename = fullfile('CACHED_DATA_TRAINVAL', sprintf('%04d.mat', id));
+    filename = fullfile('CACHED_DATA_TRAINVAL', sprintf('%06d.mat', id));
     object = load(filename, 'Detections', 'Scores', 'Matching', 'Overlaps');
     Tdata.Detections = object.Detections;
     Tdata.Scores = object.Scores;

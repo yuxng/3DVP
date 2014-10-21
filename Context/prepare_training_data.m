@@ -9,7 +9,7 @@ overlap_threshold = 0.6;  % use a large threshold for nms
 cache_dir = 'CACHED_DATA_TRAINVAL';
 
 % load ids
-object = load('kitti_ids.mat');
+object = load('kitti_ids_new.mat');
 ids = [object.ids_train object.ids_val];
 
 % load data
@@ -21,13 +21,13 @@ end
 data = object.data;
 
 % load detections
-if is_train
-    filename = sprintf('../ACF/kitti_train_few/%s_test.mat', cls);
-else
-    filename = sprintf('../ACF/kitti_test_on_train/%s_test.mat', cls);
-end
+filename = sprintf('../ACF/kitti_train_ap_125/%s_3d_aps_125_combined_train.mat', cls);
 object = load(filename);
-dets = object.dets;
+dets_train = object.dets;
+filename = sprintf('../ACF/kitti_train_ap_125/%s_3d_aps_125_combined_test.mat', cls);
+object = load(filename);
+dets_val = object.dets;
+dets = [dets_train dets_val];
 
 % aggregate the detection scores
 scores = [];
@@ -61,8 +61,8 @@ image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 N = numel(ids);
 parfor i = 1:N
     % read image
-    fprintf('%d\n', ids(i));
     file_img = sprintf('%s/%06d.png', image_dir, ids(i));
+    disp(file_img);
     I = imread(file_img);
     width = size(I, 2);
     height = size(I, 1);    
@@ -151,7 +151,7 @@ parfor i = 1:N
     
     [Matching, Overlaps] = compute_matching_scores(Detections, Patterns);
     
-    filename = fullfile(cache_dir, sprintf('%04d.mat', ids(i)));
+    filename = fullfile(cache_dir, sprintf('%06d.mat', ids(i)));
     parsave(filename, Detections, Scores, Patterns, Overlaps, Matching);
 end
 
