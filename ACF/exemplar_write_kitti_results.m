@@ -7,7 +7,7 @@ result_dir = 'kitti_train_ap_125';
 name = '3d_aps_125';
 
 % read detection results
-filename = sprintf('%s/%s_%s_combined_train.mat', result_dir, cls, name);
+filename = sprintf('%s/%s_%s_combined_test.mat', result_dir, cls, name);
 object = load(filename);
 dets = object.dets;
 fprintf('load detection done\n');
@@ -23,7 +23,7 @@ data = object.data;
 % read ids of validation images
 object = load('kitti_ids_new.mat');
 if is_train == 1
-    ids = object.ids_train;
+    ids = object.ids_val;
 else
     ids = object.ids_test;
 end
