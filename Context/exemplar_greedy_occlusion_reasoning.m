@@ -6,8 +6,9 @@ is_train = 1;
 % is_show = 0;
 is_write = 1;
 K = 15;   % number of detections to keep in each cluster
-bandwidth = 20;  % meanshift band width
-threshold_confident = 20;
+overlap_threshold = 0.5;
+bandwidth = 10;  % meanshift band width
+
 cache_dir = 'CACHED_DATA_TRAINVAL';
 
 addpath(genpath('../KITTI'));
@@ -32,7 +33,7 @@ cam = 2;
 image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 
 % read ids of validation images
-object = load('kitti_ids.mat');
+object = load('kitti_ids_new.mat');
 if is_train
     ids = object.ids_val;
 else
@@ -48,10 +49,10 @@ parfor id = 1:N
     Iimage = imread(file_img);
     width = size(Iimage, 2);
     height = size(Iimage, 1);        
-    fprintf('%d\n', ids(id));
+    fprintf('%06d\n', ids(id));
 
     % load detection results
-    filename = fullfile(cache_dir, sprintf('%04d.mat', ids(id)));
+    filename = fullfile(cache_dir, sprintf('%06d.mat', ids(id)));
     record = load(filename);
     detections = record.Detections;
     scores = record.Scores;
@@ -83,7 +84,6 @@ parfor id = 1:N
     end
     tmp = cellfun(@isempty, clusters);
     clusters = clusters(tmp == 0);
-    
     
     % for each cluster, keep the top K detections only
     % max pooling on detection scores in each cluster, but use the most
@@ -124,7 +124,7 @@ parfor id = 1:N
             if flags(cj) > 0
                 M = matching(cindex, index_cluster(cj));
                 O = overlaps(cindex, index_cluster(cj));
-                M(O < 0.1) = 1;
+                M(O < overlap_threshold) = 1;
                 M(O > 0.9) = 0;
                 s = [s M];
             end
@@ -196,7 +196,8 @@ parfor id = 1:N
     end
     
     % keep very confidence detections
-%     flags(scores_cluster > threshold_confident) = 1;
+    % threshold_confident = 20;
+    % flags(scores_cluster > threshold_confident) = 1;
     
     % compute the flags for objects
     flags_cluster = flags;
@@ -338,6 +339,6 @@ parfor id = 1:N
 %     end
 end
 
-save('dets_greedy.mat', 'dets_greedy');
+save('dets_greedy.mat', 'dets_greedy', '-v7.3');
 
 matlabpool close;

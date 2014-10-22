@@ -5,7 +5,7 @@ matlabpool open;
 
 cls = 'car';
 is_train = 1;
-overlap_threshold = 0.6;  % use a large threshold for nms
+% overlap_threshold = 0.6;  % use a large threshold for nms
 cache_dir = 'CACHED_DATA_TRAINVAL';
 
 % load ids
@@ -71,10 +71,10 @@ parfor i = 1:N
     det = dets{i};
     
     % non-maximum suppression
-    if isempty(det) == 0
-        index = nms_new(det, overlap_threshold);
-        det = det(index, :);    
-    end
+%     if isempty(det) == 0
+%         index = nms_new(det, overlap_threshold);
+%         det = det(index, :);    
+%     end
     
     num = size(det, 1);
     Detections = zeros(num, 5);

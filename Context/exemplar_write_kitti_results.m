@@ -12,7 +12,7 @@ end
 data = object.data;
 
 % read ids of validation images
-object = load('kitti_ids.mat');
+object = load('kitti_ids_new.mat');
 if is_train == 1
     ids = object.ids_val;
 else
@@ -24,8 +24,8 @@ for i = 1:N
     img_idx = ids(i);
     
     % load detections
-    filename = fullfile(cache_dir, sprintf('%04d.mat', ids(i)));
-    object = load(filename);
+    filename = fullfile(cache_dir, sprintf('%06d.mat', ids(i)));
+    object = load(filename, 'Detections', 'Scores');
     det = [object.Detections object.Scores];
     
     % result file
@@ -44,10 +44,10 @@ for i = 1:N
     end
     
     % non-maximum suppression
-%     if isempty(det) == 0
-%         I = nms(det, 0.5);
-%         det = det(I, :);    
-%     end    
+    if isempty(det) == 0
+        I = nms_new(det, 0.6);
+        det = det(I, :);    
+    end    
     
     % write detections
     num = size(det, 1);
