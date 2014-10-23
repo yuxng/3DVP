@@ -1,7 +1,7 @@
 function exemplar_display_result_kitti
 
 cls = 'car';
-threshold = -20;
+threshold = -inf;
 is_train = 1;
 threshold_overlap = 0.6;
 result_dir = 'kitti_train_ap_125';
@@ -95,12 +95,12 @@ for i = 1:N
     hold on;
     
     for k = 1:size(dets{i},1)
-        if dets{i}(k,6) > threshold
+%         if dets{i}(k,6) > threshold
             % get predicted bounding box
             bbox_pr = dets{i}(k,1:4);
             bbox_draw = [bbox_pr(1), bbox_pr(2), bbox_pr(3)-bbox_pr(1), bbox_pr(4)-bbox_pr(2)];
             rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);
-        end
+%         end
     end
     hold off;
 

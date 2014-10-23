@@ -15,9 +15,10 @@
 %  *  I: N by 1 matrix where I(i) = 1 if box i is turned on
 %  *  S: N by 1 matrix where S(i) = accumulated score of box i
 %  */
-function [I, S] = maximize(Detections, Matching, PosScore, NegScore, Weights)
+function [I, S] = maximize(Matching, Idx, PosScore, NegScore, Weights)
 
-N = size(Detections, 1);
+cdets = unique(Idx);
+N = numel(cdets);
 
 % initialize instance set "I" to all 0s and "S" to pos
 I = zeros(N, 1);
@@ -46,7 +47,7 @@ while num_pos < N
         end
         
         % get the matching score
-        s = Matching(ind, i);     
+        s = max(max(Matching(Idx == cdets(ind), Idx == cdets(i))));     
         
         S(i) = S(i) + Weights(1) * s + Weights(2);
     end

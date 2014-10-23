@@ -1,4 +1,4 @@
-function loss = compute_loss(boxes, gt, overlap_threshold)
+function loss = compute_loss(boxes, gt, idx, overlap_threshold)
 % loss = computeloss(Detections, GroundTruth)
 % loss(i,1) is the loss associated with turning on  candidate i
 % loss(i,2) is the loss associated with turning off candidate i
@@ -11,7 +11,6 @@ y2 = boxes(:, 4);
 ba = (x2-x1+1) .* (y2-y1+1);
 
 % Compute the maximum overlap of each box with each ground truth
-loss = zeros(n, 2);
 lp = zeros(n, 1);
 ln = zeros(n, 1);
 
@@ -41,5 +40,15 @@ for i = 1:size(gt,1),
     lp = max(lp, ov);
 end
 
-loss(:,1) = double(lp < overlap_threshold);
-loss(:,2) = double(ln > overlap_threshold);
+centers = unique(idx);
+num = numel(centers);
+loss = zeros(num, 2);
+
+for i = 1:num
+    index = idx == centers(i);
+    loss(i,1) = double(max(lp(index)) < overlap_threshold);
+    loss(i,2) = double(max(ln(index)) > overlap_threshold);
+end
+
+% loss(:,1) = double(lp < overlap_threshold);
+% loss(:,2) = double(ln > overlap_threshold);

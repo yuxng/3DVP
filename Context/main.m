@@ -34,11 +34,12 @@ for i = 1:numel(ids)
 
     % load detections
     filename = fullfile('CACHED_DATA_TRAINVAL', sprintf('%06d.mat', id));
-    object = load(filename, 'Detections', 'Scores', 'Matching', 'Overlaps');
+    object = load(filename, 'Detections', 'Scores', 'Matching', 'Overlaps', 'Idx');
     Tdata(i).Detections = object.Detections;
     Tdata(i).Scores = object.Scores;
     Tdata(i).Matching = object.Matching;
     Tdata(i).Overlaps = object.Overlaps;
+    Tdata(i).Idx = object.Idx;
 
     % load loss
     filename = fullfile('LOSS_TRAINVAL', sprintf('%06d.mat', id));

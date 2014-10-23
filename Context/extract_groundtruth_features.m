@@ -48,13 +48,14 @@ for id = 1:N
     
     filename = fullfile(cache_dir, sprintf('%06d.mat', ids(id)));
     disp(filename);
-    object = load(filename);
+    object = load(filename, 'Detections', 'Scores', 'Matching', 'Overlaps', 'Idx');
     Detections = object.Detections;
     Detections(:, 6) = 0;
     Scores = object.Scores;
     Matching = object.Matching;
     Overlaps = object.Overlaps;
     Matching(Overlaps < 0.1) = 1;
+    Idx = object.Idx;
 
     % load the ground truth bounding boxes
     % index = find(img_idx == ids(id) & data.idx_ap ~= -1);
@@ -126,29 +127,49 @@ for id = 1:N
             end
         end
     end
-
-    non_bg = find(Detections(:, 6) == 1);
     
     % show true detections
     if is_show
+        % clustering
+        centers_det = unique(Idx);
+        n = numel(centers_det);
+        
         imshow(Iimage);
         hold on;
-        for i = 1:size(Detections,1)
-            bbox = Detections(i, 1:4);
+        for i = 1:n
+            index = find(Idx == centers_det(i));
+            ind = find(Detections(index,6) == 1, 1);
+            if isempty(ind)
+                bbox = Detections(centers_det(i),:);
+            else
+                bbox = Detections(index(ind),:);
+            end
             bbox_draw = [bbox(1) bbox(2) bbox(3)-bbox(1) bbox(4)-bbox(2)];
-            if Detections(i,6) == 1
+            if bbox(6) == 1
                 rectangle('Position', bbox_draw', 'EdgeColor', 'g');
             else
                 rectangle('Position', bbox_draw', 'EdgeColor', 'r');
             end
-            text(bbox(1), bbox(2), num2str(Scores(i)), 'BackgroundColor', [.7 .9 .7], 'Color', 'r');
+            text(bbox(1), bbox(2), num2str(Scores(centers_det(i))), 'BackgroundColor', [.7 .9 .7], 'Color', 'r');
         end
         hold off;
         pause;
     end
  
-    % compute the ground truth features
-    [PSI_true, PHI_true] = compute_feature(Detections(non_bg, :), Scores(non_bg), Matching(non_bg, non_bg), centers); 
+    % clustering
+    idx = Idx;
+    centers_det = unique(idx);
+    n = numel(centers_det);
+    for i = 1:n
+        index = find(idx == centers_det(i));
+        ind = find(Detections(index,6) == 1, 1);
+        if isempty(ind)
+            idx(index) = -1;
+        end    
+    end
+    
+    % compute the ground truth features    
+    [PSI_true, PHI_true] = compute_feature(Detections, Scores, Matching, centers, idx); 
     Feat_true = [PSI_true; PHI_true];
     filename = fullfile(feature_dir, sprintf('%06d.mat', ids(id)));
     save(filename, 'Feat_true');

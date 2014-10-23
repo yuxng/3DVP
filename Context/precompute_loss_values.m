@@ -25,7 +25,7 @@ is_flip = data.is_flip;
 
 N = numel(ids);
 for id = 1:N
-    fprintf('%d\n', ids(id));    
+    fprintf('%06d\n', ids(id));    
     % load the ground truth bounding boxes
     % index = find(img_idx == ids(id) & data.idx_ap ~= -1);
     index = find(img_idx == ids(id) & is_flip == 0);
@@ -33,10 +33,11 @@ for id = 1:N
     
     % load detections
     filename = fullfile(cache_dir, sprintf('%06d.mat', ids(id)));
-    object = load(filename, 'Detections');
+    object = load(filename, 'Detections', 'Idx');
     Detections = object.Detections;
+    Idx = object.Idx;
         
-    loss = compute_loss(Detections, GT, overlap_threshold);
+    loss = compute_loss(Detections, GT, Idx, overlap_threshold);
         
     filename = fullfile(loss_dir, sprintf('%06d.mat', ids(id)));
     save(filename, 'loss');
