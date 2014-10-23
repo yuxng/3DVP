@@ -18,6 +18,7 @@
 function [I, S] = maximize(Matching, Idx, PosScore, NegScore, Weights)
 
 cdets = unique(Idx);
+cdets(cdets == -1) = [];
 N = numel(cdets);
 
 % initialize instance set "I" to all 0s and "S" to pos

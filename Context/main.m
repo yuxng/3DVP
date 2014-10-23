@@ -22,31 +22,31 @@ else
     ids = [object.ids_train object.ids_val];
 end
 
-% load training data
-fprintf('load training data...');
-Tdata = [];
-for i = 1:numel(ids)
-    id = ids(i);
-    % load groundtruth feature
-    filename = fullfile('FEAT_TRUE_TRAINVAL', sprintf('%06d.mat', id));
-    object = load(filename);
-    Tdata(i).Feat_true = object.Feat_true;
-
-    % load detections
-    filename = fullfile('CACHED_DATA_TRAINVAL', sprintf('%06d.mat', id));
-    object = load(filename, 'Detections', 'Scores', 'Matching', 'Overlaps', 'Idx');
-    Tdata(i).Detections = object.Detections;
-    Tdata(i).Scores = object.Scores;
-    Tdata(i).Matching = object.Matching;
-    Tdata(i).Overlaps = object.Overlaps;
-    Tdata(i).Idx = object.Idx;
-
-    % load loss
-    filename = fullfile('LOSS_TRAINVAL', sprintf('%06d.mat', id));
-    object = load(filename);
-    Tdata(i).loss = object.loss;
-end
-fprintf('done\n');
+% % load training data
+% fprintf('load training data...');
+% Tdata = [];
+% for i = 1:numel(ids)
+%     id = ids(i);
+%     % load groundtruth feature
+%     filename = fullfile('FEAT_TRUE_TRAINVAL', sprintf('%06d.mat', id));
+%     object = load(filename);
+%     Tdata(i).Feat_true = object.Feat_true;
+% 
+%     % load detections
+%     filename = fullfile('CACHED_DATA_TRAINVAL', sprintf('%06d.mat', id));
+%     object = load(filename, 'Detections', 'Scores', 'Matching', 'Overlaps', 'Idx');
+%     Tdata(i).Detections = object.Detections;
+%     Tdata(i).Scores = object.Scores;
+%     Tdata(i).Matching = object.Matching;
+%     Tdata(i).Overlaps = object.Overlaps;
+%     Tdata(i).Idx = object.Idx;
+% 
+%     % load loss
+%     filename = fullfile('LOSS_TRAINVAL', sprintf('%06d.mat', id));
+%     object = load(filename);
+%     Tdata(i).loss = object.loss;
+% end
+% fprintf('done\n');
    
 % initialize the weights
 W_s = rand(2, 1);
@@ -72,7 +72,7 @@ while (iter < max_iter && trigger)
     trigger = 0;
 
     for id = 1:numel(ids)
-        [H_wo, X_wo, m]  = find_MVC(W_s, W_a, centers, Tdata(id));
+        [H_wo, X_wo, m]  = find_MVC(W_s, W_a, centers, ids(id));
         
         % if this constraint is the MVC for this image
         isMVC = 1;

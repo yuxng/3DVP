@@ -1,4 +1,4 @@
-function idx = nms_clustering(boxes, overlap)
+function idx = nms_clustering(boxes, overlap, K)
 
 % pick = nms(boxes, overlap) 
 % Non-maximum suppression.
@@ -44,4 +44,19 @@ else
             end
         end
     end
+end
+
+% keep the top K detections for each cluster
+centers = unique(idx);
+num = numel(centers);
+for i = 1:num
+    index = find(idx == centers(i));
+    if numel(index) <= K
+        continue;
+    end
+    scores = boxes(index,6);
+    [~, ind] = sort(scores, 'descend');
+    index = index(ind);
+    index(1:K) = [];
+    idx(index) = -1;
 end

@@ -46,18 +46,22 @@ for i = 1:numel(ids)
     id = ids(i);
     % load detections
     filename = fullfile('CACHED_DATA_TRAINVAL', sprintf('%06d.mat', id));
-    object = load(filename, 'Detections', 'Scores', 'Matching', 'Overlaps');
+    object = load(filename, 'Detections', 'Scores', 'Matching', 'Overlaps', 'Idx');
     Tdata.Detections = object.Detections;
     Tdata.Scores = object.Scores;
     Tdata.Matching = object.Matching;
     Tdata.Overlaps = object.Overlaps;
+    det = [Tdata.Detections Tdata.Scores];
+    Tdata.Idx = nms_clustering(det, 0.6, 15);
 
     [I, S] = find_MVC_test(W_s, W_a, centers, Tdata);
     TP = I == 1;
     
     if is_write
         % write detections
-        det = [Tdata.Detections S]; 
+        cdets = unique(Tdata.Idx);
+        cdets(cdets == -1) = [];
+        det = [Tdata.Detections(cdets,:) S]; 
         
         if is_train == 1
             filename = sprintf('results_kitti_train/%06d.txt', id);
@@ -116,16 +120,19 @@ for i = 1:numel(ids)
         Iimage = imread(file_img);
         dets = Tdata.Detections;
         scores = S;
+        idx = Tdata.Idx;
+        cdets = unique(idx);
+        cdets(cdets == -1) = [];
         
-        for j = 1:size(dets, 1)
+        for j = 1:numel(cdets)
             if TP(j) == 0
                 continue;
             end
-            bbox = dets(j, 1:4);
+            bbox = dets(cdets(j), 1:4);
             w = bbox(3) - bbox(1) + 1;
             h = bbox(4) - bbox(2) + 1;
 
-            cid = dets(j, 5);
+            cid = dets(cdets(j), 5);
             pattern = data.pattern{cid};                
             index_pattern = find(pattern == 1);
             if data.truncation(cid) > 0 && isempty(index_pattern) == 0
@@ -143,8 +150,8 @@ for i = 1:numel(ids)
         
         imshow(Iimage);
         hold on;
-        for j = 1:size(dets, 1)
-            bbox = dets(j, 1:4);
+        for j = 1:numel(cdets)
+            bbox = dets(cdets(j), 1:4);
             bbox_draw = [bbox(1) bbox(2) bbox(3)-bbox(1) bbox(4)-bbox(2)];
             if TP(j) == 1
                 rectangle('Position', bbox_draw', 'EdgeColor', 'g');

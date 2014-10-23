@@ -31,7 +31,7 @@ for o_i = 1:num_job
   fprintf(fid, '#PBS -N run_it%d\n', o_i);
   fprintf(fid, '#PBS -l nodes=1:ppn=12\n');
   fprintf(fid, '#PBS -l mem=2gb\n');
-  fprintf(fid, '#PBS -l walltime=72:00:00\n');
+  fprintf(fid, '#PBS -l walltime=96:00:00\n');
   fprintf(fid, '#PBS -q cvgl\n');
   fprintf(fid, 'echo "I ran on:"\n');
   fprintf(fid, 'cat $PBS_NODEFILE\n');

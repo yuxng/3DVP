@@ -5,7 +5,11 @@ pascal_init;
 
 % select the clustering data        
 cls_ind = find(strcmp(cls, data.classes) == 1);
-flag = data.cls_ind == cls_ind & data.difficult == 0 & data.is_pascal == 1;
+height = data.bbox(4,:) - data.bbox(2,:) + 1;
+occlusion = data.occ_per;
+truncation = data.trunc_per;
+flag = data.cls_ind == cls_ind & data.difficult == 0 & data.is_pascal == 1 & ...
+    height > 25 & occlusion < 0.7 & truncation < 0.5;
 fprintf('%d %s examples in clustering\n', sum(flag), cls);
 
 % determine the canonical size of the bounding boxes
