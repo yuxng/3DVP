@@ -158,15 +158,15 @@ aa = VOCap(recall, accuracy);
 fprintf('AA = %.4f\n', aa);
 
 % draw recall-precision and accuracy curve
-figure;
-hold on;
-plot(recall, precision, 'r', 'LineWidth',3);
-plot(recall, accuracy, 'g', 'LineWidth',3);
-xlabel('Recall');
-ylabel('Precision/Accuracy');
-tit = sprintf('Average Precision = %.1f / Average Accuracy = %.1f', 100*ap, 100*aa);
-title(tit);
-hold off;
+% figure;
+% hold on;
+% plot(recall, precision, 'r', 'LineWidth',3);
+% plot(recall, accuracy, 'g', 'LineWidth',3);
+% xlabel('Recall');
+% ylabel('Precision/Accuracy');
+% tit = sprintf('Average Precision = %.1f / Average Accuracy = %.1f', 100*ap, 100*aa);
+% title(tit);
+% hold off;
 
 
 function ind = find_interval(azimuth, a)

@@ -1,4 +1,4 @@
-function exemplar_greedy_occlusion_reasoning
+function exemplar_greedy_occlusion_reasoning_meanshift
 
 matlabpool open;
 
@@ -214,10 +214,7 @@ parfor id = 1:N
     dets_greedy{id} = det;
     
     if is_write
-        % write detections
-        det = [detections scores];
-        det = det(flags > 0, :);    
-        
+        % write detections        
         if is_train == 1
             filename = sprintf('results_kitti_train/%06d.txt', ids(id));
         else
