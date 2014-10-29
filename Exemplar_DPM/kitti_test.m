@@ -32,7 +32,7 @@ else
     image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]); 
 
     % get test image ids
-    object = load('kitti_ids.mat');
+    object = load('kitti_ids_new.mat');
     if is_train == 1
         ids = object.ids_val;
     else

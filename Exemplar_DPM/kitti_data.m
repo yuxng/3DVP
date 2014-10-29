@@ -35,7 +35,7 @@ else
     pos(numpos).y1 = bbox(2);
     pos(numpos).x2 = bbox(3);
     pos(numpos).y2 = bbox(4);
-    pos(numpos).flip = false;
+    pos(numpos).flip = data.is_flip(ind) == 1;
     pos(numpos).trunc = 0;
     if flippedpos
       oldx1 = bbox(1);
@@ -60,7 +60,7 @@ else
       otherwise
           fprintf('undefined classes for negatives\n');
   end
-  object = load('kitti_ids.mat');
+  object = load('kitti_ids_new.mat');
   if is_train
       ids = object.ids_train;
   else

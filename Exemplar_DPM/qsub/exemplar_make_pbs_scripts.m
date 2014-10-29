@@ -1,7 +1,7 @@
 function exemplar_make_pbs_scripts
 
 % load occlusion patterns
-filename = '../../PASCAL3D/data.mat';
+filename = '../../KITTI/data.mat';
 object = load(filename);
 data = object.data;
 
@@ -11,7 +11,7 @@ num = numel(cids);
 
 is_multiple = 1;
 if is_multiple
-    num_job = 30;
+    num_job = 36;
     index = round(linspace(1, num, num_job+1));
 else
     num_job = num;
