@@ -1,10 +1,10 @@
 % Set up global variables used throughout the code
 
-is_hadoop = 0;
+is_hadoop = 1;
 
 % directory for caching models, intermediate data, and results
 if is_hadoop
-    rootdir = '/workplace/hadoop_cache/slm/';
+    rootdir = '/net/skyserver30/workplace/local/wongun/yuxiang/SLM/ACF/';
     cachedir = fullfile(rootdir, 'cache/');
     resultdir = fullfile(rootdir, 'data/');
 else
@@ -44,7 +44,8 @@ if is_hadoop == 0
     addpath(KITTIdevkit);
 end
 
-SLMpaths = {'/net/skyserver10/workplace/yxiang/SLM', ...
+SLMpaths = {'/net/skyserver30/workplace/local/wongun/yuxiang/SLM', ...
+    '/net/skyserver10/workplace/yxiang/SLM', ...
     '/home/yuxiang/Projects/SLM', ...
     '/scail/scratch/u/yuxiang/SLM'};
 
@@ -54,6 +55,8 @@ for i = 1:numel(SLMpaths)
         break;
     end
 end
+
+return;
 
 PASCAL3Dpaths = {'/home/yuxiang/Projects/Pose_Dataset/PASCAL3D+_release1.1', ...
     '/scratch/yuxiang/Projects/PASCAL3D+_release1.1', ...
