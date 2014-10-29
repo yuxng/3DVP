@@ -4,6 +4,8 @@ function show_annotations
 opt = globals();
 pascal_init;
 pad_size = 100;
+nplot = 5;
+mplot = 6;
 
 % load PASCAL3D+ cad models
 fprintf('load CAD models from file\n');
@@ -24,7 +26,7 @@ cmap = colormap(jet);
 for img_idx = 1:nimages
     disp(img_idx);
   % show image
-  subplot(1, 2, 1);
+  subplot(nplot, mplot, 1:mplot/2);
   filename = sprintf(VOCopts.imgpath, ids{img_idx});
   I = imread(filename);
   [h, w, ~] = size(I);
@@ -48,7 +50,7 @@ for img_idx = 1:nimages
     object = objects(obj_idx);
     bbox = object.bbox;
     bbox_draw = [bbox(1) bbox(2) bbox(3)-bbox(1) bbox(4)-bbox(2)];
-    rectangle('Position', bbox_draw, 'EdgeColor', 'g');
+    % rectangle('Position', bbox_draw, 'EdgeColor', 'g');
     
     cls_index = find(strcmp(object.class, classes) == 1);
     if isempty(cls_index) == 0
@@ -81,11 +83,58 @@ for img_idx = 1:nimages
   end
   hold off;
   
-  subplot(1,2,2);
+  subplot(nplot, mplot, mplot/2+1:mplot);
   mask = mask(pad_size+1:h+pad_size, pad_size+1:w+pad_size,:);
   imshow(uint8(255*mask));
   axis off;  
   axis equal;
   
+  index_plot = mplot + 1;
+  for i = 1:numel(objects)
+        object = objects(i);
+        cls_index = find(strcmp(object.class, classes) == 1);
+        if isempty(cls_index) == 0 && isempty(object.grid) == 0 
+            cad_index = object.cad_index;
+            cad = models{cls_index}(cad_index);        
+            
+            % show the image patch
+            if object.occ_per > 0
+                bbox_gt = [object.x1 object.y1 object.x2 object.y2];
+            else
+                bbox_gt = object.bbox;
+            end
+            rect = [bbox_gt(1) bbox_gt(2) bbox_gt(3)-bbox_gt(1) bbox_gt(4)-bbox_gt(2)];
+            I1 = imcrop(I, rect);
+            subplot(nplot, mplot, index_plot);
+            cla;
+            index_plot = index_plot + 1;
+            imshow(I1);            
+
+          % show 2D mask
+          subplot(nplot, mplot, index_plot);
+          index_plot = index_plot + 1;
+          pattern = object.pattern;
+          im = create_mask_image(pattern);      
+          imshow(im);
+          axis off;  
+          axis equal;
+          % title(sprintf('object %d: occ=%.2f', i, occ));
+
+          % show voxel model
+          subplot(nplot, mplot, index_plot);
+          cla;
+          index_plot = index_plot + 1;
+          draw_cad(cad, object.grid_origin);
+          view(object.azimuth, object.elevation);
+          axis on; 
+      end
+  end
+  
+  for i = index_plot:nplot*mplot
+      subplot(nplot, mplot, i);
+      title('');
+      cla;
+      axis off;
+  end  
   pause;
 end

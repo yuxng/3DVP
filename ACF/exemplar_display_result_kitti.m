@@ -2,11 +2,11 @@ function exemplar_display_result_kitti
 
 cls = 'car';
 threshold = -20;
-is_train = 1;
+is_train = 0;
 is_save = 0;
 threshold_overlap = 0.6;
-result_dir = 'kitti_train_ap_125';
-name = '3d_aps_125_combined';
+result_dir = 'kitti_test_acf_3d_227_flip';
+name = '3d_ap_227_combined';
 
 % read detection results
 filename = sprintf('%s/%s_%s_test.mat', result_dir, cls, name);
@@ -130,10 +130,44 @@ for i = 1:N
             pattern = data.pattern{cid};                
             index = find(pattern == 1);
             if data.truncation(cid) > 0 && isempty(index) == 0
-                [y, x] = ind2sub(size(pattern), index);                
+%                 [y, x] = ind2sub(size(pattern), index);                
+%                 pattern = pattern(min(y):max(y), min(x):max(x));
+                
+                [y, x] = ind2sub(size(pattern), index);
+                cx = size(pattern, 2)/2;
+                cy = size(pattern, 1)/2;
+                width = size(pattern, 2);
+                height = size(pattern, 1);                 
                 pattern = pattern(min(y):max(y), min(x):max(x));
+
+                % find the object center
+                sx = w / size(pattern, 2);
+                sy = h / size(pattern, 1);
+                tx = bbox(1) - sx*min(x);
+                ty = bbox(2) - sy*min(y);
+                cx = sx * cx + tx;
+                cy = sy * cy + ty;
+                width = sx * width;
+                height = sy * height;
+                bbox_pr = round([cx-width/2 cy-height/2 cx+width/2 cy+height/2]);
+                width = bbox_pr(3) - bbox_pr(1) + 1;
+                height = bbox_pr(4) - bbox_pr(2) + 1;
+                
+                pattern = imresize(data.pattern{cid}, [height width], 'nearest');
+                
+                bbox = zeros(1,4);
+                bbox(1) = max(1, floor(bbox_pr(1)));
+                start_x = bbox(1) - floor(bbox_pr(1)) + 1;
+                bbox(2) = max(1, floor(bbox_pr(2)));
+                start_y = bbox(2) - floor(bbox_pr(2)) + 1;
+                bbox(3) = min(size(I,2), floor(bbox_pr(3)));
+                bbox(4) = min(size(I,1), floor(bbox_pr(4)));
+                w = bbox(3) - bbox(1) + 1;
+                h = bbox(4) - bbox(2) + 1;
+                pattern = pattern(start_y:start_y+h-1, start_x:start_x+w-1);
+            else
+                pattern = imresize(pattern, [h w], 'nearest');
             end
-            pattern = imresize(pattern, [h w], 'nearest');
             
             % build the pattern in the image
             height = size(I,1);
@@ -146,10 +180,14 @@ for i = 1:N
             P(index_y, index_x) = pattern(1:numel(index_y), 1:numel(index_x));
             
             % show segments
-            if flags_pr(k)
-                dispColor = [0 255 0];
+            if is_train
+                if flags_pr(k)
+                    dispColor = [0 255 0];
+                else
+                    dispColor = [255 0 0];
+                end
             else
-                dispColor = [255 0 0];
+                dispColor = [0 255 0];
             end
             scale = round(max(size(I))/500);            
             [gx, gy] = gradient(double(P));

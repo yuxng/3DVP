@@ -1,7 +1,7 @@
 function show_occlusion_patterns
 
-is_save = 0;
-is_flip = 1;
+is_save = 1;
+is_flip = 0;
 
 opt = globals();
 root_dir = opt.path_kitti_root;
@@ -22,8 +22,8 @@ cads = object.(cls);
 
 hf = figure;
 ind_plot = 1;
-mplot = 6;
-nplot = 6;
+mplot = 1;
+nplot = 3;
 for i = 1:N
     % load annotation
     filename = fullfile(path_ann, files(i).name);
@@ -35,25 +35,6 @@ for i = 1:N
     for j = 1:numel(objects)
         object = objects(j);
         if strcmp(object.type, 'Car') == 1% && object.occ_per > 0.05 && object.occ_per < 0.95 
-            subplot(mplot, nplot, ind_plot);
-            cla;
-            cad = cads(object.cad_index);
-            draw_cad(cad, object.grid_origin);
-            view(object.azimuth, object.elevation);
-%             til = sprintf('%s, object %d, occ=%.2f', files(i).name, j, object.occ_per);
-%             title(til);
-            ind_plot = ind_plot + 1;
-            
-            % show 2D pattern
-            subplot(mplot, nplot, ind_plot);
-            cla;
-            pattern = object.pattern;
-            im = create_mask_image(pattern);
-            imshow(im);
-            ind_plot = ind_plot + 1;
-            axis on;
-            xlabel('x');
-            ylabel('y');
             
             % show the image patch
             filename = sprintf('%s/%06d.png',image_dir, i - 1);
@@ -64,8 +45,30 @@ for i = 1:N
             subplot(mplot, nplot, ind_plot);
             cla;
             ind_plot = ind_plot + 1;
-            imshow(I1);
+            imshow(I1);          
             
+            % show 2D pattern
+            subplot(mplot, nplot, ind_plot);
+            cla;
+            pattern = object.pattern;
+            im = create_mask_image(pattern);
+            imshow(im);
+            ind_plot = ind_plot + 1;
+            axis off;
+%             xlabel('x');
+%             ylabel('y');            
+            
+            % show 3D model
+            subplot(mplot, nplot, ind_plot);
+            cla;
+            cad = cads(object.cad_index);
+            draw_cad(cad, object.grid_origin);
+            axis off;
+            view(object.azimuth, object.elevation);
+%             til = sprintf('%s, object %d, occ=%.2f', files(i).name, j, object.occ_per);
+%             title(til);
+            ind_plot = ind_plot + 1;
+                       
             if is_flip
                 % show flipped pattern
                 subplot(mplot, nplot, ind_plot);

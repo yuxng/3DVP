@@ -1,18 +1,20 @@
 function exemplar_3d_detections_light
 
-matlabpool open;
+% matlabpool open;
 
 addpath(genpath('../KITTI'));
 cls = 'car';
-threshold = -50;
-threshold_nms = 0.95;
+threshold = -inf;
+threshold_nms = 0.6;
 is_train = 0;
+result_dir = 'kitti_test_acf_3d_227_flip';
+name = '3d_ap_227_combined';
 
 % load data
 if is_train
     object = load('../KITTI/data.mat');
 else
-    object = load('../KITTI/data_all.mat');
+    object = load('../KITTI/data_kitti.mat');
 end
 data = object.data;
 
@@ -43,17 +45,23 @@ end
 cam = 2;
 calib_dir = fullfile(root_dir, [data_set '/calib']);
 
-% load detections
+% read ids of validation images
+object = load('kitti_ids_new.mat');
 if is_train
-    filename = sprintf('kitti_train/%s_test.mat', cls);
+    ids = object.ids_val;
 else
-    filename = sprintf('kitti_test/%s_test.mat', cls);
+    ids = object.ids_test;
 end
+N = numel(ids);
+
+% load detections
+filename = sprintf('%s/%s_%s_test.mat', result_dir, cls, name);
 object = load(filename);
 dets = object.dets;
-N = numel(dets);
+dets_3d = cell(1, N);
 
-parfor i = 1:N
+for i = 1:N
+    img_idx = ids(i);
     tic;
     det = dets{i};
     
@@ -61,7 +69,7 @@ parfor i = 1:N
     if isempty(det) == 0
         flag = det(:,6) > threshold;
         det = det(flag,:);
-        I = nms(det, threshold_nms);
+        I = nms_new(det, threshold_nms);
         det = det(I, :);    
     end     
     
@@ -70,15 +78,15 @@ parfor i = 1:N
     fprintf('image %d, %d detections\n', i, num);
     
     % projection matrix
-    P = readCalibration(calib_dir, i-1, cam);
+    P = readCalibration(calib_dir, img_idx, cam);
     
     % load the velo_to_cam matrix
-    R0_rect = readCalibration(calib_dir, i-1, 4);
+    R0_rect = readCalibration(calib_dir, img_idx, 4);
     tmp = R0_rect';
     tmp = tmp(1:9);
     tmp = reshape(tmp, 3, 3);
     tmp = tmp';
-    Pv2c = readCalibration(calib_dir, i-1, 5);
+    Pv2c = readCalibration(calib_dir, img_idx, 5);
     Pv2c = tmp * Pv2c;
     Pv2c = [Pv2c; 0 0 0 1];
     
@@ -210,18 +218,16 @@ parfor i = 1:N
     flag = T(3,:) >= tmin & T(3,:) <= tmax;
     objects = objects(flag);
     
-    if is_train
-        filename = sprintf('results_3d_train/%06d_3d.mat', i-1);
-    else
-        filename = sprintf('results_3d_test/%06d_3d.mat', i-1);
-    end
-    parsave(filename, objects);    
+    dets_3d{i} = objects;    
     
     fprintf('%d detections left\n', sum(flag));
     toc;
 end
 
-matlabpool close;
+filename = sprintf('%s/%s_%s_test_3d.mat', result_dir, cls, name);
+save(filename, 'dets_3d', '-v7.3');
+
+% matlabpool close;
 
 
 % compute the projection error between 3D bbox and 2D bbox
@@ -273,7 +279,3 @@ x3d = R*x3d;
 x3d(1,:) = x3d(1,:) + t(1);
 x3d(2,:) = x3d(2,:) + t(2) - h/2;
 x3d(3,:) = x3d(3,:) + t(3);
-
-function parsave(fname, objects)
-
-save(fname, 'objects');
