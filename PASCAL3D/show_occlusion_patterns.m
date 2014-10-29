@@ -3,7 +3,7 @@ function show_occlusion_patterns
 opt = globals();
 pascal_init;
 is_flip = 0;
-is_save = 1;
+is_save = 0;
 
 % load PASCAL3D+ cad models
 fprintf('load CAD models from file\n');
@@ -44,26 +44,6 @@ for i = 1:N
             cad_index = object.cad_index;
             cad = models{cls_index}(cad_index);
             
-            % show 3D pattern
-            subplot(mplot, nplot, ind_plot);
-            cla;
-            draw_cad(cad, object.grid_origin);
-            view(object.azimuth, object.elevation);
-%             til = sprintf('%s, object %d, occ=%.2f', ids{i}, j, object.occ_per);
-%             title(til);
-            ind_plot = ind_plot + 1;
-            
-            % show 2D pattern
-            subplot(mplot, nplot, ind_plot);
-            cla;
-            pattern = object.pattern;
-            im = create_mask_image(pattern);
-            imshow(im);
-            ind_plot = ind_plot + 1;
-            axis on;
-            xlabel('x');
-            ylabel('y');
-            
             % show the image patch
             if isfield(record, 'cls') == 0
                 filename = sprintf(VOCopts.imgpath, ids{i});
@@ -83,6 +63,27 @@ for i = 1:N
             cla;
             ind_plot = ind_plot + 1;
             imshow(I1);
+            
+            % show 2D pattern
+            subplot(mplot, nplot, ind_plot);
+            cla;
+            pattern = object.pattern;
+            im = create_mask_image(pattern);
+            imshow(im);
+            ind_plot = ind_plot + 1;
+            axis off;
+%             xlabel('x');
+%             ylabel('y');            
+            
+            % show 3D pattern
+            subplot(mplot, nplot, ind_plot);
+            cla;
+            draw_cad(cad, object.grid_origin);
+            view(object.azimuth, object.elevation);
+            axis off;
+%             til = sprintf('%s, object %d, occ=%.2f', ids{i}, j, object.occ_per);
+%             title(til);
+            ind_plot = ind_plot + 1;
             
             if is_flip
                 % show flipped pattern

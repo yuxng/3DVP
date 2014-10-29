@@ -74,9 +74,9 @@ for img_idx = 0:nimages-1
     % plot 2D bounding box
     object = objects(obj_idx);
     
-    if issave == 0
-        draw_2d_box(object);
-    end
+%     if issave == 0
+%         draw_2d_box(object);
+%     end
     
     if strcmp(object.type, 'Car') == 1
         cad_index = find_closest_cad(cads, object);
@@ -113,7 +113,7 @@ for img_idx = 0:nimages-1
     end
   end
   mask = mask(pad_size+1:h+pad_size, pad_size+1:w+pad_size);
-  mask = padarray(mask, [pad_size pad_size]);
+  mask = padarray(mask, [pad_size pad_size], -1);
   mask_image = mask_image(pad_size+1:h+pad_size, pad_size+1:w+pad_size,:);
   
   if issave == 0
@@ -129,10 +129,10 @@ for img_idx = 0:nimages-1
       if isempty(BWs{i}) == 1
           continue;
       end
-      
-      pattern = uint8(BWs{i});
-      pattern = 2*pattern;  % occluded
-      pattern(mask == i) = 1;  % visible
+
+      pattern = uint8(BWs{i});  % 1 visible
+      pattern(mask > 0 & mask ~= i & BWs{i}) = 2;  % occluded
+      pattern(mask == -1 & BWs{i}) = 3;  % truncated
       [x, y] = find(pattern > 0);
       pattern = pattern(min(x):max(x), min(y):max(y));
       
@@ -140,20 +140,7 @@ for img_idx = 0:nimages-1
       occ = numel(find(pattern == 2)) / numel(find(pattern > 0));
       
       % 2D occlusion mask
-      im = 255*ones(size(pattern,1), size(pattern,2), 3);
-      color = [0 255 0];
-      for j = 1:3
-        tmp = im(:,:,j);
-        tmp(pattern == 1) = color(j);
-        im(:,:,j) = tmp;
-      end
-      color = [255 0 0];
-      for j = 1:3
-        tmp = im(:,:,j);
-        tmp(pattern == 2) = color(j);
-        im(:,:,j) = tmp;
-      end
-      im = uint8(im);
+      im = create_mask_image(pattern);
       
       % 3D occlusion mask
       azimuth = objects(i).alpha*180/pi;
@@ -209,13 +196,25 @@ for img_idx = 0:nimages-1
       end
       
       if issave == 0
+            % show the image patch
+            object = objects(i);
+            bbox_gt = [object.x1 object.y1 object.x2 object.y2];
+            rect = [bbox_gt(1) bbox_gt(2) bbox_gt(3)-bbox_gt(1) bbox_gt(4)-bbox_gt(2)];
+            I1 = imcrop(I, rect);
+            subplot(nplot, mplot, index_plot);
+            cla;
+            index_plot = index_plot + 1;
+            imshow(I1);            
+          
+          % show 2D mask
           subplot(nplot, mplot, index_plot);
           index_plot = index_plot + 1;
           imshow(uint8(im));
           axis off;  
           axis equal;
-          title(sprintf('object %d: occ=%.2f', i, occ));
+          % title(sprintf('object %d: occ=%.2f', i, occ));
           
+          % show voxel model
           subplot(nplot, mplot, index_plot);
           cla;
           index_plot = index_plot + 1;

@@ -19,7 +19,7 @@ ids = textread(sprintf(VOCopts.imgsetpath, 'val'), '%s');
 M = numel(ids);
 
 % read detection results
-result_dir = 'data';
+result_dir = 'pascal3d_kmeans_1';
 if is_2d
     filename = sprintf('%s/%s_2d_kmeans_%d_test.mat', result_dir, cls, K);
 else

@@ -39,10 +39,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          x3 = round(vertex_in[5 * dimsv_1 + i]);
          y3 = round(vertex_in[4 * dimsv_1 + i]);
 
-         if (x1 <= 0 || y1 <= 0 || x2 <= 0 || y2 <= 0 || x3 <= 0 || y3 <= 0 || y1 >= imgh || x1 >= imgw || y2 >= imgh || x2 >= imgw || y3>=imgh || x3 >=imgw)
-         {
-           continue;
-         }
+         //if (x1 <= 0 || y1 <= 0 || x2 <= 0 || y2 <= 0 || x3 <= 0 || y3 <= 0 || y1 >= imgh || x1 >= imgw || y2 >= imgh || x2 >= imgw || y3>=imgh || x3 >=imgw)
+         //{
+         //  continue;
+         //}
                    
          minx = min(min(x1,x2),x3);
          if (minx == 0)
@@ -75,11 +75,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                invdenom = 1.0 / (dot00 * dot11 - dot01 * dot01);
                u = (dot11 * dot02 - dot01 * dot12) * invdenom;
                v = (dot00 * dot12 - dot01 * dot02) * invdenom;
-               if ((u >= 0) && (v >= 0) && (u + v < 1))
+               if ((u >= 0) && (v >= 0) && (u + v <= 1))
                {
-                  if (((nn-1)*imgh)+mm <= 0 || ((nn-1)*imgh)+mm > (imgh) * (imgw)-1)
+                  //if (((nn-1)*imgh)+mm <= 0 || ((nn-1)*imgh)+mm > (imgh) * (imgw)-1)
+	                if (nn < 1 || nn >= imgw || mm < 0 || mm > imgh)
                   {  
-                     mexPrintf("%d %d %d %d ****** \n", ((nn-1)*imgh)+mm, nn, imgh, mm);
+                     //mexPrintf("%d %d %d %d ****** \n", ((nn-1)*imgh)+mm, nn, imgh, mm);
                      continue;
                   }
                   outArray[((nn-1)*imgh)+mm] = 1;
