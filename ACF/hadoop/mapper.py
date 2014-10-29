@@ -2,31 +2,10 @@
 import os
 import sys
 
-slm_bin = '/net/skyserver10/workplace/yxiang/SLM/ACF/mccrun.sh'
-resultdir = '/workplace/hadoop_cache/slm/data/'
-odir = "/user/yxiang/yuxiang/acfout/"
-
+slm_bin = './mccrun.sh'
 for line in sys.stdin:
+    os.chdir('/net/skyserver30/workplace/local/wongun/yuxiang/SLM/ACF/')
     # one processing
     line = line.strip()
     cmd = slm_bin+' '+line
-
-    if(not os.path.exists(resultdir)):
-        os.makedirs(resultdir)
     os.system(cmd)
-
-    # upload the result files to the hdfs server
-    resfile = 'car_'+line+'_final.mat'
-    hadoopcmd = "hadoop fs -put "+resultdir+resfile+" "+odir+resfile
-    os.system(hadoopcmd)
-    # clean up the temporary files in the local server
-    cmd = "rm "+resfile
-    os.system(hadoopcmd)
-
-    # upload the result files to the hdfs server
-    resfile = 'car_'+line+'_test.mat'
-    hadoopcmd = "hadoop fs -put "+resultdir+resfile+" "+odir+resfile
-    os.system(hadoopcmd)
-    # clean up the temporary files in the local server
-    cmd = "rm "+resfile
-    os.system(hadoopcmd)
