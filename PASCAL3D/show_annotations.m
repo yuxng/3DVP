@@ -44,6 +44,7 @@ for img_idx = 1:nimages
   index = sort_objects(objects);
  
   % for all annotated objects do
+  count = 0;
   for i = 1:numel(index)
     obj_idx = index(i);
     % plot 2D bounding box
@@ -61,6 +62,7 @@ for img_idx = 1:nimages
             continue;
         end
         face = models{cls_index}(cad_index).faces;
+        count = count + 1;
         
         index_color = 1 + floor((i-1) * size(cmap,1) / numel(index));
         patch('vertices', x2d, 'faces', face, ...
@@ -82,6 +84,10 @@ for img_idx = 1:nimages
     
   end
   hold off;
+  
+  if count < 2
+      continue;
+  end
   
   subplot(nplot, mplot, mplot/2+1:mplot);
   mask = mask(pad_size+1:h+pad_size, pad_size+1:w+pad_size,:);
@@ -127,6 +133,10 @@ for img_idx = 1:nimages
           draw_cad(cad, object.grid_origin);
           view(object.azimuth, object.elevation);
           axis on; 
+          
+          if index_plot > nplot*mplot
+              break;
+          end
       end
   end
   

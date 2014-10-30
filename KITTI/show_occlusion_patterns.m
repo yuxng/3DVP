@@ -1,6 +1,6 @@
 function show_occlusion_patterns
 
-is_save = 1;
+is_save = 0;
 is_flip = 0;
 
 opt = globals();
@@ -34,7 +34,7 @@ for i = 1:N
     
     for j = 1:numel(objects)
         object = objects(j);
-        if strcmp(object.type, 'Car') == 1% && object.occ_per > 0.05 && object.occ_per < 0.95 
+        if strcmp(object.type, 'Car') == 1 && object.occ_per > 0.1 && object.trunc_per > 0.1
             
             % show the image patch
             filename = sprintf('%s/%06d.png',image_dir, i - 1);

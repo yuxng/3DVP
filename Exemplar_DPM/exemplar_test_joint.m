@@ -38,6 +38,7 @@ else
     else
         ids = object.ids_test;
     end
+    opt = [];
 end
 
 filename = sprintf('data/%s_%s_test.mat', cls, name);

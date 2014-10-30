@@ -40,7 +40,7 @@ for i = 1:N
     for j = 1:numel(objects)
         object = objects(j);
         cls_index = find(strcmp(object.class, classes) == 1);
-        if isempty(cls_index) == 0 && isempty(object.grid) == 0 % && object.occ_per > 0.05 && object.occ_per < 0.95 
+        if isempty(cls_index) == 0 && isempty(object.grid) == 0 && cls_index == 10 % && object.occ_per > 0.05 && object.occ_per < 0.95 
             cad_index = object.cad_index;
             cad = models{cls_index}(cad_index);
             
