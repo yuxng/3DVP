@@ -1,18 +1,21 @@
-function [odet] = greedy_inference(data, params)
+function [odet, ndet] = greedy_inference(data, params)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-bias = 0.13; % about -20
+% params.bias = 0.0; % about -20
+% % bias = 0.2; % about -20
+% 
+% 
+% a = 10;
+% b = 0.6;
+% c = 0.5;
+% 
+% params.w(1) = a;
+% params.w(2) = -b;
+% params.w(3) = b;
+% params.w(4) = -c;
+% params.w(5) = b;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 threshold = 0;
-
-a = 1;
-b = 1;
-c = 10;
-params.w(1) = a;
-params.w(2) = -b;
-params.w(3) = b;
-params.w(4) = -c;
-params.w(5) = b;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-odet = [];
+visualize = params.visualize;
 
 onedet = data.onedet;
 unaries = data.unaries;
@@ -28,15 +31,14 @@ solution = false(size(onedet, 1), 1);
 % anyway...
 unaries(unaries(:, 2) > 0.9, 2) = 10;
 
-u = [unaries(:, 1) + bias + 0.1, unaries(:, 2:3)] * params.w(1:3)';
-% p = pairwise(:,:,1) * params.w(4) + pairwise(:,:,2) * params.w(5);
-% p = (pairwise(:,:,1) > 0.3) * -8;
-% p = p + (pairwise(:,:,1) > 0.5) * -8;
-% p = p + (pairwise(:,:,1) > 0.7) * -8;
-p = pairwise(:,:,1) * params.w(4);
-p = p + pairwise(:,:,2) * params.w(5);
+prob = build_problem(unaries, pairwise, params);
+u = prob.u;
+p = prob.p;
 
-while(1)
+count = 1;
+odet = zeros(size(onedet));
+
+while(1 && any(p(:)))
     if(any(solution))
         score = u + sum(p(:, solution), 2);
     else
@@ -48,47 +50,84 @@ while(1)
         solution(idx) = true;
         u(idx) = -Inf;
         
-        odet = [odet; onedet(idx, 1:5), v];
+        odet(count, :) = [onedet(idx, 1:5), v];
+        count = count + 1;
     else
         break;
     end
 end
 
-%%%
-imageidx = data.idx;
-load ../KITTI/kitti_ids_new.mat
+odet = odet(1:count-1, :);
 
-figure(1)
-subplot(211)
-im = show_image(ids_val, imageidx);
-[~, top] = sort(-odet(:, end));
-top = 1:size(odet, 1);
+if(visualize)
+    vizscore = -0.05;
+    
+    imageidx = data.idx;
+    load ../KITTI/kitti_ids_new.mat
+    
+    subplot(311)
+    im = show_image(ids_val, imageidx);
+    top = 1:size(odet, 1);
 
-imshow(im);
-for i = 1:length(top)
-    im = draw_mask(im, odet(top(i), :), params.pattern);
     imshow(im);
-    % rectangle('position', box2rect(odet(top(i), 1:4)), 'linewidth', 2, 'edgecolor', 'r');
-    pause(0.5);
+    for i = 1:length(top)
+        if(odet(top(i), end) > vizscore * params.w(1) + params.bias)
+            im = draw_mask(im, odet(top(i), :), params.pattern);
+            imshow(im);
+            % rectangle('position', box2rect(odet(top(i), 1:4)), 'linewidth', 2, 'edgecolor', 'r');
+            drawnow;
+        end
+    end
+    title('Occlusion Reasoning')
 end
-title('Occlusion Reasoning')
 
-subplot(212)
-im = show_image(ids_val, imageidx);
-imshow(im);
+odet = recompute_score(onedet, solution, prob.u, prob.p);
+pick = nms_new(odet, 0.7);
+odet = odet(pick, :);
+%%%
+if(visualize)
+    subplot(312)
+    im = show_image(ids_val, imageidx);
+    [~, top] = sort(-odet(:, end));
+    % top = 1:size(odet, 1);
+
+    imshow(im);
+    for i = 1:length(top)
+        if(odet(top(i), end) > vizscore * params.w(1)  + params.bias)
+            im = draw_mask(im, odet(top(i), :), params.pattern);
+            imshow(im);
+            % rectangle('position', box2rect(odet(top(i), 1:4)), 'linewidth', 2, 'edgecolor', 'r');
+            drawnow;
+        end
+    end
+    title('Occlusion Reasoning')
+end
+
 
 pick = nms_new(onedet, 0.6);
 [~, idx] = sort(-onedet(pick, end));
 pick = pick(idx);
-for i = 1:length(pick)
-    if(onedet(pick(i), end) > (-bias + threshold) * params.snorm)
-        % rectangle('position', box2rect(onedet(pick(i), 1:4)), 'linewidth', 2, 'edgecolor', 'r');
-        im = draw_mask(im, onedet(pick(i), :), params.pattern);
-        imshow(im);
-        pause(0.5);
+ndet = onedet(pick ,:);
+
+if(visualize)
+    vizscore = -20;
+    
+    subplot(313)
+    im = show_image(ids_val, imageidx);
+    imshow(im);
+
+    for i = 1:length(pick)
+        if(onedet(pick(i), end) > vizscore)
+            % rectangle('position', box2rect(onedet(pick(i), 1:4)), 'linewidth', 2, 'edgecolor', 'r');
+            im = draw_mask(im, onedet(pick(i), :), params.pattern);
+            imshow(im);
+            drawnow;
+        end
     end
+    title('NMS')
+    drawnow;
+	pause(0.5);
 end
-title('NMS')
 
 return;
 

@@ -11,8 +11,8 @@ for i = 1:size(dets, 1)
     idx = find(o > 0);
     idx = idx + i;
     
-    fprintf('\r %d/%d', i, size(dets, 1));
-    
+    % fprintf('\r %d/%d', i, size(dets, 1));
+    stdout_withFlush([num2str(i) '/' num2str(size(dets, 1))]);
     for j = idx' % i+1:size(dets, 1)
         pairwise(i, j, :) = compute_match(dets(i, 1:4), dets(j, 1:4), imptns{i}, imptns{j});
         pairwise(j, i, :) = pairwise(i, j, :);
@@ -70,7 +70,7 @@ if(0) % not faster...
     a2 = length(farptn.visibleidx);
     scores(1)  = ia / (a1 + a2 - ia);
     
-    % occlusion compatibility
+    % occlusion explained
     ia = sum(ismembc(nearptn.visibleidx, farptn.occidx));
     a2 = length(farptn.visibleidx) + length(farptn.occidx) + length(farptn.truncidx);
 
@@ -83,7 +83,7 @@ else
     a2 = sum(farptn.rawptn(:) == 1) + sum(farptn.rawptn(:) == 2);
 
     scores(1)  = ia / (a1 + a2 - ia);
-    % visibility overlap
+    % occlusion explained
     ia = sum(nearptn.rawptn(:) == 1 & farptn.rawptn(:) == 2);
     a2 = sum(farptn.rawptn(:) >= 1);
 

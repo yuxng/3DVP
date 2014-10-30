@@ -8,14 +8,15 @@ end
 setpath;
 
 outpath = fullfile(rootpath, 'ContextW/data/');
-load(fullfile(rootpath, 'KITTI/data.mat'));
-load(fullfile(rootpath, 'ACF/data/car_3d_ap_125_combined_test.mat'));
 
 try
     load(fullfile(outpath, [num2str(idx, '%06d') '.mat']), 'idx', 'onedet', 'unaries', 'pairwise');
     return
 catch
 end
+
+load(fullfile(rootpath, 'KITTI/data.mat'));
+load(fullfile(rootpath, 'ACF/data/car_3d_ap_125_combined_test.mat'));
 
 if nargin < 2
     params = learn_params(data, dets);

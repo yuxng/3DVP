@@ -1,6 +1,6 @@
-function params = learn_params(data, dets)
+function params = learn_params(data, dets, vargins)
 
-params = struct('w', [], 'b', [], 'pattern', [], 'centers', [], 'transform', [], 'snorm', []);
+params = struct('w', [], 'bias', [], 'b', [], 'pattern', [], 'centers', [], 'transform', [], 'snorm', []);
 
 centers = unique(data.idx_ap);
 centers(centers == -1) = [];
@@ -31,10 +31,18 @@ for i = 1:length(dets)
 end
 %% get the parameters
 params.w = zeros(1, 5);
+params.bias = 0;
+
 params.b = b;
 params.transform = transform;
 params.centers = centers;
 params.pattern = data.pattern;
 params.snorm = max(abs(maxscore), max(minscore));
+
+if(nargin >= 3)
+    for i = 1:2:length(vargins)
+        params.(vargins{i}) = vargins{i+1};
+    end
+end
 
 end
