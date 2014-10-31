@@ -20,6 +20,11 @@ for i = 1:length(centers)
     end
 end
 %% normalize the scores
+
+if(length(dets) > 3799)
+    error('Do not call this function with test data. It does some learning...');
+end
+
 minscore = 0;
 maxscore = 0;
 % allscores = [];
