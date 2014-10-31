@@ -1,6 +1,6 @@
 % Set up global variables used throughout the code
 
-is_hadoop = 1;
+is_hadoop = 0;
 
 % directory for caching models, intermediate data, and results
 if is_hadoop

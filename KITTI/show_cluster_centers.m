@@ -38,7 +38,7 @@ for i = 1:N
     view(data.azimuth(ind), data.elevation(ind));
     num = numel(find(idx == ind));
     til = sprintf('%d: trunc %.2f, %d examples', ind, data.truncation(ind), num);
-    title(til);
+%     title(til);
     
     % show exemplar DPM
 %     filename = sprintf('../Exemplar_DPM/kitti_train/%s_%d_final.mat', cls, ind);
