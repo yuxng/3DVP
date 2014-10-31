@@ -1,9 +1,12 @@
-function pick = nms_new(boxes, overlap)
-
+function pick = nms_new(boxes, overlap, fixed)
 % pick = nms(boxes, overlap) 
 % Non-maximum suppression.
 % Greedily select high-scoring detections and skip detections
 % that are significantly covered by a previously selected detection.
+
+if(nargin < 3)
+    fixed = 0;
+end
 
 if isempty(boxes)
   pick = [];
@@ -18,7 +21,7 @@ else
   [vals, I] = sort(s, 'descend');
   n = numel(I);
   pick = ones(n, 1);
-    for i = 1:n
+    for i = fixed+1:n
         ii = I(i);
         for j = 1:i-1
             jj = I(j);

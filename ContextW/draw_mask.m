@@ -19,7 +19,7 @@ mask(yrange(yi), xrange(xi), 1) = (ptn(yi, xi) == 1) .* 255;
 mask(yrange(yi), xrange(xi), 2) = (ptn(yi, xi) == 2) .* 255;
 mask(yrange(yi), xrange(xi), 3) = (ptn(yi, xi) == 3) .* 255;
 
-im(mask > 0) = 0.5 .* im(mask > 0) + uint8(0.5 .* mask(mask > 0));
+im(mask > 0) = 0.2 .* im(mask > 0) + uint8(0.8 .* mask(mask > 0));
 
 box = zeros(size(im, 1), size(im, 2));
 

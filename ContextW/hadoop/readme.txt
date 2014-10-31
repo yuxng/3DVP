@@ -18,12 +18,12 @@ documentation.
 
 Files to package for Standalone 
 ================================
--prepare_data 
--run_prepare_data.sh (shell script run to temporarily set environment variables and 
-                      execute the application)
+-testall 
+-run_testall.sh (shell script run to temporarily set environment variables and execute 
+                 the application)
    -to run the shell script, type
    
-       ./run_prepare_data.sh <mcr_directory> <argument_list>
+       ./run_testall.sh <mcr_directory> <argument_list>
        
     at Linux or Mac command prompt. <mcr_directory> is the directory 
     where version 7.15 of MCR is installed or the directory where 
@@ -33,12 +33,12 @@ Files to package for Standalone
     If you have version 7.15 of MCR installed in 
     /mathworks/home/application/R2010a/v715, run the shell script as:
     
-       ./run_prepare_data.sh /mathworks/home/application/R2010a/v715
+       ./run_testall.sh /mathworks/home/application/R2010a/v715
        
     If you have MATLAB installed in /mathworks/devel/application/matlab, 
     run the shell script as:
     
-       ./run_prepare_data.sh /mathworks/devel/application/matlab
+       ./run_testall.sh /mathworks/devel/application/matlab
 -MCRInstaller.bin
    -include when building component by clicking "Add MCR" link 
     in deploytool
@@ -80,7 +80,7 @@ A. On the target machine, add the MCR directory to the environment variable LD_L
         NOTE: The environment variable syntax utilizes forward 
               slashes (/), delimited by colons (:).  
         NOTE: When deploying standalone applications, it is possible 
-              to run the shell script file run_prepare_data.sh 
+              to run the shell script file run_testall.sh 
               instead of setting environment variables. See 
               section 2 "Files to Deploy and Package".    
 

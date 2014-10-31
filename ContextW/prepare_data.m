@@ -8,7 +8,6 @@ end
 setpath;
 
 outpath = fullfile(rootpath, 'ContextW/data/');
-
 try
     load(fullfile(outpath, [num2str(idx, '%06d') '.mat']), 'idx', 'onedet', 'unaries', 'pairwise');
     return
@@ -24,6 +23,11 @@ end
 
 onedet = dets{idx};
 clear dets;
+
+if(~exist(outpath, 'dir'))
+    mkdir(outpath);
+end
+
 %% get the full boxes
 if(isempty(onedet))
     unaries = zeros(0, 3);
@@ -32,12 +36,24 @@ else
     rt = box2rect(onedet(:, 1:4));
     onedet(:, 1:4) = onedet(:, 1:4) + (params.transform(onedet(:, 5), :) .* [rt(:, 3:4) rt(:, 3:4)]);
 
-    unaries = compute_unaries(onedet, params);
-    pairwise = compute_pairwise_match(onedet, params);
+    if(params.ver == 0.5) % not using... just complicated and not helping...
+        error('dont use');
+        unaries = compute_unaries2(onedet, params);
+        pairwise = compute_pairwise_match2(onedet, unaries, params);
+    else
+        unaries = compute_unaries(onedet, params);
+        pairwise = compute_pairwise_match(onedet, params);
+    end
 end
 
 if savefile
     save(fullfile(outpath, [num2str(idx, '%06d') '.mat']), 'idx', 'onedet', 'unaries', 'pairwise');
+end
+
+if(0) % debugging
+    temp = load(fullfile(outpath, [num2str(idx, '%06d') '.mat']), 'idx', 'onedet', 'unaries', 'pairwise');
+    assert(all(temp.unaries(:) == unaries(:)));
+    assert(all(temp.pairwise(:) == pairwise(:)));
 end
 
 end

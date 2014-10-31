@@ -1,25 +1,40 @@
-function pairwise = compute_pairwise_match(dets, params)
+function pairwise = compute_pairwise_match2(dets, unaries, params)
 % the function takes quite long time 
 % we should mex it.
 
 imptns = get_image_patterns(dets, params.pattern);
 
 pairwise = zeros(size(dets, 1), size(dets, 1), 2);
+faridx = zeros(size(dets, 1), size(dets, 1));
 for i = 1:size(dets, 1)
     o = boxoverlap(dets(i+1:end, 1:4), dets(i, 1:4));
     
     idx = find(o > 0);
     idx = idx + i;
     
-    % fprintf('\r %d/%d', i, size(dets, 1));
     stdout_withFlush([num2str(i) '/' num2str(size(dets, 1))]);
     for j = idx' % i+1:size(dets, 1)
-        temp = compute_match(dets(i, 1:4), dets(j, 1:4), imptns{i}, imptns{j});
+        [temp, temp2] = compute_match(dets(i, 1:4), dets(j, 1:4), imptns{i}, imptns{j});
         pairwise(i, j, :) = temp;
         pairwise(j, i, :) = temp;
+        
+        if(temp2 == 1)
+            temp2 = j;
+        else
+            temp2 = i;
+        end
+        faridx(i, j) = temp2;
+        faridx(j, i) = temp2;
     end
 end
-% pairwise = sparse(pairwise);
+clear imptns
+pairwise(:, :, 1) = pwlinear(pairwise(:, :, 1), params.lambda1);
+
+idx = pairwise(:,:,2) > 0;
+temp = pairwise(:,:,2);
+temp(idx) = pwlinear(temp(idx), params.lambda2) .* unaries(faridx(idx), 2);
+pairwise(:,:,2) = temp;
+
 end
 
 function imptns = get_image_patterns(dets, patterns)
@@ -54,7 +69,7 @@ end
 
 end
 
-function scores = compute_match(nearbox, farbox, nearptn, farptn)
+function [scores, faridx] = compute_match(nearbox, farbox, nearptn, farptn)
 % the function compute pairwise potential using pattern matching
 % 1. if there is large overlap between visible patterns -> high negative
 % 2. if there is compatible visibility pattern -> reward
@@ -63,56 +78,31 @@ function scores = compute_match(nearbox, farbox, nearptn, farptn)
 % find the order
 if(nearbox(4) < farbox(4))
     scores = compute_match(farbox, nearbox, farptn, nearptn);
+    faridx = 2;
     return;
 end
 
 scores = zeros(1, 1, 2);
 
-if(0) % not faster...
-    % visibility overlap
-    ia = sum(ismembc(nearptn.visibleidx, farptn.visibleidx)); % sum(nearptn(:) == 1 & farptn(:) == 1);
-    a1 = length(nearptn.visibleidx);
-    a2 = length(farptn.visibleidx);
-    scores(1)  = ia / (a1 + a2 - ia);
-    
-    % occlusion explained
-    ia = sum(ismembc(nearptn.visibleidx, farptn.occidx));
-    a2 = length(farptn.visibleidx) + length(farptn.occidx) + length(farptn.truncidx);
+% faster!
 
+% visibility overlap
+ia = sum(nearptn.rawptn(farptn.visibleidx) == 1);
+ia = ia + sum(nearptn.rawptn(farptn.occidx) == 2);
+ia = ia + sum(nearptn.rawptn(farptn.truncidx) == 3);
+
+a1 = length(nearptn.visibleidx) + length(nearptn.occidx) + length(nearptn.truncidx);
+a2 = length(farptn.visibleidx) + length(farptn.occidx) + length(farptn.truncidx);
+
+scores(1)  = ia / min(a1, a2);
+
+% percentage of occlusion explained
+ia = sum(nearptn.rawptn(farptn.occidx) == 1);
+a2 = length(farptn.occidx)  + length(farptn.truncidx);
+if(ia > 0)
     scores(2)  = ia / a2;
-elseif(1)
-    % faster!
-    
-    % visibility overlap
-    ia = sum(nearptn.rawptn(farptn.visibleidx) == 1);
-    ia = ia + sum(nearptn.rawptn(farptn.occidx) == 2);
-    a1 = length(nearptn.visibleidx) + length(nearptn.occidx);
-    a2 = length(farptn.visibleidx) + length(farptn.occidx);
-
-    scores(1)  = ia / (a1 + a2 - ia);
-    
-    % occlusion explained
-    ia = sum(nearptn.rawptn(farptn.occidx) == 1);
-    a2 = length(farptn.visibleidx) + length(farptn.occidx)  + length(farptn.truncidx);
-
-    scores(2)  = ia / a2;
-else    
-    % visibility overlap
-    ia = sum(nearptn.rawptn(:) == 1 & farptn.rawptn(:) == 1);
-    ia = ia + sum(nearptn.rawptn(:) == 2 & farptn.rawptn(:) == 2);
-    a1 = sum(nearptn.rawptn(:) == 1) + sum(nearptn.rawptn(:) == 2);
-    a2 = sum(farptn.rawptn(:) == 1) + sum(farptn.rawptn(:) == 2);
-
-    scores(1)  = ia / (a1 + a2 - ia);
-    % occlusion explained
-    ia = sum(nearptn.rawptn(:) == 1 & farptn.rawptn(:) == 2);
-    a2 = sum(farptn.rawptn(:) >= 1);
-
-    scores(2)  = ia / a2;
-    
-    if(~all(tt == scores))
-        keyboard;
-    end
 end
+
+faridx = 1;
 
 end

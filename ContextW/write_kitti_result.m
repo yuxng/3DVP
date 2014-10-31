@@ -2,7 +2,7 @@ function write_kitti_result(filename, det, data)
 
 imsize = [1224, 370]; % kittisize
 
-disp(filename);
+% disp(filename);
 fid = fopen(filename, 'w');
 
 if isempty(det) == 1

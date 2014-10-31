@@ -1,19 +1,7 @@
-function [odet, ndet] = greedy_inference(data, params)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% params.bias = 0.0; % about -20
-% % bias = 0.2; % about -20
-% 
-% 
-% a = 10;
-% b = 0.6;
-% c = 0.5;
-% 
-% params.w(1) = a;
-% params.w(2) = -b;
-% params.w(3) = b;
-% params.w(4) = -c;
-% params.w(5) = b;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [odet, odet2, ndet] = greedy_inference(data, params)
+%%%%%% temporary
+data.unaries(data.unaries(:, 1) < -0.1, 1) = data.unaries(data.unaries(:, 1) < -0.1, 1) .* 3;
+%%%%%%%%%%%%%%%%%%%%%%
 threshold = 0;
 visualize = params.visualize;
 
@@ -25,8 +13,6 @@ if(isempty(onedet))
     return;
 end
 
-solution = false(size(onedet, 1), 1);
-
 % temp. lets not use too much occluded detections... doesn't make sense
 % anyway...
 unaries(unaries(:, 2) > 0.9, 2) = 10;
@@ -37,42 +23,89 @@ p = prob.p;
 
 count = 1;
 odet = zeros(size(onedet));
+count2 = 1;
+odet2 = zeros(size(onedet));
 
+debug = 0;
+if(debug)
+    load ../KITTI/kitti_ids_new.mat
+    imageidx = data.idx;
+    im = show_image(ids_val, imageidx);
+end
+
+solution = zeros(size(onedet, 1), 1);
 while(1 && any(p(:)))
-    if(any(solution))
-        score = u + sum(p(:, solution), 2);
+    if(any(u < -100000))
+        score = u + sum(p(:, u < -100000), 2);
     else
         score = u;
     end
 
     [v, idx] = max(score);
-    if(v > threshold)
-        solution(idx) = true;
-        u(idx) = -Inf;
+    if(v > 0) % -0.1 * params.w(1))
+        if(debug)
+            subplot(311)
+            im = draw_mask(im, onedet(idx, :), params.pattern);
+            imshow(im);
+            title(num2str(v));
+            fprintf('%.02f, %.02f\n', u(idx), sum(p(idx, solution)));
+            keyboard;
+        end
         
-        odet(count, :) = [onedet(idx, 1:5), v];
-        count = count + 1;
+        u(idx) = -Inf;
+        if(v > threshold)
+            solution(count) = idx;
+            odet(count, :) = [onedet(idx, 1:5), v];
+            count = count + 1;
+        end
+        
+        odet2(count2, :) = [onedet(idx, 1:5), v];
+        count2 = count2 + 1;
     else
         break;
     end
 end
+solution(count:end) = [];
 
 odet = odet(1:count-1, :);
+odet2 = odet2(1:count2-1, :);
+
+if(0)
+    odet2(:, end) = odet2(:, end) + 1000;
+    odet2 = [odet2; onedet];
+
+    pick = nms_new(odet2, 0.7);
+    [~, idx] = sort(-odet2(pick, end));
+    pick = pick(idx);
+    odet2 = odet2(pick ,:);
+else
+    tempd = recompute_score(onedet, solution, prob.u, prob.p);
+    tempd(solution, :) = []; % rescore the remainder
+    
+    odet2(:, end) = odet2(:, end) + 1000; % keep the MAP solution
+    odet2 = [odet2; tempd];
+    
+    pick = nms_new(odet2, 0.8);
+    [~, idx] = sort(-odet2(pick, end));
+    pick = pick(idx);
+    odet2 = odet2(pick ,:);
+end
+
 
 if(visualize)
-    vizscore = -0.05;
+    vizscore = 0; % -0.05;
     
     imageidx = data.idx;
     load ../KITTI/kitti_ids_new.mat
     
     subplot(311)
     im = show_image(ids_val, imageidx);
-    top = 1:size(odet, 1);
+    top = 1:size(odet2, 1);
 
     imshow(im);
     for i = 1:length(top)
-        if(odet(top(i), end) > vizscore * params.w(1) + params.bias)
-            im = draw_mask(im, odet(top(i), :), params.pattern);
+        if(odet2(top(i), end) > vizscore)
+            im = draw_mask(im, odet2(top(i), :), params.pattern);
             imshow(im);
             % rectangle('position', box2rect(odet(top(i), 1:4)), 'linewidth', 2, 'edgecolor', 'r');
             drawnow;
@@ -104,7 +137,7 @@ if(visualize)
 end
 
 
-pick = nms_new(onedet, 0.6);
+pick = nms(onedet, 0.5);
 [~, idx] = sort(-onedet(pick, end));
 pick = pick(idx);
 ndet = onedet(pick ,:);
