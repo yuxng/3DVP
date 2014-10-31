@@ -34,7 +34,7 @@ for i = 1:N
     
     for j = 1:numel(objects)
         object = objects(j);
-        if strcmp(object.type, 'Car') == 1 && object.occ_per > 0.1 && object.trunc_per > 0.1
+        if strcmp(object.type, 'Car') == 1 && object.occ_per > 0.1 % object.occ_per > 0.1 &&
             
             % show the image patch
             filename = sprintf('%s/%06d.png',image_dir, i - 1);

@@ -14,7 +14,7 @@ cad = object.(cls);
 index = cad.grid == 1;
 
 % cluster centers
-files = dir('../Exemplar_DPM/kitti_train/*final*');
+files = dir('../Exemplar_DPM/kitti_train_ap_125/*final*');
 N = numel(files);
 centers = zeros(1, N);
 for i = 1:N
@@ -41,11 +41,11 @@ for i = 1:N
     ind_plot = ind_plot + 1;
     draw_cad(cad, visibility_grid);
     view(data.azimuth(ind), data.elevation(ind));
-    til = sprintf('%d: trunc %.2f', ind, data.truncation(ind));
-    title(til);
+%     til = sprintf('%d: trunc %.2f', ind, data.truncation(ind));
+%     title(til);
     
     % show exemplar DPM
-    filename = sprintf('../Exemplar_DPM/kitti_train/%s_%d_final.mat', cls, ind);
+    filename = sprintf('../Exemplar_DPM/kitti_train_ap_125/%s_%d_final.mat', cls, ind);
     if exist(filename, 'file')
         object = load(filename);
         model = object.model;

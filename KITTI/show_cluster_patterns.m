@@ -1,5 +1,7 @@
 function show_cluster_patterns(cid)
 
+is_save = 0;
+
 opt = globals;
 
 % get image directory
@@ -33,9 +35,10 @@ N = numel(centers);
 % [~, ind] = sort(azimuth);
 % centers = centers(ind);
 
-figure;
-nplot = 8;
-mplot = 8;
+% hf = figure('units','normalized','outerposition',[0 0 0.5 1]);
+hf = figure;
+nplot = 5;
+mplot = 6;
 for i = 1:N
     disp(i);
     ind = centers(i);
@@ -88,8 +91,8 @@ for i = 1:N
     subplot(nplot, mplot, ind_plot);
     ind_plot = ind_plot + 1;
     imshow(I1);
-    til = sprintf('w:%d, h:%d', size(I1,2), size(I1,1));
-    title(til);
+%     til = sprintf('w:%d, h:%d', size(I1,2), size(I1,1));
+%     title(til);
     
     % show several members
     member = find(idx == ind);
@@ -118,13 +121,18 @@ for i = 1:N
         subplot(nplot, mplot, ind_plot);
         ind_plot = ind_plot + 1;
         imshow(I1);
-        til = sprintf('w:%d, h:%d', size(I1,2), size(I1,1));
-        title(til);        
+%         til = sprintf('w:%d, h:%d', size(I1,2), size(I1,1));
+%         title(til);        
     end
     for j = ind_plot:nplot*mplot
         subplot(nplot, mplot, j);
         cla;
         title('');
     end
-    pause;
+    if is_save
+        filename = sprintf('Clusters/%03d.png', i);
+        saveas(hf, filename);
+    else
+        pause;
+    end
 end

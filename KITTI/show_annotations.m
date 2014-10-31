@@ -53,7 +53,7 @@ for img_idx = 1:nimages-1
     obj_idx = index(i);
     % plot 2D bounding box
     object = objects(obj_idx);
-    draw_2d_box(object);
+%     draw_2d_box(object);
     
     if strcmp(object.type, 'Car') == 1
         cad_index = find_closest_cad(cads, object);
@@ -96,9 +96,9 @@ for img_idx = 1:nimages-1
   axis off;  
   axis equal;
   
-  if isempty(V) == 0
-      pause(1);
-      render_cad_model(V, F);
-  end
+%   if isempty(V) == 0
+%       pause(1);
+%       render_cad_model(V, F);
+%   end
   pause;
 end
