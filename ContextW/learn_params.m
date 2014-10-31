@@ -32,7 +32,7 @@ for i = 1:length(dets)
     % allscores = [allscores ; dets{i}(:, end)];
 end
 %% get the parameters
-params.w = [10 -1 1 -10 1];
+params.w = [10 -2 2 -10 2];
 params.bias = 0.1;
 params.visualize = 0;
 params.tw = 0.4;
