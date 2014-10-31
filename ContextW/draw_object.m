@@ -19,19 +19,14 @@ mask(yrange(yi), xrange(xi), 1) = (ptn(yi, xi) == 1) .* color(1);
 mask(yrange(yi), xrange(xi), 2) = (ptn(yi, xi) == 1) .* color(2);
 mask(yrange(yi), xrange(xi), 3) = (ptn(yi, xi) == 1) .* color(3);
 
-im(mask > 0) = 0.1 .* im(mask > 0) + uint8(0.9 .* mask(mask > 0));
+im(mask > 0) = 0.3 .* im(mask > 0) + uint8(0.7 .* mask(mask > 0));
+
+mask = any(mask > 0, 3);
+[gx, gy] = gradient(double(mask));
+outline = imdilate(repmat(conv2(gx.^2 + gy.^2, [1 1; 1 1], 'same') > 0, [1 1 3]), 1);
+
+im(outline) = 255;
 
 return;
-
-box = zeros(size(im, 1), size(im, 2));
-
-box(max(1, det(2)-1):max(1, det(2)+1), max(1, det(1)):min(size(im, 2), det(3))) = 1;
-box(min(size(im, 1), det(4)-1):min(size(im, 1), det(4)+1), max(1, det(1)):min(size(im, 2), det(3))) = 1;
-box(max(1, det(2)):min(size(im, 1), det(4)), max(1, det(1)-1):max(1, det(1)+1)) = 1;
-box(max(1, det(2)):min(size(im, 1), det(4)), min(size(im, 2), det(3)-1):min(size(im, 2), det(3)+1)) = 1;
-
-im(:,:,1) = im(:,:,1) + uint8(box .* color(1));
-im(:,:,2) = im(:,:,2) + uint8(box .* color(2));
-im(:,:,3) = im(:,:,3) + uint8(box .* color(3));
 
 end
