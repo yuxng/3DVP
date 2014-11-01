@@ -1,4 +1,5 @@
-function [onedet, unaries, pairwise] = prepare_data(idx, params)
+function [onedet, unaries, pairwise] = prepare_data(idx, params, data, dets)
+
 savefile = 0;
 if(ischar(idx))
     idx = str2double(idx);
@@ -7,15 +8,19 @@ end
 
 setpath;
 
-outpath = fullfile(rootpath, 'ContextW/data/');
 try
     load(fullfile(outpath, [num2str(idx, '%06d') '.mat']), 'idx', 'onedet', 'unaries', 'pairwise');
-    return
+    return;
 catch
 end
 
-load(fullfile(rootpath, 'KITTI/data.mat'));
-load(fullfile(rootpath, 'ACF/data/car_3d_ap_125_combined_test.mat'));
+if nargin < 3
+    load(fullfile(datapath, 'data.mat'));
+end
+
+if nargin < 4
+    load(detfile);
+end
 
 if nargin < 2
     params = learn_params(data, dets);
@@ -42,7 +47,7 @@ else
         pairwise = compute_pairwise_match2(onedet, unaries, params);
     else
         unaries = compute_unaries(onedet, params);
-        pairwise = compute_pairwise_match(onedet, params);
+        pairwise = compute_pairwise_match_new(onedet, params);
     end
 end
 
