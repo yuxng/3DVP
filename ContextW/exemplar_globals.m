@@ -56,8 +56,6 @@ for i = 1:numel(SLMpaths)
     end
 end
 
-return;
-
 PASCAL3Dpaths = {'/home/yuxiang/Projects/Pose_Dataset/PASCAL3D+_release1.1', ...
     '/scratch/yuxiang/Projects/PASCAL3D+_release1.1', ...
     '/scail/scratch/u/yuxiang/PASCAL3D+_release1.1'};

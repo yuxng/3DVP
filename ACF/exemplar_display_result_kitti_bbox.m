@@ -48,7 +48,7 @@ object = load(filename);
 data = object.data;
 
 figure;
-for i = 322:N
+for i = 1:N
     img_idx = ids(i);
     disp(img_idx);
     

@@ -47,7 +47,7 @@ end
 object = load(filename);
 data = object.data;
 
-figure;
+hf = figure(1);
 for i = 1:N
     img_idx = ids(i);
     disp(img_idx);
@@ -114,7 +114,7 @@ for i = 1:N
 %     end
 %     hold off;
 
-    hf = figure(1);
+
     % add pattern
     for k = 1:num
         if det(k,6) > threshold
@@ -219,6 +219,7 @@ for i = 1:N
         if det(k,6) > threshold
             % get predicted bounding box
             bbox_pr = det(k,1:4);
+            disp(det(k,5));
 %             bbox_draw = [bbox_pr(1), bbox_pr(2), bbox_pr(3)-bbox_pr(1), bbox_pr(4)-bbox_pr(2)];
 %             if is_train
 %                 if flags_pr(k)
@@ -229,8 +230,8 @@ for i = 1:N
 %             else
 %                 rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);
 %             end
-            s = sprintf('%.2f', det(k,6));
-            text(bbox_pr(1), bbox_pr(2), s, 'FontSize', 4, 'BackgroundColor', 'c');
+%             s = sprintf('%.2f', det(k,6));
+%             text(bbox_pr(1), bbox_pr(2), s, 'FontSize', 4, 'BackgroundColor', 'c');
         end
     end
     

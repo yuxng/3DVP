@@ -1,7 +1,7 @@
 function exemplar_display_result_kitti
 
 cls = 'car';
-threshold = 1000;
+threshold = -2;
 is_save = 0;
 % is_train = 0;
 % result_dir = 'kitti_test_acf_3d_227_flip';
