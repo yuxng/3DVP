@@ -3,11 +3,11 @@ function exemplar_display_result_kitti
 cls = 'car';
 threshold = -2;
 is_save = 0;
-% is_train = 0;
-% result_dir = 'kitti_test_acf_3d_227_flip';
+is_train = 0;
+result_dir = 'kitti_test_ap_227';
 % name = '3d_ap_227_combined';
-is_train = 1;
-result_dir = 'kitti_train_ap_125';
+% is_train = 1;
+% result_dir = 'kitti_train_ap_125';
 
 % read detection results
 filename = sprintf('%s/odets.mat', result_dir);
@@ -46,7 +46,7 @@ object = load(filename);
 data = object.data;
 
 figure;
-for i = 131:N
+for i = 1:N
     img_idx = ids(i);
     disp(img_idx);
     
@@ -224,7 +224,7 @@ for i = 131:N
 %                 rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);
 %             end
             s = sprintf('%.2f', det(k,6));
-            text(bbox_pr(1), bbox_pr(2), s, 'FontSize', 4, 'BackgroundColor', 'c');
+            text(bbox_pr(1), bbox_pr(2), s, 'FontSize', 8, 'BackgroundColor', 'c');
         end
     end
     
