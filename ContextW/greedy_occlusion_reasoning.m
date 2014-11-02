@@ -1,6 +1,6 @@
 function greedy_occlusion_reasoning(varargin)
 
-matlabpool open;
+% matlabpool open;
 
 % run occlusion reasoning for all the validation images
 if nargin < 1
@@ -25,18 +25,20 @@ else
     outpath = fullfile(rootpath, 'ContextW/kitti_test_ap_227/');
 end 
 
-load(datafile);
-load(detfile);
+object = load(datafile);
+data = object.data;
+object = load(detfile);
+dets = object.dets;
 
 if is_train
     params = learn_params(data, dets, varargin);
 else
     params = learn_params_test(data);
 end
+clear data;
 
 N = length(dets);
 odets = cell(1, N);
-onedata = cell(1, N);
 parfor idx = 1:N
     disp(idx);
     tic;
@@ -45,7 +47,7 @@ parfor idx = 1:N
     filename = fullfile(outpath, [num2str(idx, '%06d') '.mat']);
     if exist(filename) ~= 0
         object = load(filename, 'onedet', 'unaries', 'pairwise');
-        onedet = object.ondet;
+        onedet = object.onedet;
         unaries = object.unaries;
         pairwise = object.pairwise;
     else
@@ -62,12 +64,13 @@ parfor idx = 1:N
         parsave(filename, idx, onedet, unaries, pairwise);
     end
     
-    onedata{idx}.idx = idx;
-    onedata{idx}.onedet = onedet;
-    onedata{idx}.unaries = unaries;
-    onedata{idx}.pairwise = pairwise;
+    onedata = [];
+    onedata.idx = idx;
+    onedata.onedet = onedet;
+    onedata.unaries = unaries;
+    onedata.pairwise = pairwise;
     
-    odets{idx} = greedy_inference2(onedata{idx}, params, 1);
+    odets{idx} = greedy_inference2(onedata, params, 1);
     toc;
 end
 
