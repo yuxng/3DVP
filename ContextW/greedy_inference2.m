@@ -80,24 +80,24 @@ else
     pick = pick(idx);
     odet = odet(pick ,:);
     %%
-    if(0)
-        imageidx = data.idx;
-        load ../KITTI/kitti_ids_new.mat
-
-        im = show_image(ids_val, imageidx);
-        top = 1:size(odet, 1);
-
-        imshow(im);
-        for i = 1:length(top)
-            im = draw_mask(im, odet(top(i), :), params.pattern);
-            imshow(im);
-            % rectangle('position', box2rect(odet(top(i), 1:4)), 'linewidth', 2, 'edgecolor', 'r');
-            drawnow;
-        end
-        title('Occlusion Reasoning')
-
-        pause;
-    end
+%     if(0)
+%         imageidx = data.idx;
+%         load ../KITTI/kitti_ids_new.mat
+% 
+%         im = show_image(ids_val, imageidx);
+%         top = 1:size(odet, 1);
+% 
+%         imshow(im);
+%         for i = 1:length(top)
+%             im = draw_mask(im, odet(top(i), :), params.pattern);
+%             imshow(im);
+%             % rectangle('position', box2rect(odet(top(i), 1:4)), 'linewidth', 2, 'edgecolor', 'r');
+%             drawnow;
+%         end
+%         title('Occlusion Reasoning')
+% 
+%         pause;
+%     end
 end
 
 if(~all(ismember(1:length(solution), pick)))

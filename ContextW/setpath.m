@@ -9,7 +9,7 @@ if is_hadoop
     detfile = fullfile(rootpath, 'ACF/data/car_3d_ap_125_combined_test.mat');
     outpath = fullfile(rootpath, 'ContextW/data/');
 else
-    rootpath = '/home/yuxiang/Projects/SLM/';
+    rootpath = '/scratch/yuxiang/Projects/SLM/';
     image_dir = '/home/yuxiang/Projects/KITTI_Dataset/data_object_image_2/training/image_2';
     datapath = fullfile(rootpath, 'KITTI');
     if is_train
