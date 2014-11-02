@@ -15,7 +15,7 @@ catch
 end
 
 if nargin < 3
-    load(fullfile(datapath, 'data.mat'));
+    load(datafile);
 end
 
 if nargin < 4
@@ -23,7 +23,11 @@ if nargin < 4
 end
 
 if nargin < 2
-    params = learn_params(data, dets);
+    if is_train
+        params = learn_params(data, dets);
+    else
+        params = learn_params_test(data);
+    end
 end
 
 onedet = dets{idx};

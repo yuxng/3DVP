@@ -13,19 +13,24 @@ end
 
 setpath;
 
-load(fullfile(datapath, 'data.mat'));
+load(datafile);
 load(detfile);
-load(fullfile(datapath, 'kitti_ids_new.mat'));
 
-params = learn_params(data, dets, varargin);
+if is_train
+    params = learn_params(data, dets, varargin);
+else
+    params = learn_params_test(data);
+end
 
 N = length(dets);
 odets = cell(1, N);
 for idx = 1:N
     disp(idx);
+    tic;
     onedata.idx = idx;
     [onedata.onedet, onedata.unaries, onedata.pairwise] = prepare_data(num2str(idx), params, data, dets);
     odets{idx} = greedy_inference2(onedata, params, 1);
+    toc;
 end
 
 filename = fullfile(outpath, 'odets.mat');
