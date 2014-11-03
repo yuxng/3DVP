@@ -54,7 +54,8 @@ odet(:, end) = odet(:, end) + 1000; % keep the MAP solution high ranked
 odet = [odet; tempd];
 
 if(nmstype)
-    pick = nms_new(odet, 0.7, length(solution));
+    % pick = nms_new(odet, 0.7, length(solution));
+    pick = nms_new(odet, 0.7);
     [~, idx] = sort(-odet(pick, end));
     pick = pick(idx);
     odet = odet(pick ,:);
@@ -100,8 +101,8 @@ else
 %     end
 end
 
-if(~all(ismember(1:length(solution), pick)))
-    keyboard;
-end
+% if(~all(ismember(1:length(solution), pick)))
+%     keyboard;
+% end
 
 end

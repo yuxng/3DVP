@@ -13,8 +13,8 @@ else
     end
 end
 
-is_train = 0;
-rootpath = '/scratch/yuxiang/Projects/SLM/';
+is_train = 1;
+rootpath = '/home/yuxiang/Projects/SLM/';
 if is_train
     datafile = fullfile(rootpath, 'KITTI/data.mat');
     detfile = fullfile(rootpath, 'ACF/kitti_train_ap_125/car_3d_aps_125_combined_test.mat');
@@ -39,7 +39,7 @@ clear data;
 
 N = length(dets);
 odets = cell(1, N);
-parfor idx = 1:N
+for idx = 1:N
     disp(idx);
     tic;
 
@@ -77,7 +77,7 @@ end
 filename = fullfile(outpath, 'odets.mat');
 save(filename, 'odets', '-v7.3');
 
-matlabpool close;
+% matlabpool close;
 
 
 function parsave(filename, idx, onedet, unaries, pairwise)
