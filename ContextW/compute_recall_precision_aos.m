@@ -31,22 +31,25 @@ end
 fprintf('load ground truth done\n');
 
 % read detection results
-% result_dir = 'kitti_train_ap_125';
-% filename = sprintf('%s/odets.mat', result_dir);
-% object = load(filename);
-% detections = object.odets;
-detections = cell(1, M);
-for i = 1:M
-    % read ground truth 
-    img_idx = ids(i);
-    filename = sprintf('results_kitti_train/%06d.txt', img_idx);
-    fid = fopen(filename, 'r');
-    C = textscan(fid, '%s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f');
-    fclose(fid);
-    det = [C{5} C{6} C{7} C{8} C{2} C{16}];
-    detections{i} = det;
-end
+result_dir = 'kitti_train_ap_125';
+filename = sprintf('%s/odets.mat', result_dir);
+object = load(filename);
+detections = object.odets;
+% detections = cell(1, M);
+% for i = 1:M
+%     % read ground truth 
+%     img_idx = ids(i);
+%     filename = sprintf('results_kitti_train/%06d.txt', img_idx);
+%     fid = fopen(filename, 'r');
+%     C = textscan(fid, '%s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f');
+%     fclose(fid);
+%     det = [C{5} C{6} C{7} C{8} C{2} C{16}];
+%     detections{i} = det;
+% end
 fprintf('load detection done\n');
+
+recall_all = cell(1, 3);
+precision_all = cell(1, 3);
 
 for difficulty = 1:3
     % for each image
@@ -98,7 +101,7 @@ for difficulty = 1:3
         
         % compute statistics
         det = detections{i};
-%         det = truncate_detections(det);
+        det = truncate_detections(det);
         
         num_det = size(det, 1);
         assigned_detection = zeros(1, num_det);
@@ -153,7 +156,7 @@ for difficulty = 1:3
         ignored_gt = ignored_gt_all{i};
         
         det = detections{i};
-%         det = truncate_detections(det);    
+        det = truncate_detections(det);    
         num_det = size(det, 1);
         
         % for each threshold
@@ -236,9 +239,40 @@ for difficulty = 1:3
         precision(t) = tp(t) / (tp(t) + fp(t));
     end
     
-    ap = VOCap(recall, precision);
-    disp(ap);
+    recall_all{difficulty} = recall;
+    precision_all{difficulty} = precision;
 end
+
+recall_easy = recall_all{1};
+recall_moderate = recall_all{2};
+recall_hard = recall_all{3};
+precision_easy = precision_all{1};
+precision_moderate = precision_all{2};
+precision_hard = precision_all{3};
+
+ap_easy = VOCap(recall_easy, precision_easy);
+fprintf('AP_easy = %.4f\n', ap_easy);
+
+ap_moderate = VOCap(recall_moderate, precision_moderate);
+fprintf('AP_moderate = %.4f\n', ap_moderate);
+
+ap = VOCap(recall_hard, precision_hard);
+fprintf('AP_hard = %.4f\n', ap);
+
+% draw recall-precision and accuracy curve
+figure(1);
+hold on;
+plot(recall_easy, precision_easy, 'g', 'LineWidth',3);
+plot(recall_moderate, precision_moderate, 'b', 'LineWidth',3);
+plot(recall_hard, precision_hard, 'r', 'LineWidth',3);
+h = xlabel('Recall');
+set(h, 'FontSize', 12);
+h = ylabel('Precision');
+set(h, 'FontSize', 12);
+tit = sprintf('Car APs');
+h = title(tit);
+set(h, 'FontSize', 12);
+hold off;
 
 
 function thresholds = get_thresholds(v, n_groundtruth, N_SAMPLE_PTS)
