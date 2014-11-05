@@ -6,7 +6,7 @@ is_train = 0;
 is_calibration = 0;
 is_filtering = 1;
 is_pascal = 0;
-result_dir = 'data';
+result_dir = 'kitti_test_acf_3d_167_flip';
 
 % load data
 if is_pascal
@@ -23,7 +23,7 @@ else
     end
 end
 data = object.data;
-idx = data.idx_ap;
+idx = data.idx_ap_few;
 
 centers = double(unique(idx));
 centers(centers == -1) = [];

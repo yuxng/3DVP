@@ -1,5 +1,5 @@
 is_hadoop = 0;
-is_train = 0;
+is_train = 1;
 
 if is_hadoop
     rootpath = '/net/skyserver30/workplace/local/wongun/yuxiang/SLM/';

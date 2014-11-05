@@ -394,6 +394,7 @@ tPrData computeStatistics(CLASSES current_class, const vector<tGroundtruth> &gt,
         det_idx              = j;
         valid_detection      = 1;
         assigned_ignored_det = true;
+			  // not reachable
       }
     }
 
