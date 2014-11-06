@@ -394,6 +394,7 @@ tPrData computeStatistics(CLASSES current_class, const vector<tGroundtruth> &gt,
         det_idx              = j;
         valid_detection      = 1;
         assigned_ignored_det = true;
+			  // not reachable
       }
     }
 
@@ -638,7 +639,8 @@ bool eval(string result_sha)
   initGlobals();
 
   // ground truth and result directories
-  string gt_dir         = "/net/skyserver10/workplace/yxiang/KITTI_Dataset/data_object_image_2/training/label_2";
+  // string gt_dir         = "/net/skyserver10/workplace/yxiang/KITTI_Dataset/data_object_image_2/training/label_2";
+  string gt_dir         = "/home/yuxiang/Projects/KITTI_Dataset/data_object_image_2/training/label_2";
   string result_dir     = "./" + result_sha;
   string plot_dir       = result_dir + "/plot";
 

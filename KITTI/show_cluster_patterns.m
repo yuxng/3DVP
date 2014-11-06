@@ -13,7 +13,7 @@ image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 % load data
 object = load('data_kitti.mat');
 data = object.data;
-idx = data.idx_ap;
+idx = data.idx_ap_few;
 
 % load the mean CAD model
 cls = 'car';

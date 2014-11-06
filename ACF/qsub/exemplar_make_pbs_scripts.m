@@ -11,13 +11,13 @@ end
 object = load(filename);
 data = object.data;
 
-cids = unique(data.idx_ap);
+cids = unique(data.idx_ap_few);
 cids(cids == -1) = [];
 num = numel(cids);
 
 is_multiple = 1;
 if is_multiple
-    num_job = 32;
+    num_job = 36;
     index = round(linspace(1, num, num_job+1));
 else
     num_job = num;

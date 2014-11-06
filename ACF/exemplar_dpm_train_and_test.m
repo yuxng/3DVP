@@ -30,13 +30,13 @@ end
 
 object = load(filename);
 data = object.data;
-data.idx = data.idx_ap;
+data.idx = data.idx_ap_few;
 
 % cluster centers
 centers = unique(data.idx);
 centers(centers == -1) = [];
 
-% train an exemplar DPM for each cluster
+% train an ACF for each cluster
 num = numel(centers);
 name = sprintf('3d_ap_%d', num);
 threshold = -50;

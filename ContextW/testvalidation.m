@@ -1,4 +1,5 @@
 function testvalidation(varargin)
+
 % run occlusion reasoning for all the validation images
 if nargin < 1
     varargin = {};
@@ -38,13 +39,14 @@ unix(['rm ' nmspath '/*']);
 evallist = [];
 
 for idx = 1:length(dets)
-    try
-        onedata.idx = idx;
-        [onedata.onedet, onedata.unaries, onedata.pairwise] = prepare_data(num2str(idx));
+    disp(idx);
+%     try
+    onedata.idx = idx;
+    [onedata.onedet, onedata.unaries, onedata.pairwise] = prepare_data(num2str(idx), params, data, dets);
         % onedata = load(fullfile(cachepath, [num2str(idx, '%06d') '.mat']));
-    catch
-        continue;
-    end
+%     catch
+%         continue;
+%     end
     
     odet = greedy_inference2(onedata, params, 1);
     pick = nms_new(onedata.onedet, 0.6);
@@ -56,7 +58,9 @@ for idx = 1:length(dets)
 
     evallist(end+1) = ids_val(idx);
 
-    stdout_withFlush(num2str(ids_val(idx), '%06d'));
+    if is_hadoop
+        stdout_withFlush(num2str(ids_val(idx), '%06d'));
+    end
 end
 
 % finished all the inference. Do evaluations
@@ -72,7 +76,7 @@ system(command);
 
 figure
 % compile  the evaluation code..
-system('./compile.sh');
+system('g++ -O3 -DNDEBUG -o evaluate_object evaluate_object.cpp');
 
 command = ['./evaluate_object ' occpath ' 0.7'];
 system(command);
@@ -83,12 +87,12 @@ aps(1, :) = compute_aps(occpath, '-');
 aps(2, :) = compute_aps(nmspath, '--');
 axis([0 1 0 1])
 grid on
-legend({['occ easy ' num2str(aps(1,1), '%.02f')] ...
-    ['occ moder ' num2str(aps(1,2), '%.02f')] ...
-    ['occ hard ' num2str(aps(1,3), '%.02f')] ...
-    ['nms easy ' num2str(aps(2,1), '%.02f')] ...
-    ['nms moder ' num2str(aps(2,2), '%.02f')] ...
-    ['nms hard ' num2str(aps(2,3), '%.02f')]})
+legend({['occ easy ' num2str(aps(1,1), '%.04f')] ...
+    ['occ moder ' num2str(aps(1,2), '%.04f')] ...
+    ['occ hard ' num2str(aps(1,3), '%.04f')] ...
+    ['nms easy ' num2str(aps(2,1), '%.04f')] ...
+    ['nms moder ' num2str(aps(2,2), '%.04f')] ...
+    ['nms hard ' num2str(aps(2,3), '%.04f')]})
 saveas(gcf, fullfile(occpath, 'cardet7.fig'));
 saveas(gcf, fullfile(occpath, 'cardet7.png'));
 
@@ -102,14 +106,14 @@ aps(3, :) = compute_aps(occpath, '-');
 aps(4, :) = compute_aps(nmspath, '--');
 axis([0 1 0 1])
 grid on
-legend({['occ easy ' num2str(aps(3,1), '%.02f')] ...
-    ['occ moder ' num2str(aps(3,2), '%.02f')] ...
-    ['occ hard ' num2str(aps(3,3), '%.02f')] ...
-    ['nms easy ' num2str(aps(4,1), '%.02f')] ...
-    ['nms moder ' num2str(aps(4,2), '%.02f')] ...
-    ['nms hard ' num2str(aps(4,3), '%.02f')]})
-saveas(gcf, fullfile(occpath, 'cardet7.fig'));
-saveas(gcf, fullfile(occpath, 'cardet7.png'));
+legend({['occ easy ' num2str(aps(3,1), '%.04f')] ...
+    ['occ moder ' num2str(aps(3,2), '%.04f')] ...
+    ['occ hard ' num2str(aps(3,3), '%.04f')] ...
+    ['nms easy ' num2str(aps(4,1), '%.04f')] ...
+    ['nms moder ' num2str(aps(4,2), '%.04f')] ...
+    ['nms hard ' num2str(aps(4,3), '%.04f')]})
+saveas(gcf, fullfile(occpath, 'cardet5.fig'));
+saveas(gcf, fullfile(occpath, 'cardet5.png'));
 
 % clean up and save
 save(fullfile(occpath, 'cardet'), 'aps', 'params');
