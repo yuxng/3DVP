@@ -1,4 +1,4 @@
-function compute_recall_precision_aos
+function [recall_all, precision_all, aos_all] = compute_recall_precision_aos
 
 cls = 'car';
 
@@ -15,6 +15,10 @@ root_dir = KITTIroot;
 data_set = 'training';
 cam = 2;
 label_dir = fullfile(root_dir, [data_set '/label_' num2str(cam)]);
+
+% load data
+object = load('../KITTI/data.mat');
+data = object.data;
 
 % read ids of validation images
 object = load('kitti_ids_new.mat');
@@ -48,8 +52,22 @@ detections = object.odets;
 % end
 fprintf('load detection done\n');
 
+% read segmentation scores
+segmentations = cell(1, M);
+segmentations_box = cell(1, M);
+for i = 1:M
+    filename = sprintf('%s/%06d_seg.mat', result_dir, i);
+    object = load(filename);
+    segmentations{i} = object.Scores;
+    segmentations_box{i} = object.Scores_box;
+end
+fprintf('load segmentation scores done\n');
+
 recall_all = cell(1, 3);
 precision_all = cell(1, 3);
+aos_all = cell(1, 3);
+asa_all = cell(1, 3);
+asa_box_all = cell(1, 3);
 
 for difficulty = 1:3
     % for each image
@@ -146,11 +164,18 @@ for difficulty = 1:3
     tp = zeros(nt, 1);
     fp = zeros(nt, 1);
     fn = zeros(nt, 1);
+    similarity = zeros(nt, 1);
+    overlap_seg = zeros(nt, 1);
+    overlap_box = zeros(nt, 1);
     recall = zeros(nt, 1);
     precision = zeros(nt, 1);
+    aos = zeros(nt, 1);
+    asa = zeros(nt, 1);
+    asa_box = zeros(nt, 1);
     
     % for each image
     for i = 1:M
+        disp(i);
         gt = groundtruths{i};
         num = numel(gt);
         ignored_gt = ignored_gt_all{i};
@@ -158,6 +183,15 @@ for difficulty = 1:3
         det = detections{i};
         det = truncate_detections(det);    
         num_det = size(det, 1);
+        
+        seg = segmentations{i};
+        seg_box = segmentations_box{i};
+        if num && num_det
+            assert(size(seg,1) == num_det);
+            assert(size(seg,2) == num);
+            assert(size(seg_box,1) == num_det);
+            assert(size(seg_box,2) == num);    
+        end
         
         % for each threshold
         for t = 1:nt
@@ -195,6 +229,22 @@ for difficulty = 1:3
                 elseif isinf(valid_detection) == 0
                     tp(t) = tp(t) + 1;
                     assigned_detection(det_idx) = 1;
+                    % compute alpha
+                    cid = det(det_idx, 5);
+                    azimuth = data.azimuth(cid);
+                    alpha = azimuth + 90;
+                    if alpha >= 360
+                        alpha = alpha - 360;
+                    end
+                    alpha = alpha*pi/180;
+                    if alpha > pi
+                        alpha = alpha - 2*pi;
+                    end
+                    delta = gt(j).alpha - alpha;
+                    similarity(t) = similarity(t) + (1+cos(delta))/2.0;
+                    % segmentation
+                    overlap_seg(t) = overlap_seg(t) + seg(det_idx, j);
+                    overlap_box(t) = overlap_box(t) + seg_box(det_idx, j);
                 end
             end
             
@@ -237,12 +287,27 @@ for difficulty = 1:3
         % compute recall and precision
         recall(t) = tp(t) / (tp(t) + fn(t));
         precision(t) = tp(t) / (tp(t) + fp(t));
+        aos(t) = similarity(t) / (tp(t) + fp(t));
+        asa(t) = overlap_seg(t) / (tp(t) + fp(t));
+        asa_box(t) = overlap_box(t) / (tp(t) + fp(t));
+    end
+    
+    % filter precision and aos
+    for t = 1:nt
+        precision(t) = max(precision(t:end));
+        aos(t) = max(aos(t:end));
+        asa(t) = max(asa(t:end));
+        asa_box(t) = max(asa_box(t:end));
     end
     
     recall_all{difficulty} = recall;
     precision_all{difficulty} = precision;
+    aos_all{difficulty} = aos;
+    asa_all{difficulty} = asa;
+    asa_box_all{difficulty} = asa_box;
 end
 
+% average precision
 recall_easy = recall_all{1};
 recall_moderate = recall_all{2};
 recall_hard = recall_all{3};
@@ -259,7 +324,6 @@ fprintf('AP_moderate = %.4f\n', ap_moderate);
 ap = VOCap(recall_hard, precision_hard);
 fprintf('AP_hard = %.4f\n', ap);
 
-% draw recall-precision and accuracy curve
 figure(1);
 hold on;
 plot(recall_easy, precision_easy, 'g', 'LineWidth',3);
@@ -270,6 +334,88 @@ set(h, 'FontSize', 12);
 h = ylabel('Precision');
 set(h, 'FontSize', 12);
 tit = sprintf('Car APs');
+h = title(tit);
+set(h, 'FontSize', 12);
+hold off;
+
+% average orientation similarity
+aos_easy = aos_all{1};
+aos_moderate = aos_all{2};
+aos_hard = aos_all{3};
+
+ap_easy = VOCap(recall_easy, aos_easy);
+fprintf('AOS_easy = %.4f\n', ap_easy);
+
+ap_moderate = VOCap(recall_moderate, aos_moderate);
+fprintf('AOS_moderate = %.4f\n', ap_moderate);
+
+ap = VOCap(recall_hard, aos_hard);
+fprintf('AOS_hard = %.4f\n', ap);
+
+% draw recall-precision and accuracy curve
+figure(2);
+hold on;
+plot(recall_easy, aos_easy, 'g', 'LineWidth',3);
+plot(recall_moderate, aos_moderate, 'b', 'LineWidth',3);
+plot(recall_hard, aos_hard, 'r', 'LineWidth',3);
+h = xlabel('Recall');
+set(h, 'FontSize', 12);
+h = ylabel('AOS');
+set(h, 'FontSize', 12);
+tit = sprintf('Car AOSs');
+h = title(tit);
+set(h, 'FontSize', 12);
+hold off;
+
+
+% average segmentation accuracy
+
+asa_easy = asa_all{1};
+asa_moderate = asa_all{2};
+asa_hard = asa_all{3};
+ap_easy = VOCap(recall_easy, asa_easy);
+fprintf('ASA_easy = %.4f\n', ap_easy);
+ap_moderate = VOCap(recall_moderate, asa_moderate);
+fprintf('ASA_moderate = %.4f\n', ap_moderate);
+ap = VOCap(recall_hard, asa_hard);
+fprintf('ASA_hard = %.4f\n', ap);
+
+figure(3);
+hold on;
+plot(recall_easy, asa_easy, 'g', 'LineWidth',3);
+plot(recall_moderate, asa_moderate, 'b', 'LineWidth',3);
+plot(recall_hard, asa_hard, 'r', 'LineWidth',3);
+h = xlabel('Recall');
+set(h, 'FontSize', 12);
+h = ylabel('ASA');
+set(h, 'FontSize', 12);
+tit = sprintf('Car ASAs');
+h = title(tit);
+set(h, 'FontSize', 12);
+hold off;
+
+% average segmentation accuracy
+
+asa_easy = asa_box_all{1};
+asa_moderate = asa_box_all{2};
+asa_hard = asa_box_all{3};
+ap_easy = VOCap(recall_easy, asa_easy);
+fprintf('ASA_box_easy = %.4f\n', ap_easy);
+ap_moderate = VOCap(recall_moderate, asa_moderate);
+fprintf('ASA_box_moderate = %.4f\n', ap_moderate);
+ap = VOCap(recall_hard, asa_hard);
+fprintf('ASA_box_hard = %.4f\n', ap);
+
+figure(4);
+hold on;
+plot(recall_easy, asa_easy, 'g', 'LineWidth',3);
+plot(recall_moderate, asa_moderate, 'b', 'LineWidth',3);
+plot(recall_hard, asa_hard, 'r', 'LineWidth',3);
+h = xlabel('Recall');
+set(h, 'FontSize', 12);
+h = ylabel('ASA Box');
+set(h, 'FontSize', 12);
+tit = sprintf('Car ASA Box');
 h = title(tit);
 set(h, 'FontSize', 12);
 hold off;
