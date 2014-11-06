@@ -12,13 +12,17 @@ evallist = [];
 params = learn_params(data, dets);
 params.bias = 0.1 * params.w(1);
 params.tw = 0.4;
-params.visualize = 1;
+params.visualize = 0;
 
-for idx = 1:length(dets)
+params.w([2 3 5]) = 4.*[-1 1 1];
+
+temp = [];
+for idx = 1:100 % length(dets)
     try
         onedata.idx = idx;
         % [onedata.onedet, onedata.unaries, onedata.pairwise] = prepare_data(num2str(idx));
         onedata = load(fullfile(cachepath, [num2str(idx, '%06d') '.mat']));
+        onedata = threshold_detections(onedata, -30);
     catch
         continue;
     end        
@@ -26,8 +30,17 @@ for idx = 1:length(dets)
     if(0)
         [odet, ndet1, ndet2] = greedy_inference(onedata, params);
     else
+        params.w([2 3 5]) = 4.*[-1 1 1];
+        params.tw = 1;
         odet = greedy_inference2(onedata, params, 1);
-        odet2 = greedy_inference2(onedata, params, 0);
+        
+        params.w([2 3 5]) = 4.*[-1 1 1];
+        params.tw = 1;
+        odet2 = greedy_inference_hp(onedata, params);
+        
+        if(~isempty(odet) && (any(isnan(odet(:, end))) || any(isinf(odet(:, end)))))
+            keyboard;
+        end
 
         pick = nms(onedata.onedet, 0.5);
         ndet1 = onedata.onedet(pick, :);
@@ -35,6 +48,28 @@ for idx = 1:length(dets)
         pick = nms_new(onedata.onedet, 0.6);
         ndet2 = onedata.onedet(pick, :);
     end
+    if(0)
+        subplot(221);
+        if(~isempty(odet))
+            show_results(idx, odet(odet(:, end) > 100, :), params); 
+        end
+        subplot(222);
+        if(~isempty(odet2))
+            show_results(idx, odet2(odet2(:, end) > 100, :), params); 
+        end
+        subplot(223);
+        if(~isempty(ndet1))
+            show_results(idx, ndet1(ndet1(:, end) > -20, :), params); 
+        end
+        subplot(224);
+        if(~isempty(ndet2))
+            show_results(idx, ndet2(ndet2(:, end) > -20, :), params); 
+        end
+        % pause(1);
+    end
+    
+    temp = [temp; idx.*ones(size(odet, 1), 1), odet];
+    
     write_kitti_result(fullfile(occpath, [num2str(ids_val(idx), '%06d') '.txt']), odet, data);
     write_kitti_result(fullfile(occpath2, [num2str(ids_val(idx), '%06d') '.txt']), odet2, data);
     write_kitti_result(fullfile(nmspath, [num2str(ids_val(idx), '%06d') '.txt']), ndet1, data);
@@ -56,16 +91,15 @@ command = ['cp ' fullfile(occpath, 'kitti_ids_val.txt') ' ' fullfile(nmspath2, '
 system(command);
 command = ['cp ' fullfile(occpath, 'kitti_ids_val.txt') ' ' fullfile(nmspath, 'kitti_ids_val.txt')];
 system(command);
-%%
-command = ['./evaluate_object ' occpath ' 0.5'];
+%
+command = ['./evaluate_object ' occpath ' 0.7'];
 system(command);
-command = ['./evaluate_object ' occpath2 ' 0.5'];
+command = ['./evaluate_object ' occpath2 ' 0.7'];
 system(command);
-command = ['./evaluate_object ' nmspath2 ' 0.5'];
+command = ['./evaluate_object ' nmspath2 ' 0.7'];
 system(command);
-command = ['./evaluate_object ' nmspath ' 0.5'];
+command = ['./evaluate_object ' nmspath ' 0.7'];
 system(command);
-
 %
 figure
 a1 = compute_aps(occpath, '-');

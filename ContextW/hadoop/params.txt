@@ -1,41 +1,48 @@
-occw 0.00
-occw 0.50
-occw 1.00
-occw 1.50
-occw 2.00
-occw 2.50
-occw 3.00
-occw 3.50
-occw 4.00
-occw 4.50
-occw 5.00
-occw 5.50
-occw 6.00
-occw 6.50
-occw 7.00
-occw 7.50
-occw 8.00
-occw 8.50
-occw 9.00
-occw 9.50
-occw 10.00
-pairw 1.00
-pairw 3.00
-pairw 5.00
-pairw 7.00
-pairw 9.00
-pairw 11.00
-pairw 13.00
-pairw 15.00
-pairw 17.00
-pairw 19.00
-pairw 21.00
-pairw 23.00
-pairw 25.00
-pairw 27.00
-pairw 29.00
-pairw 31.00
-pairw 33.00
-pairw 35.00
-pairw 37.00
-pairw 39.00
+occw 0.00 tw 1
+occw 0.50 tw 1
+occw 1.00 tw 1
+occw 1.50 tw 1
+occw 2.00 tw 1
+occw 2.50 tw 1
+occw 3.00 tw 1
+occw 3.50 tw 1
+occw 4.00 tw 1
+occw 4.50 tw 1
+occw 5.00 tw 1
+occw 5.50 tw 1
+occw 6.00 tw 1
+occw 6.50 tw 1
+occw 7.00 tw 1
+occw 7.50 tw 1
+occw 8.00 tw 1
+occw 8.50 tw 1
+occw 9.00 tw 1
+occw 9.50 tw 1
+occw 10.00 tw 1
+occw 15.00 tw 1
+occw 20.00 tw 1
+occw 30.00 tw 1
+occw 40.00 tw 1
+occw 80.00 tw 1
+occw 120.00 tw 1
+occw 160.00 tw 1
+pairw 1.00 tw 1
+pairw 3.00 tw 1
+pairw 5.00 tw 1
+pairw 7.00 tw 1
+pairw 9.00 tw 1
+pairw 11.00 tw 1
+pairw 13.00 tw 1
+pairw 15.00 tw 1
+pairw 17.00 tw 1
+pairw 19.00 tw 1
+pairw 21.00 tw 1
+pairw 23.00 tw 1
+pairw 25.00 tw 1
+pairw 27.00 tw 1
+pairw 29.00 tw 1
+pairw 31.00 tw 1
+pairw 33.00 tw 1
+pairw 35.00 tw 1
+pairw 37.00 tw 1
+pairw 39.00 tw 1

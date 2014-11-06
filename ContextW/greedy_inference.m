@@ -10,6 +10,9 @@ unaries = data.unaries;
 pairwise = data.pairwise;
 
 if(isempty(onedet))
+    odet = [];
+    odet2 = [];
+    ndet = [];
     return;
 end
 
