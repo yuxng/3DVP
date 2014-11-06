@@ -25,10 +25,10 @@ ap(3) = VOCap(recall, precision_hard);
 fprintf('AP_hard = %.4f\n', ap(3));
 
 bestf(1) = max(2 .* (recall .* precision_easy) ./ (recall + precision_easy));
-fprintf('BF1_easy = %.4f\n', bestf(1));
+%fprintf('BF1_easy = %.4f\n', bestf(1));
 bestf(2) = max(2 .* (recall .* precision_moderate) ./ (recall + precision_moderate));
-fprintf('BF1_moderate = %.4f\n', bestf(2));
+%fprintf('BF1_moderate = %.4f\n', bestf(2));
 bestf(3) = max(2 .* (recall .* precision_hard) ./ (recall + precision_hard));
-fprintf('BF1_hard = %.4f\n', bestf(3));
+%fprintf('BF1_hard = %.4f\n', bestf(3));
 
 end
