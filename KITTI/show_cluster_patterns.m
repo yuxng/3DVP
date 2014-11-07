@@ -11,9 +11,9 @@ cam = 2; % 2 = left color camera
 image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
 
 % load data
-object = load('data_kitti.mat');
+object = load('data.mat');
 data = object.data;
-idx = data.idx_ap_few;
+idx = data.idx_pose;
 
 % load the mean CAD model
 cls = 'car';

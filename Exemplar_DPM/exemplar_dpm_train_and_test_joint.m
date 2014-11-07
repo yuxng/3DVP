@@ -5,7 +5,7 @@ matlabpool open;
 cls = 'car';
 is_continue = 0;
 is_train = 1;
-is_pascal = 1;
+is_pascal = 0;
 
 if is_pascal
     if is_train
@@ -23,14 +23,15 @@ end
 
 object = load(filename);
 data = object.data;
-data.idx = data.idx_ap;
+data.idx = data.idx_pose;
 
 % cluster centers
 centers = unique(data.idx);
 centers(centers == -1) = [];
 fprintf('%d clusters\n', numel(centers));
+name = sprintf('pose_%d', numel(centers));
 
-exemplar_train_joint(cls, data, centers, '', is_train, is_continue, is_pascal);
-exemplar_test_joint(cls, is_train, is_continue, is_pascal);
+exemplar_train_joint(cls, name, data, centers, '', is_train, is_continue, is_pascal);
+exemplar_test_joint(cls, name, is_train, is_continue, is_pascal);
 
 matlabpool close;

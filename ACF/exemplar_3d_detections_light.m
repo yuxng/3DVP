@@ -1,14 +1,14 @@
 function exemplar_3d_detections_light
 
-% matlabpool open;
+matlabpool open;
 
 addpath(genpath('../KITTI'));
 cls = 'car';
 threshold = -inf;
 threshold_nms = 0.6;
-is_train = 0;
-result_dir = 'kitti_test_acf_3d_227_flip';
-name = '3d_ap_227_combined';
+is_train = 1;
+result_dir = 'kitti_train_ap_125';
+name = '3d_aps_125_combined';
 
 % load data
 if is_train
@@ -60,7 +60,7 @@ object = load(filename);
 dets = object.dets;
 dets_3d = cell(1, N);
 
-for i = 1:N
+parfor i = 1:N
     img_idx = ids(i);
     tic;
     det = dets{i};
@@ -215,19 +215,19 @@ for i = 1:N
     end
     
     % filter out floating bounding boxes
-    flag = T(3,:) >= tmin & T(3,:) <= tmax;
-    objects = objects(flag);
+    % flag = T(3,:) >= tmin & T(3,:) <= tmax;
+    % objects = objects(flag);
     
     dets_3d{i} = objects;    
     
-    fprintf('%d detections left\n', sum(flag));
+    % fprintf('%d detections left\n', sum(flag));
     toc;
 end
 
 filename = sprintf('%s/%s_%s_test_3d.mat', result_dir, cls, name);
 save(filename, 'dets_3d', '-v7.3');
 
-% matlabpool close;
+matlabpool close;
 
 
 % compute the projection error between 3D bbox and 2D bbox

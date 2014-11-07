@@ -1,11 +1,11 @@
-function [pos, neg, spos] = kitti_data_joint(cls, data, centers, flippedpos, is_train, is_continue)
+function [pos, neg, spos] = kitti_data_joint(cls, name, data, centers, is_train, is_continue)
 
 % Get training data from the KITTI dataset.
 
 globals; 
 pascal_init;
 
-filename = [cachedir cls '_train.mat'];
+filename = [cachedir cls '_' name '_train.mat'];
 if is_continue == 1 && exist(filename, 'file') ~= 0
   load(filename);
 else
@@ -26,34 +26,18 @@ else
   numpos = 0;
   cids = [];
   for i = 1:num_train
-    fprintf('%s : parsing positives: %d/%d\n', cls, i, num_train);
+    fprintf('%s %s : parsing positives: %d/%d\n', cls, name, i, num_train);
     ind = index(i);
     numpos = numpos+1;
     pos(numpos).im = fullfile(image_dir, data.imgname{ind});
-    info = imfinfo(pos(numpos).im);
     bbox = data.bbox(:,ind);
     pos(numpos).x1 = bbox(1);
     pos(numpos).y1 = bbox(2);
     pos(numpos).x2 = bbox(3);
     pos(numpos).y2 = bbox(4);
-    pos(numpos).flip = false;
+    pos(numpos).flip = data.is_flip(ind) == 1;
     pos(numpos).trunc = 0;
     cids(numpos) = data.idx(ind);
-    if flippedpos
-      oldx1 = bbox(1);
-      oldx2 = bbox(3);
-      bbox(1) = info.Width - oldx2 + 1;
-      bbox(3) = info.Width - oldx1 + 1;
-      numpos = numpos+1;
-      pos(numpos).im = fullfile(image_dir, data.imgname{ind});
-      pos(numpos).x1 = bbox(1);
-      pos(numpos).y1 = bbox(2);
-      pos(numpos).x2 = bbox(3);
-      pos(numpos).y2 = bbox(4);
-      pos(numpos).flip = true;
-      pos(numpos).trunc = 0;
-      cids(numpos) = data.idx(ind);
-    end
   end
   
   % split positive examples
@@ -71,7 +55,7 @@ else
       otherwise
           fprintf('undefined classes for negatives\n');
   end
-  object = load('kitti_ids.mat');
+  object = load('kitti_ids_new.mat');
   if is_train
       ids = object.ids_train;
   else
@@ -80,7 +64,7 @@ else
   neg = [];
   numneg = 0;
   for i = 1:length(ids);
-    fprintf('%s : parsing negatives: %d/%d\n', cls, i, length(ids));
+    fprintf('%s %s : parsing negatives: %d/%d\n', cls, name, i, length(ids));
     numneg = numneg+1;
     neg(numneg).im = sprintf('%s/%06d.png', image_dir, ids(i));
     neg(numneg).flip = false;

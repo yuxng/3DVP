@@ -14,7 +14,7 @@ globals;
 if is_pascal
     [pos, neg, spos] = exemplar_pascal_data_joint(cls, name, data, centers, is_train, is_continue);
 else
-    [pos, neg, spos] = kitti_data_joint(cls, data, centers, false, is_train, is_continue);
+    [pos, neg, spos] = kitti_data_joint(cls, name, data, centers, is_train, is_continue);
 end
 
 cachesize = 24000;
