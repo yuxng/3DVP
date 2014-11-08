@@ -1,11 +1,9 @@
-function draw_mean_image(cid)
+function [mimages, gimages] = draw_mean_image(data, cid)
 
 % exemplar_globals
-SLMroot = '../';
 imroot = '/home/yuxiang/Projects/KITTI_Dataset/data_object_image_2/training/image_2/';
 %%%%%%%%%%%%%%%%%%
 
-load(fullfile(SLMroot, 'KITTI/data.mat'));
 % data.bbox = round(data.bbox);
 % for i = 1:size(data.bbox, 1)
 %     if(data.is_flip(i))
@@ -20,9 +18,12 @@ load(fullfile(SLMroot, 'KITTI/data.mat'));
 %     pause;
 % end
 
-centers = unique(data.idx_ap);
+% centers = unique(data.idx_ap);
+% centers(centers == -1) = [];
+% tidx = find(data.idx_ap == centers(cid));
 
-tidx = find(data.idx_ap == centers(cid));
+tidx = find(data.idx_ap == cid);
+fprintf('%d examples\n', numel(tidx));
 oboxes = data.bbox(:, tidx)';
 [boxes, mar] = convert_aspect_ratio(oboxes);
 boxes = round(boxes);
@@ -56,9 +57,12 @@ for i = 1:length(tidx)
     count = count + 1;
 end
 
-figure(1); imshow(uint8(mimages ./ count));
-figure(2); imshow(uint8(gimages ./ count .* 8));
-figure(3); imshow(uint8(nimages ./ count .* 50)  + 128);
+mimages = uint8(mimages ./ count);
+gimages = uint8(gimages ./ count .* 20);
+
+% figure(1); imshow(uint8(mimages ./ count));
+% figure(2); imshow(uint8(gimages ./ count .* 20));
+% figure(3); imshow(uint8(nimages ./ count .* 50)  + 128);
 disp(count);
 
 end

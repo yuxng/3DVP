@@ -6,9 +6,14 @@ addpath(genpath('../KITTI'));
 cls = 'car';
 threshold = -inf;
 threshold_nms = 0.6;
-is_train = 1;
-result_dir = 'kitti_train_ap_125';
-name = '3d_aps_125_combined';
+
+is_train = 0;
+result_dir = 'kitti_test_acf_3d_227_flip';
+name = '3d_ap_227_combined';
+
+% is_train = 1;
+% result_dir = 'kitti_train_ap_125';
+% name = '3d_aps_125_combined';
 
 % load data
 if is_train
@@ -152,7 +157,7 @@ parfor i = 1:N
         objects(k).pattern = imresize(pattern, [h w], 'nearest');
 
         % backprojection
-        c = [cx; cy; 1];
+        c = [cx; cy + height/2; 1];
         X = pinv(P) * c;
         X = X ./ X(4);
         if X(3) < 0
@@ -186,7 +191,7 @@ parfor i = 1:N
         ub = dmax;
         % optimize
         options = optimset('Algorithm', 'interior-point', 'Display', 'off');
-        x = fmincon(@(x)compute_error(x, x3d, C, X, P, Pv2c, width, height),...
+        x = fmincon(@(x)compute_error(x, x3d, C, X, P, Pv2c, width, height, hmean),...
             x, [], [], [], [], lb, ub, [], options);
 
         % compute the translation in camera coordinate
@@ -231,7 +236,7 @@ matlabpool close;
 
 
 % compute the projection error between 3D bbox and 2D bbox
-function error = compute_error(x, x3d, C, X, P, Pv2c, bw, bh)
+function error = compute_error(x, x3d, C, X, P, Pv2c, bw, bh, h)
 
 % compute the translate of the 3D bounding box
 t = C + x .* X;
@@ -240,7 +245,7 @@ t(4) = [];
 
 % compute 3D points
 x3d(1,:) = x3d(1,:) + t(1);
-x3d(2,:) = x3d(2,:) + t(2);
+x3d(2,:) = x3d(2,:) + t(2) - h/2;
 x3d(3,:) = x3d(3,:) + t(3);
 
 % project the 3D bounding box into the image plane
@@ -277,5 +282,5 @@ R = [+cos(ry), 0, +sin(ry);
 % rotate and translate 3D bounding box
 x3d = R*x3d;
 x3d(1,:) = x3d(1,:) + t(1);
-x3d(2,:) = x3d(2,:) + t(2) - h/2;
+x3d(2,:) = x3d(2,:) + t(2);
 x3d(3,:) = x3d(3,:) + t(3);

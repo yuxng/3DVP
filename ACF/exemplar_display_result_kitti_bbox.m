@@ -1,7 +1,7 @@
 function exemplar_display_result_kitti_bbox
 
 cls = 'car';
-threshold = -20;
+threshold = -10;
 is_save = 0;
 threshold_overlap = 0.6;
 is_train = 0;
@@ -48,7 +48,8 @@ object = load(filename);
 data = object.data;
 
 figure;
-for i = 1:N
+cmap = colormap(summer);
+for i = 506:N
     img_idx = ids(i);
     disp(img_idx);
     
@@ -77,7 +78,12 @@ for i = 1:N
     end
     if isempty(det) == 0
         I = nms_new(det, threshold_overlap);
-        det = det(I, :);    
+        det = det(I, :);
+        I = det(:,6) >= threshold;
+        det = det(I,:);
+        height = det(:,4) - det(:,2);
+        [~, I] = sort(height);
+        det = det(I,:);
     end
     num = size(det, 1);
     
@@ -128,7 +134,8 @@ for i = 1:N
                     rectangle('Position', bbox_draw, 'EdgeColor', 'r', 'LineWidth', 2);
                 end
             else
-                rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);
+                index_color = 1 + floor((k-1) * size(cmap,1) / num);
+                rectangle('Position', bbox_draw, 'EdgeColor', cmap(index_color,:), 'LineWidth', 4);
             end
 %             s = sprintf('%.2f', det(k,6));
 %             text(bbox_pr(1), bbox_pr(2), s, 'FontSize', 4, 'BackgroundColor', 'c');

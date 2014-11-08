@@ -1,7 +1,7 @@
 function exemplar_display_result_kitti
 
 cls = 'car';
-threshold = -20;
+threshold = -10;
 is_save = 0;
 threshold_overlap = 0.6;
 is_train = 0;
@@ -48,6 +48,7 @@ object = load(filename);
 data = object.data;
 
 hf = figure(1);
+cmap = colormap(summer);
 for i = 1:N
     img_idx = ids(i);
     disp(img_idx);
@@ -77,7 +78,12 @@ for i = 1:N
     end
     if isempty(det) == 0
         I = nms_new(det, threshold_overlap);
-        det = det(I, :);    
+        det = det(I, :);
+        I = det(:,6) >= threshold;
+        det = det(I,:);
+        height = det(:,4) - det(:,2);
+        [~, I] = sort(height);
+        det = det(I,:);        
     end
     num = size(det, 1);
     
@@ -182,26 +188,6 @@ for i = 1:N
             index_x = x:min(x+w-1, width);
             P(index_y, index_x) = pattern(1:numel(index_y), 1:numel(index_x));
             
-            % show segments
-            if is_train
-                if flags_pr(k)
-                    dispColor = [0 255 0];
-                else
-                    dispColor = [255 0 0];
-                end
-            else
-                dispColor = [0 255 0];
-            end
-            scale = round(max(size(I))/500);            
-            [gx, gy] = gradient(double(P));
-            g = gx.^2 + gy.^2;
-            g = conv2(g, ones(scale), 'same');
-            edgepix = find(g > 0);
-            npix = numel(P);
-            for b = 1:3
-                I((b-1)*npix+edgepix) = dispColor(b);
-            end            
-            
             % show occluded region
             im = create_occlusion_image(pattern);
             x = bbox(1);
@@ -209,7 +195,28 @@ for i = 1:N
             Isub = I(y:y+h-1, x:x+w-1, :);
             index = im == 255;
             im(index) = Isub(index);
-            I(y:y+h-1, x:x+w-1, :) = uint8(0.1*Isub + 0.9*im);            
+            I(y:y+h-1, x:x+w-1, :) = uint8(0.1*Isub + 0.9*im);             
+            
+            % show segments
+            index_color = 1 + floor((k-1) * size(cmap,1) / num);
+            if is_train
+                if flags_pr(k)
+                    dispColor = [0 255 0];
+                else
+                    dispColor = [255 0 0];
+                end
+            else
+                dispColor = 255*cmap(index_color,:);
+            end
+            scale = round(max(size(I))/400);            
+            [gx, gy] = gradient(double(P));
+            g = gx.^2 + gy.^2;
+            g = conv2(g, ones(scale), 'same');
+            edgepix = find(g > 0);
+            npix = numel(P);
+            for b = 1:3
+                I((b-1)*npix+edgepix) = dispColor(b);
+            end
         end
     end
     
@@ -259,7 +266,7 @@ function im = create_occlusion_image(pattern)
 
 % 2D occlusion mask
 im = 255*ones(size(pattern,1), size(pattern,2), 3);
-color = [0 0 255];
+color = [255 0 0];
 for j = 1:3
     tmp = im(:,:,j);
     tmp(pattern == 2) = color(j);
