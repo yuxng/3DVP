@@ -6,6 +6,7 @@ cls = 'car';
 is_continue = 0;
 is_train = 1;
 is_pascal = 0;
+overlap = 0.7;
 
 if is_pascal
     if is_train
@@ -31,7 +32,7 @@ centers(centers == -1) = [];
 fprintf('%d clusters\n', numel(centers));
 name = sprintf('pose_%d', numel(centers));
 
-exemplar_train_joint(cls, name, data, centers, '', is_train, is_continue, is_pascal);
+exemplar_train_joint(cls, name, data, centers, '', is_train, is_continue, is_pascal, overlap);
 exemplar_test_joint(cls, name, is_train, is_continue, is_pascal);
 
 matlabpool close;

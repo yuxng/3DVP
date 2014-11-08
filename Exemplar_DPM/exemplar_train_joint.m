@@ -1,4 +1,4 @@
-function model = exemplar_train_joint(cls, name, data, centers, note, is_train, is_continue, is_pascal)
+function model = exemplar_train_joint(cls, name, data, centers, note, is_train, is_continue, is_pascal, overlap)
 
 % model = kitti_train(cls, data, cid, note)
 % Train a model with 1 component using the KITTI dataset.
@@ -30,7 +30,7 @@ else
     models{i} = initmodel(cls, spos{i}, note, 'N');
     models{i}.symmetric = 0;
     models{i} = train([cls '_' name], models{i}, spos{i}, neg, i, 1, 1, 1, ...
-                      cachesize, true, 0.7, false, ['root_' num2str(i)]);
+                      cachesize, true, overlap, false, ['root_' num2str(i)]);
   end
                   
   save(filename, 'models');
@@ -43,9 +43,9 @@ if is_continue && exist(filename, 'file')
 else
   initrand();
   model = mergemodels(models);
-  model.overlap_neg = 0.1;
+  model.overlap_neg = 0.2;
   model = train([cls '_' name], model, pos, neg(1:maxneg), 0, 0, 1, 5, ...
-                cachesize, true, 0.7, false, 'mix');
+                cachesize, true, overlap, false, 'mix');
             
 %   model = train(cls, model, pos, neg(1:maxneg), 0, 0, 8, 10, ...
 %                 cachesize, true, 0.7, false, 'mix_1');
@@ -69,9 +69,9 @@ else
       end
   end
   model = train([cls '_' name], model, pos, neg(1:maxneg), 0, 0, 8, 10, ...
-                cachesize, true, 0.7, false, 'parts_1');
+                cachesize, true, overlap, false, 'parts_1');
   model = train([cls '_' name], model, pos, neg, 0, 0, 1, 5, ...
-                cachesize, true, 0.7, true, 'parts_2');
+                cachesize, true, overlap, true, 'parts_2');
   save(filename, 'model');
 end
 

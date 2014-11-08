@@ -1,6 +1,6 @@
 function data = prepare_clustering_data
 
-is_train = 1;
+is_train = 0;
 
 % KITTI path
 opt = globals();
@@ -20,7 +20,7 @@ object = load('kitti_ids_new.mat');
 if is_train
     ids = object.ids_train;
 else
-    ids = [object.ids_train ids_val];
+    ids = [object.ids_train object.ids_val];
 end
 
 count = 0;
@@ -41,6 +41,7 @@ pattern = [];
 grid = [];
 translation = [];
 is_flip = [];
+cad_index = [];
 
 for i = 1:numel(ids)
     img_idx = ids(i);
@@ -87,6 +88,7 @@ for i = 1:numel(ids)
             X(4) = [];
             translation(:,count) = X;
             is_flip(count) = object.is_flip;
+            cad_index(count) = object.cad_index;
         end
     end
 end
@@ -108,3 +110,4 @@ data.pattern = pattern;
 data.grid = grid;
 data.translation = translation;
 data.is_flip = is_flip;
+data.cad_index = cad_index;

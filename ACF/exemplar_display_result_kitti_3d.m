@@ -6,13 +6,13 @@ addpath(genpath('../KITTI'));
 threshold = -20;
 cls = 'car';
 
-% is_train = 0;
-% result_dir = 'kitti_test_acf_3d_227_flip';
-% name = '3d_ap_227_combined';
+is_train = 0;
+result_dir = 'kitti_test_acf_3d_227_flip';
+name = '3d_ap_227_combined';
 
-is_train = 1;
-result_dir = 'kitti_train_ap_125';
-name = '3d_aps_125_combined';
+% is_train = 1;
+% result_dir = 'kitti_train_ap_125';
+% name = '3d_aps_125_combined';
 
 % read detection results
 filename = sprintf('%s/%s_%s_test_3d.mat', result_dir, cls, name);
@@ -62,7 +62,7 @@ cmap = colormap(summer);
 ind_plot = 1;
 mplot = 2;
 nplot = 2;
-for i = 1:N
+for i = 322:N
     disp(i);
     img_idx = ids(i);
     
@@ -275,7 +275,9 @@ for i = 1:N
     for k = 1:numel(objects);
         object = objects(k);
         if strcmp(object.type, 'Car') == 1 && object.score >= threshold
-            cad_index = find_closest_cad(cads, object);
+            % cad_index = find_closest_cad(cads, object);
+            % transfer cad model
+            cad_index = data.cad_index(objects(k).cid);
             x3d = compute_3d_points(cads(cad_index).vertices, object);
             face = cads(cad_index).faces;
             tmp = face + size(Vpr,2);
@@ -294,9 +296,9 @@ for i = 1:N
         trimesh(Fpr, Vpr(1,:), Vpr(2,:), Vpr(3,:), 'EdgeColor', 'b');
         hold on;
         axis equal;
-        xlabel('x');
-        ylabel('y');
-        zlabel('z');
+%         xlabel('x');
+%         ylabel('y');
+%         zlabel('z');
 
         % draw the camera
         draw_camera(C);
@@ -304,25 +306,25 @@ for i = 1:N
         % draw the ground plane
         h = 1.73;
         
-%         sxmin = min(min(Vpr(1,:)), C(1));
-%         symin = min(min(Vpr(2,:)), C(2));
-%         sxmax = max(max(Vpr(1,:)), C(1));
-%         symax = max(max(Vpr(2,:)), C(2));
-%         plane_vertex = zeros(4,3);
-%         plane_vertex(1,:) = [sxmin symin -h];
-%         plane_vertex(2,:) = [sxmax symin -h];
-%         plane_vertex(3,:) = [sxmax symax -h];
-%         plane_vertex(4,:) = [sxmin symax -h];        
-        
-        sx = max(abs(Vpr(1,:))) / 2;
-        sy = max(abs(Vpr(2,:))) / 2;
-        c = [mean(Vpr(1:2,:), 2); 0]';
-
+        sxmin = min(min(Vpr(1,:)), C(1)) - 5;
+        symin = min(min(Vpr(2,:)), C(2)) - 5;
+        sxmax = max(max(Vpr(1,:)), C(1)) + 5;
+        symax = max(max(Vpr(2,:)), C(2)) + 5;
         plane_vertex = zeros(4,3);
-        plane_vertex(1,:) = c + [-sx -sy -h];
-        plane_vertex(2,:) = c + [sx -sy -h];
-        plane_vertex(3,:) = c + [sx sy -h];
-        plane_vertex(4,:) = c + [-sx sy -h];
+        plane_vertex(1,:) = [sxmin symin -h];
+        plane_vertex(2,:) = [sxmax symin -h];
+        plane_vertex(3,:) = [sxmax symax -h];
+        plane_vertex(4,:) = [sxmin symax -h];        
+        
+%         sx = max(abs(Vpr(1,:))) / 2;
+%         sy = max(abs(Vpr(2,:))) / 2;
+%         c = [mean(Vpr(1:2,:), 2); 0]';
+%         plane_vertex = zeros(4,3);
+%         plane_vertex(1,:) = c + [-sx -sy -h];
+%         plane_vertex(2,:) = c + [sx -sy -h];
+%         plane_vertex(3,:) = c + [sx sy -h];
+%         plane_vertex(4,:) = c + [-sx sy -h];
+        
         patch('Faces', [1 2 3 4], 'Vertices', plane_vertex, 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.5);
 
         axis tight;
