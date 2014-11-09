@@ -4,8 +4,14 @@ matlabpool open;
 
 addpath(genpath('../KITTI'));
 cls = 'car';
-is_train = 1;
-result_dir = 'kitti_train_ap_125';
+
+is_train = 0;
+
+if is_train
+    result_dir = 'kitti_train_ap_125';
+else
+    result_dir = 'kitti_test_ap_227';
+end
 
 % load data
 if is_train

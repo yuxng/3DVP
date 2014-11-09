@@ -1,12 +1,17 @@
 function exemplar_display_result_kitti_3d
 
-is_train = 1;
+is_train = 0;
 is_save = 0;
 
 addpath(genpath('../KITTI'));
 threshold = -2;
 cls = 'car';
-result_dir = 'kitti_train_ap_125';
+
+if is_train
+    result_dir = 'kitti_train_ap_125';
+else
+    result_dir = 'kitti_test_ap_227';
+end
 
 % read detection results
 filename = sprintf('%s/odets_3d.mat', result_dir);
@@ -52,10 +57,11 @@ object = load(filename);
 data = object.data;
 
 hf = figure;
+cmap = colormap(summer);
 ind_plot = 1;
 mplot = 2;
 nplot = 2;
-for i = 1:N
+for i = 378:N
     disp(i);
     img_idx = ids(i);
     
@@ -70,7 +76,7 @@ for i = 1:N
                 objects(clsinds(j)).x2 objects(clsinds(j)).y2];     
         end
         flags_gt = zeros(n, 1);
-    end     
+    end    
     
     objects = dets_all{i};
     num = numel(objects);
@@ -86,6 +92,15 @@ for i = 1:N
         fprintf('maximum score %.2f is smaller than threshold\n', max(dets(:,6)));
         continue;
     end
+    
+    if isempty(dets) == 0
+        I = dets(:,6) >= threshold;
+        dets = dets(I,:);
+        height = dets(:,4) - dets(:,2);
+        [~, I] = sort(height);
+        dets = dets(I,:);        
+    end
+    num = size(dets, 1); 
     
     % for each predicted bounding box
     if is_train
@@ -140,10 +155,44 @@ for i = 1:N
             pattern = data.pattern{cid};                
             index = find(pattern == 1);
             if data.truncation(cid) > 0 && isempty(index) == 0
-                [y, x] = ind2sub(size(pattern), index);                
+%                 [y, x] = ind2sub(size(pattern), index);                
+%                 pattern = pattern(min(y):max(y), min(x):max(x));
+                
+                [y, x] = ind2sub(size(pattern), index);
+                cx = size(pattern, 2)/2;
+                cy = size(pattern, 1)/2;
+                width = size(pattern, 2);
+                height = size(pattern, 1);                 
                 pattern = pattern(min(y):max(y), min(x):max(x));
+
+                % find the object center
+                sx = w / size(pattern, 2);
+                sy = h / size(pattern, 1);
+                tx = bbox(1) - sx*min(x);
+                ty = bbox(2) - sy*min(y);
+                cx = sx * cx + tx;
+                cy = sy * cy + ty;
+                width = sx * width;
+                height = sy * height;
+                bbox_pr = round([cx-width/2 cy-height/2 cx+width/2 cy+height/2]);
+                width = bbox_pr(3) - bbox_pr(1) + 1;
+                height = bbox_pr(4) - bbox_pr(2) + 1;
+                
+                pattern = imresize(data.pattern{cid}, [height width], 'nearest');
+                
+                bbox = zeros(1,4);
+                bbox(1) = max(1, floor(bbox_pr(1)));
+                start_x = bbox(1) - floor(bbox_pr(1)) + 1;
+                bbox(2) = max(1, floor(bbox_pr(2)));
+                start_y = bbox(2) - floor(bbox_pr(2)) + 1;
+                bbox(3) = min(size(I,2), floor(bbox_pr(3)));
+                bbox(4) = min(size(I,1), floor(bbox_pr(4)));
+                w = bbox(3) - bbox(1) + 1;
+                h = bbox(4) - bbox(2) + 1;
+                pattern = pattern(start_y:start_y+h-1, start_x:start_x+w-1);
+            else
+                pattern = imresize(pattern, [h w], 'nearest');
             end
-            pattern = imresize(pattern, [h w], 'nearest');
             
             % build the pattern in the image
             height = size(I,1);
@@ -155,26 +204,6 @@ for i = 1:N
             index_x = x:min(x+w-1, width);
             P(index_y, index_x) = pattern(1:numel(index_y), 1:numel(index_x));
             
-            % show segments
-            if is_train
-                if flags_pr(k)
-                    dispColor = [0 255 0];
-                else
-                    dispColor = [255 0 0];
-                end
-            else
-                dispColor = [0 255 0];
-            end
-            scale = round(max(size(I))/500);            
-            [gx, gy] = gradient(double(P));
-            g = gx.^2 + gy.^2;
-            g = conv2(g, ones(scale), 'same');
-            edgepix = find(g > 0);
-            npix = numel(P);
-            for b = 1:3
-                I((b-1)*npix+edgepix) = dispColor(b);
-            end            
-            
             % show occluded region
             im = create_occlusion_image(pattern);
             x = bbox(1);
@@ -182,7 +211,28 @@ for i = 1:N
             Isub = I(y:y+h-1, x:x+w-1, :);
             index = im == 255;
             im(index) = Isub(index);
-            I(y:y+h-1, x:x+w-1, :) = uint8(0.1*Isub + 0.9*im);              
+            I(y:y+h-1, x:x+w-1, :) = uint8(0.1*Isub + 0.9*im);               
+            
+            % show segments
+            index_color = 1 + floor((k-1) * size(cmap,1) / num);
+            if is_train
+                if flags_pr(k)
+                    dispColor = [0 255 0];
+                else
+                    dispColor = [255 0 0];
+                end
+            else
+                dispColor = 255*cmap(index_color,:);
+            end
+            scale = round(max(size(I))/400);            
+            [gx, gy] = gradient(double(P));
+            g = gx.^2 + gy.^2;
+            g = conv2(g, ones(scale), 'same');
+            edgepix = find(g > 0);
+            npix = numel(P);
+            for b = 1:3
+                I((b-1)*npix+edgepix) = dispColor(b);
+            end                       
         end
     end    
     
@@ -190,38 +240,43 @@ for i = 1:N
     hold on;
 
     if is_train
-%         for k = 1:num
-%             if dets(k,6) > threshold
-%                 % get predicted bounding box
-%                 bbox = dets(k,1:4);
-%                 bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
-%                 rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);            
-%                 text(bbox(1), bbox(2), num2str(k), 'FontSize', 16, 'BackgroundColor', 'r');
-%                 til = sprintf('%s, s%d=%.2f', til, k, objects(k).score);
-%                 s = sprintf('%.2f', dets(k,6));
-%                 bbox_pr = dets(k,1:4);
-%                 text(bbox_pr(1), bbox_pr(2), s, 'FontSize', 4, 'BackgroundColor', 'c');
-%             end
-%         end
-        
+        for k = 1:num
+            if dets(k,6) > threshold
+                % get predicted bounding box
+    %             bbox = dets(k,1:4);
+    %             bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
+    %             rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);            
+    %             text(bbox(1), bbox(2), num2str(k), 'FontSize', 16, 'BackgroundColor', 'r');
+    %             til = sprintf('%s, s%d=%.2f', til, k, objects(k).score);
+                s = sprintf('%.2f', dets(k,6));
+                bbox_pr = dets(k,1:4);
+                text(bbox_pr(1), bbox_pr(2), s, 'FontSize', 4, 'BackgroundColor', 'c');
+            end
+        end
+    end
+    
+    if is_train
         for k = 1:n
             if flags_gt(k) == 0
                 bbox = bbox_gt(k,1:4);
                 bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
                 rectangle('Position', bbox_draw, 'EdgeColor', 'y', 'LineWidth', 2);
             end
-        end        
-    end
+        end
+    end    
+    
     hold off;
     ind_plot = ind_plot + 2;
     
     % plot 3D localization
     Vpr = [];
     Fpr = [];
-    for k = 1:num
+    for k = 1:numel(objects);
         object = objects(k);
-        if strcmp(object.type, 'Car') == 1 && object.score > threshold
-            cad_index = find_closest_cad(cads, object);
+        if strcmp(object.type, 'Car') == 1 && object.score >= threshold
+            % cad_index = find_closest_cad(cads, object);
+            % transfer cad model
+            cad_index = data.cad_index(objects(k).cid);
             x3d = compute_3d_points(cads(cad_index).vertices, object);
             face = cads(cad_index).faces;
             tmp = face + size(Vpr,2);
@@ -240,23 +295,35 @@ for i = 1:N
         trimesh(Fpr, Vpr(1,:), Vpr(2,:), Vpr(3,:), 'EdgeColor', 'b');
         hold on;
         axis equal;
-        xlabel('x');
-        ylabel('y');
-        zlabel('z');
+%         xlabel('x');
+%         ylabel('y');
+%         zlabel('z');
 
         % draw the camera
         draw_camera(C);
 
         % draw the ground plane
         h = 1.73;
-        sx = max(abs(Vpr(1,:)));
-        sy = 2*max(abs(Vpr(2,:)));
-        c = [mean(Vpr(1:2,:), 2); 0]';
+        
+        sxmin = min(min(Vpr(1,:)), C(1)) - 5;
+        symin = min(min(Vpr(2,:)), C(2)) - 5;
+        sxmax = max(max(Vpr(1,:)), C(1)) + 5;
+        symax = max(max(Vpr(2,:)), C(2)) + 5;
         plane_vertex = zeros(4,3);
-        plane_vertex(1,:) = c + [-sx -sy -h];
-        plane_vertex(2,:) = c + [sx -sy -h];
-        plane_vertex(3,:) = c + [sx sy -h];
-        plane_vertex(4,:) = c + [-sx sy -h];
+        plane_vertex(1,:) = [sxmin symin -h];
+        plane_vertex(2,:) = [sxmax symin -h];
+        plane_vertex(3,:) = [sxmax symax -h];
+        plane_vertex(4,:) = [sxmin symax -h];        
+        
+%         sx = max(abs(Vpr(1,:))) / 2;
+%         sy = max(abs(Vpr(2,:))) / 2;
+%         c = [mean(Vpr(1:2,:), 2); 0]';
+%         plane_vertex = zeros(4,3);
+%         plane_vertex(1,:) = c + [-sx -sy -h];
+%         plane_vertex(2,:) = c + [sx -sy -h];
+%         plane_vertex(3,:) = c + [sx sy -h];
+%         plane_vertex(4,:) = c + [-sx sy -h];
+        
         patch('Faces', [1 2 3 4], 'Vertices', plane_vertex, 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.5);
 
         axis tight;
@@ -294,17 +361,17 @@ for i = 1:N
             trimesh(Fgt, Vgt(1,:), Vgt(2,:), Vgt(3,:), 'EdgeColor', 'b');
             hold on;
             axis equal;
-%             xlabel('x');
-%             ylabel('y');
-%             zlabel('z');
+            xlabel('x');
+            ylabel('y');
+            zlabel('z');
 
             % draw the camera
             draw_camera(C);
 
             % draw the ground plane
             h = 1.73;
-            sx = max(abs(Vgt(1,:)));
-            sy = 3*max(abs(Vgt(2,:)));
+            sx = max(abs(Vgt(1,:))) / 2;
+            sy = max(abs(Vgt(2,:))) / 2;
             c = [mean(Vgt(1:2,:), 2); 0]';
             plane_vertex = zeros(4,3);
             plane_vertex(1,:) = c + [-sx -sy -h];
@@ -314,7 +381,7 @@ for i = 1:N
             patch('Faces', [1 2 3 4], 'Vertices', plane_vertex, 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.5);
 
             axis tight;
-%             title('3D Ground Truth');
+            title('3D Ground Truth');
             view(250, 20);
             hold off;
         else
@@ -327,11 +394,7 @@ for i = 1:N
     if ind_plot > mplot*nplot
         ind_plot = 1;
         if is_save
-            if is_train
-                filename = fullfile('result_images_train', sprintf('%06d.png', img_idx));
-            else
-                filename = fullfile('result_images_test', sprintf('%06d.png', img_idx));
-            end
+            filename = fullfile('result_images_test', sprintf('%06d.png', img_idx));
             saveas(hf, filename);
         else
             pause;
@@ -343,7 +406,7 @@ function im = create_occlusion_image(pattern)
 
 % 2D occlusion mask
 im = 255*ones(size(pattern,1), size(pattern,2), 3);
-color = [0 0 255];
+color = [255 0 0];
 for j = 1:3
     tmp = im(:,:,j);
     tmp(pattern == 2) = color(j);

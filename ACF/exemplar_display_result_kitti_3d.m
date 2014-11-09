@@ -3,7 +3,7 @@ function exemplar_display_result_kitti_3d
 is_save = 0;
 
 addpath(genpath('../KITTI'));
-threshold = -20;
+threshold = -15;
 cls = 'car';
 
 is_train = 0;
@@ -62,7 +62,7 @@ cmap = colormap(summer);
 ind_plot = 1;
 mplot = 2;
 nplot = 2;
-for i = 322:N
+for i = 378:N
     disp(i);
     img_idx = ids(i);
     
