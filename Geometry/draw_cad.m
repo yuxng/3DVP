@@ -8,7 +8,7 @@ L3 = cad.grid;
 if isempty(visibility) == 0
     L3(L3 == 1) = 2;  % self-occluded
 else
-    L3(L3 == 1) = 127;
+    L3(L3 == 1) = 3;
 end
 L3(L3 == 0) = 1;  % empty voxel
 

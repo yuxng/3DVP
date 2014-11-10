@@ -15,6 +15,7 @@ tL3(tL3==0) = NaN;
 colormap('default');
 % cmap = colormap;
 cmap = [0 0 1; 0 1 0; 1 0 0; 0 1 1];
+% cmap = colormap(summer);
 PATCH_3Darray(tL3+1, cmap, 'col');
 
 xlim([0 size(L3,1)]);

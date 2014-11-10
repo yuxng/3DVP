@@ -3,13 +3,20 @@ function exemplar_write_kitti_results_dpm
 cls = 'car';
 vnum = 16;
 is_train = 1;
+azimuth_interval = [0 (360/(vnum*2)):(360/vnum):360-(360/(vnum*2))];
 
 % read detection results
-filename = sprintf('kitti_train_dpm/%s_pose_%d_test.mat', cls, vnum);
+filename = sprintf('kitti_train_dpm/%s_pose_%d_test_09.mat', cls, vnum);
 object = load(filename);
 dets = object.boxes1;
 parts = object.parts1;
 fprintf('load detection done\n');
+
+% load data
+object = load('../KITTI/data.mat');
+data = object.data;
+centers = unique(data.idx_pose);
+centers(centers == -1) = [];
 
 % read ids of validation images
 object = load('kitti_ids_new.mat');
@@ -42,8 +49,9 @@ for i = 1:N
     
     % non-maximum suppression
     if isempty(det) == 0
-        I = nms(det, 0.5);
-        det = det(I, :);    
+        I = nms_new(det, 0.6);
+        det = det(I, :);
+        part = part(I, :);
     end    
     
     % write detections
@@ -53,8 +61,10 @@ for i = 1:N
         occlusion = 0;
         
         % azimuth
-        azimuth_index = part(k,37);
-        azimuth = (azimuth_index - 1) * (360 / vnum);
+        cid = centers(part(k,37));
+        azimuth_cid = data.azimuth(cid);
+        vind = find_interval(azimuth_cid, azimuth_interval);
+        azimuth = (vind - 1) * (360 / vnum);
         
         alpha = azimuth + 90;
         if alpha >= 360
@@ -74,4 +84,16 @@ for i = 1:N
             h, w, l, -1, -1, -1, -1, det(k,6));
     end
     fclose(fid);
+end
+
+function ind = find_interval(azimuth, a)
+
+for i = 1:numel(a)
+    if azimuth < a(i)
+        break;
+    end
+end
+ind = i - 1;
+if azimuth > a(end)
+    ind = 1;
 end

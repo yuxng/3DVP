@@ -1,19 +1,17 @@
-function exemplar_3d_detections_light
+function exemplar_3d_detections_light_dpm
 
 matlabpool open;
 
 addpath(genpath('../KITTI'));
 cls = 'car';
 threshold = -inf;
-threshold_nms = 0.6;
+threshold_nms = 0.5;
 
-is_train = 0;
-result_dir = 'kitti_test_acf_3d_227_flip';
-name = '3d_ap_227_combined';
-
-% is_train = 1;
-% result_dir = 'kitti_train_ap_125';
-% name = '3d_aps_125_combined';
+vnum = 16;
+is_train = 1;
+azimuth_interval = [0 (360/(vnum*2)):(360/vnum):360-(360/(vnum*2))];
+result_dir = 'kitti_train_dpm';
+name = 'pose_16_test_09';
 
 % load data
 if is_train
@@ -22,6 +20,8 @@ else
     object = load('../KITTI/data_kitti.mat');
 end
 data = object.data;
+centers = unique(data.idx_pose);
+centers(centers == -1) = [];
 
 % compute statistics
 lmean = mean(data.l);
@@ -30,8 +30,6 @@ wmean = mean(data.w);
 dmin = min(data.distance);
 dmean = mean(data.distance);
 dmax = max(data.distance);
-tmin = min(data.translation(3,:));
-tmax = max(data.translation(3,:));
 
 % load the mean CAD model
 filename = sprintf('../Geometry/%s_mean.mat', cls);
@@ -40,7 +38,7 @@ cad = object.(cls);
 vertices = cad.x3d;
 
 % KITTI path
-exemplar_globals;
+globals;
 root_dir = KITTIroot;
 if is_train
     data_set = 'training';
@@ -60,22 +58,25 @@ end
 N = numel(ids);
 
 % load detections
-filename = sprintf('%s/%s_%s_test.mat', result_dir, cls, name);
+filename = sprintf('%s/%s_%s.mat', result_dir, cls, name);
 object = load(filename);
-dets = object.dets;
+dets = object.boxes1;
+parts = object.parts1;
 dets_3d = cell(1, N);
 
 parfor i = 1:N
     img_idx = ids(i);
     tic;
     det = dets{i};
+    part = parts{i};
     
     % thresholding and nms
     if isempty(det) == 0
         flag = det(:,6) > threshold;
         det = det(flag,:);
-        I = nms_new(det, threshold_nms);
-        det = det(I, :);    
+        I = nms(det, threshold_nms);
+        det = det(I, :);
+        part = part(I, :);
     end     
     
     num = size(det, 1);
@@ -106,7 +107,7 @@ parfor i = 1:N
         bbox = det(k,1:4);
         w = bbox(3) - bbox(1) + 1;
         h = bbox(4) - bbox(2) + 1;
-        cid = det(k,5);
+        cid = centers(part(k,37));
         
         objects(k).type = 'Car';
         objects(k).x1 = bbox(1);
@@ -116,44 +117,14 @@ parfor i = 1:N
         objects(k).cid = cid;
         objects(k).score = det(k,6);
         % apply the 2D occlusion mask to the bounding box
-        % check if truncated pattern
-        pattern = data.pattern{cid};                
-        index = find(pattern == 1);
-        if data.truncation(cid) > 0 && isempty(index) == 0
-            [y, x] = ind2sub(size(pattern), index);
-            cx = size(pattern, 2)/2;
-            cy = size(pattern, 1)/2;
-            width = size(pattern, 2);
-            height = size(pattern, 1);                 
-            pattern = pattern(min(y):max(y), min(x):max(x));
-
-            % find the object center
-            sx = w / size(pattern, 2);
-            sy = h / size(pattern, 1);
-            tx = bbox(1) - sx*min(x);
-            ty = bbox(2) - sy*min(y);
-            cx = sx * cx + tx;
-            cy = sy * cy + ty;
-            width = sx * width;
-            height = sy * height;
-            objects(k).truncation = data.truncation(cid);
-            objects(k).occlusion = 0;
-        else
-            cx = (bbox(1) + bbox(3)) / 2;
-            cy = (bbox(2) + bbox(4)) / 2;
-            width = w;
-            height = h;
-            objects(k).truncation = 0;
-            occ_per = data.occ_per(cid);
-            if occ_per > 0.5
-                objects(k).occlusion = 2;
-            elseif occ_per > 0
-                objects(k).occlusion = 1;
-            else
-                objects(k).occlusion = 0;
-            end
-        end
-        objects(k).occ_per = data.occ_per(cid);
+        pattern = data.pattern{cid};
+        cx = (bbox(1) + bbox(3)) / 2;
+        cy = (bbox(2) + bbox(4)) / 2;
+        width = w;
+        height = h;
+        objects(k).truncation = 0;
+        objects(k).occlusion = 0;
+        objects(k).occ_per = 0;
         objects(k).pattern = imresize(pattern, [h w], 'nearest');
 
         % backprojection
@@ -174,7 +145,11 @@ parfor i = 1:N
 
         % optimization to search for 3D bounding box
         % compute 3D points without translation
-        alpha = data.azimuth(cid) + 90;
+        azimuth_cid = data.azimuth(cid);
+        vind = find_interval(azimuth_cid, azimuth_interval);
+        azimuth = (vind - 1) * (360 / vnum);        
+        
+        alpha = azimuth + 90;
         ry = alpha*pi/180 + theta;
         while ry > pi
             ry = ry - 2*pi;
@@ -219,17 +194,12 @@ parfor i = 1:N
         objects(k).T = T(:,k)';
     end
     
-    % filter out floating bounding boxes
-    % flag = T(3,:) >= tmin & T(3,:) <= tmax;
-    % objects = objects(flag);
+    dets_3d{i} = objects;
     
-    dets_3d{i} = objects;    
-    
-    % fprintf('%d detections left\n', sum(flag));
     toc;
 end
 
-filename = sprintf('%s/%s_%s_test_3d.mat', result_dir, cls, name);
+filename = sprintf('%s/%s_%s_3d.mat', result_dir, cls, name);
 save(filename, 'dets_3d', '-v7.3');
 
 matlabpool close;
@@ -284,3 +254,16 @@ x3d = R*x3d;
 x3d(1,:) = x3d(1,:) + t(1);
 x3d(2,:) = x3d(2,:) + t(2);
 x3d(3,:) = x3d(3,:) + t(3);
+
+
+function ind = find_interval(azimuth, a)
+
+for i = 1:numel(a)
+    if azimuth < a(i)
+        break;
+    end
+end
+ind = i - 1;
+if azimuth > a(end)
+    ind = 1;
+end

@@ -7,13 +7,13 @@ cls = 'car';
 threshold = -inf;
 threshold_nms = 0.6;
 
-is_train = 0;
-result_dir = 'kitti_test_acf_3d_227_flip';
-name = '3d_ap_227_combined';
+% is_train = 0;
+% result_dir = 'kitti_test_acf_3d_227_flip';
+% name = '3d_ap_227_combined';
 
-% is_train = 1;
-% result_dir = 'kitti_train_ap_125';
-% name = '3d_aps_125_combined';
+is_train = 1;
+result_dir = 'kitti_train_ap_125';
+name = '3d_aps_125_combined';
 
 % load data
 if is_train
