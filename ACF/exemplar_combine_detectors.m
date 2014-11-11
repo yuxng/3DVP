@@ -1,10 +1,10 @@
 function exemplar_combine_detectors
 
 cls = 'car';
-is_train = 1;
+is_train = 0;
 is_pascal = 0;
 threshold = -50;
-result_dir = 'kitti_train_ap_125';
+result_dir = 'kitti_test_acf_3d_227_flip';
 
 % load data
 if is_pascal
@@ -26,7 +26,7 @@ idx = data.idx_ap;
 centers = double(unique(idx));
 centers(centers == -1) = [];
 N = numel(centers);
-name = sprintf('3d_aps_%d', N);
+name = sprintf('3d_ap_%d', N);
 
 % load detectors
 detectors = cell(1, N);
