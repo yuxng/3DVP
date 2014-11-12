@@ -58,7 +58,15 @@ for i = 1:length(tidx)
 end
 
 mimages = uint8(mimages ./ count);
-gimages = uint8(gimages ./ count .* 20);
+gimages = gimages ./ count;
+
+gmax = max(max(gimages));
+gmin = min(min(gimages));
+vmax = 200;
+vmin = 50;
+a = (vmax - vmin) / (gmax - gmin);
+b = vmax - a * gmax;
+gimages = uint8(a .* gimages + b);
 
 % figure(1); imshow(uint8(mimages ./ count));
 % figure(2); imshow(uint8(gimages ./ count .* 20));

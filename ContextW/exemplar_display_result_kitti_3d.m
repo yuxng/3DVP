@@ -1,6 +1,6 @@
 function exemplar_display_result_kitti_3d
 
-is_train = 0;
+is_train = 1;
 is_save = 0;
 
 addpath(genpath('../KITTI'));
@@ -61,7 +61,7 @@ cmap = colormap(summer);
 ind_plot = 1;
 mplot = 2;
 nplot = 2;
-for i = 378:N
+for i = 1:N
     disp(i);
     img_idx = ids(i);
     
@@ -217,7 +217,7 @@ for i = 378:N
             index_color = 1 + floor((k-1) * size(cmap,1) / num);
             if is_train
                 if flags_pr(k)
-                    dispColor = [0 255 0];
+                    dispColor = 255*cmap(index_color,:);
                 else
                     dispColor = [255 0 0];
                 end
@@ -239,21 +239,21 @@ for i = 378:N
     imshow(I);
     hold on;
 
-    if is_train
-        for k = 1:num
-            if dets(k,6) > threshold
-                % get predicted bounding box
-    %             bbox = dets(k,1:4);
-    %             bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
-    %             rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);            
-    %             text(bbox(1), bbox(2), num2str(k), 'FontSize', 16, 'BackgroundColor', 'r');
-    %             til = sprintf('%s, s%d=%.2f', til, k, objects(k).score);
-                s = sprintf('%.2f', dets(k,6));
-                bbox_pr = dets(k,1:4);
-                text(bbox_pr(1), bbox_pr(2), s, 'FontSize', 4, 'BackgroundColor', 'c');
-            end
-        end
-    end
+%     if is_train
+%         for k = 1:num
+%             if dets(k,6) > threshold
+%                 % get predicted bounding box
+%                 bbox = dets(k,1:4);
+%                 bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
+%                 rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);            
+%                 text(bbox(1), bbox(2), num2str(k), 'FontSize', 16, 'BackgroundColor', 'r');
+%                 til = sprintf('%s, s%d=%.2f', til, k, objects(k).score);
+%                 s = sprintf('%.2f', dets(k,6));
+%                 bbox_pr = dets(k,1:4);
+%                 text(bbox_pr(1), bbox_pr(2), s, 'FontSize', 4, 'BackgroundColor', 'c');
+%             end
+%         end
+%     end
     
     if is_train
         for k = 1:n
@@ -370,14 +370,16 @@ for i = 378:N
 
             % draw the ground plane
             h = 1.73;
-            sx = max(abs(Vgt(1,:))) / 2;
-            sy = max(abs(Vgt(2,:))) / 2;
-            c = [mean(Vgt(1:2,:), 2); 0]';
+            
+            sxmin = min(min(Vgt(1,:)), C(1)) - 5;
+            symin = min(min(Vgt(2,:)), C(2)) - 5;
+            sxmax = max(max(Vgt(1,:)), C(1)) + 5;
+            symax = max(max(Vgt(2,:)), C(2)) + 5;
             plane_vertex = zeros(4,3);
-            plane_vertex(1,:) = c + [-sx -sy -h];
-            plane_vertex(2,:) = c + [sx -sy -h];
-            plane_vertex(3,:) = c + [sx sy -h];
-            plane_vertex(4,:) = c + [-sx sy -h];
+            plane_vertex(1,:) = [sxmin symin -h];
+            plane_vertex(2,:) = [sxmax symin -h];
+            plane_vertex(3,:) = [sxmax symax -h];
+            plane_vertex(4,:) = [sxmin symax -h];
             patch('Faces', [1 2 3 4], 'Vertices', plane_vertex, 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.5);
 
             axis tight;

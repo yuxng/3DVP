@@ -1,4 +1,4 @@
-function compute_recall_precision_aos_3d
+function [fppi_all, thresholds_all] = compute_recall_precision_aos_3d
 
 cls = 'car';
 
@@ -54,12 +54,14 @@ fprintf('load segmentation scores done\n');
 
 recall_all = cell(1, 3);
 precision_all = cell(1, 3);
+fppi_all = cell(1, 3);
 aos_all = cell(1, 3);
 asa_all = cell(1, 3);
 asa_box_all = cell(1, 3);
 ala_5_all = cell(1, 3);
 ala_2_all = cell(1, 3);
 ala_1_all = cell(1, 3);
+thresholds_all = cell(1, 3);
 
 for difficulty = 1:3
     % for each image
@@ -172,6 +174,7 @@ for difficulty = 1:3
     accuracy_1 = zeros(nt, 1);
     recall = zeros(nt, 1);
     precision = zeros(nt, 1);
+    fppi = zeros(nt, 1);
     aos = zeros(nt, 1);
     asa = zeros(nt, 1);
     asa_box = zeros(nt, 1);
@@ -305,6 +308,7 @@ for difficulty = 1:3
         % compute recall and precision
         recall(t) = tp(t) / (tp(t) + fn(t));
         precision(t) = tp(t) / (tp(t) + fp(t));
+        fppi(t) = fp(t) / M;
         aos(t) = similarity(t) / (tp(t) + fp(t));
         asa(t) = overlap_seg(t) / (tp(t) + fp(t));
         asa_box(t) = overlap_box(t) / (tp(t) + fp(t));
@@ -326,12 +330,14 @@ for difficulty = 1:3
     
     recall_all{difficulty} = recall;
     precision_all{difficulty} = precision;
+    fppi_all{difficulty} = fppi;
     aos_all{difficulty} = aos;
     asa_all{difficulty} = asa;
     asa_box_all{difficulty} = asa_box;
     ala_5_all{difficulty} = ala_5;
     ala_2_all{difficulty} = ala_2;
     ala_1_all{difficulty} = ala_1;
+    thresholds_all{difficulty} = thresholds;
 end
 
 % average precision

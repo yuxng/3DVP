@@ -51,6 +51,7 @@ for i = 1:numel(VOCpaths)
         PASCAL3Droot = [VOCpaths{i} '/../']; 
         VOCdevkit = [ VOCpaths{i} '/VOCdevkit/'];
         path_img_imagenet = [PASCAL3Droot '/Images/%s_imagenet'];
+        path_cad = [PASCAL3Droot '/CAD/%s.mat'];
         break;
     end
 end

@@ -47,6 +47,7 @@ for i = 1:N
     xlabel('');
     ylabel('');
     zlabel('');
+    axis off;
 %     til = sprintf('%d: trunc %.2f', ind, data.truncation(ind));
 %     title(til);
     
