@@ -26,7 +26,7 @@ nimages = length(dir(fullfile(image_dir, '*.png')));
 % main loop
 figure(1);
 cmap = colormap(jet);
-for img_idx = 1:nimages-1
+for img_idx = 1138:nimages-1
   % show image
   subplot(2, 1, 1);
   I = imread(sprintf('%s/%06d.png',image_dir, img_idx));
@@ -47,8 +47,19 @@ for img_idx = 1:nimages-1
   
   V = [];
   F = [];
+  
+  % for all annotated objects do
+  num_car = 0;
+  for i = 1:numel(index)
+    obj_idx = index(i);
+    object = objects(obj_idx);
+    if strcmp(object.type, 'Car') == 1
+        num_car = num_car + 1;
+    end
+  end
  
   % for all annotated objects do
+  count = 0;
   for i = 1:numel(index)
     obj_idx = index(i);
     % plot 2D bounding box
@@ -68,10 +79,14 @@ for img_idx = 1:nimages-1
         tmp(3,:) = tmp(3,:) * -1;
         V = [V tmp];
         
-        index_color = 1 + floor((i-1) * size(cmap,1) / numel(index));
+        count = count + 1;
+        index_color = 1 + floor((count-1) * size(cmap,1) / num_car);
         x2d = x2d';
         patch('vertices', x2d, 'faces', face, ...
             'FaceColor', cmap(index_color,:), 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+        
+        s = sprintf('%d', cad_index);
+        text(object.x2, object.y2, s, 'FontSize', 8, 'BackgroundColor', 'c');        
         
         x2d = x2d + pad_size;
         vertices = [x2d(face(:,1),2) x2d(face(:,1),1) ...

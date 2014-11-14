@@ -1,8 +1,8 @@
 function exemplar_3drr_test_combined
 
-matlabpool open;
+% matlabpool open;
 
-is_save = 1;
+is_save = 0;
 
 cls = 'car';
 result_dir = 'kitti_test_acf_3d_227_flip';
@@ -35,9 +35,9 @@ ids = 1:200;
 % run detector in each image
 N = numel(ids);
 boxes = cell(1, N);
-parfor id = 1:N
-    tic;
+for id = 1:N
     fprintf('%s %s: combined: %d/%d\n', cls, name, id, N);
+    tic;
     file_img = sprintf('%s/%04d.jpg', image_dir, ids(id));
     I = feval(imreadf, file_img, imreadp{:});
 
@@ -95,4 +95,4 @@ if is_save
     save(filename, 'dets', '-v7.3');
 end
 
-matlabpool close;
+% matlabpool close;

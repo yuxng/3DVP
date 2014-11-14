@@ -66,7 +66,7 @@ cmap = colormap(summer);
 ind_plot = 1;
 mplot = 2;
 nplot = 1;
-for i = 1:N
+for i = [50, 121, 763, 1859] %1:N
     disp(i);
     img_idx = ids(i);
     
@@ -245,6 +245,19 @@ for i = 1:N
     
     imshow(I);
     hold on;
+    
+    if is_train
+        for k = 1:n
+            if flags_gt(k) == 0
+                bbox = bbox_gt(k,1:4);
+                bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
+                % rectangle('Position', bbox_draw, 'EdgeColor', 'b', 'LineWidth', 2, 'LineStyle',':');
+                lw = 2;
+                rectangle('position', bbox_draw, 'linewidth', lw, 'edgecolor', 'w');
+                rectangle('position', bbox_draw, 'linewidth', lw, 'edgecolor', 'b', 'linestyle', ':');                
+            end
+        end
+    end        
 
     if is_train
         for k = 1:num
@@ -253,7 +266,16 @@ for i = 1:N
                 bbox = dets(k,1:4);
                 bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
                 index_color = 1 + floor((k-1) * size(cmap,1) / num);
-                rectangle('Position', bbox_draw, 'EdgeColor', cmap(index_color,:), 'LineWidth', 2);            
+                if is_train
+                    if flags_pr(k)
+                        dispColor = cmap(index_color,:);
+                    else
+                        dispColor = [1 0 0];
+                    end
+                else
+                    dispColor = cmap(index_color,:);
+                end                
+                rectangle('Position', bbox_draw, 'EdgeColor', dispColor, 'LineWidth', 2);            
 %                 text(bbox(1), bbox(2), num2str(k), 'FontSize', 16, 'BackgroundColor', 'r');
 %                 til = sprintf('%s, s%d=%.2f', til, k, objects(k).score);
 %                 s = sprintf('%.2f', dets(k,6));
@@ -262,16 +284,6 @@ for i = 1:N
             end
         end
     end
-    
-    if is_train
-        for k = 1:n
-            if flags_gt(k) == 0
-                bbox = bbox_gt(k,1:4);
-                bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
-                rectangle('Position', bbox_draw, 'EdgeColor', 'b', 'LineWidth', 2);
-            end
-        end
-    end    
     
     hold off;
     ind_plot = ind_plot + 1;
@@ -314,6 +326,7 @@ for i = 1:N
             
             
             plane_vertex = corners_3D(1:3, 5:8)';
+            plane_vertex(:,3) = plane_vertex(:,3) + 1; 
             patch('Faces', [1 2 3 4], 'Vertices', plane_vertex, 'EdgeColor', [0 1 0],...
                 'FaceColor', 'none', 'LineWidth', 2);
             
@@ -396,7 +409,7 @@ for i = 1:N
         ind_plot = 1;
         if is_save
             if is_train
-                filename = fullfile('result_images_train', sprintf('%06d.png', img_idx));
+                filename = fullfile('../', sprintf('%06d_dpm.png', img_idx));
             else
                 filename = fullfile('result_images_test', sprintf('%06d.png', img_idx));
             end
@@ -411,7 +424,7 @@ function im = create_occlusion_image(pattern)
 
 % 2D occlusion mask
 im = 255*ones(size(pattern,1), size(pattern,2), 3);
-color = [255 0 0];
+color = [0 0 255];
 for j = 1:3
     tmp = im(:,:,j);
     tmp(pattern == 2) = color(j);

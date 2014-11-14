@@ -1,7 +1,7 @@
 function exemplar_display_result_kitti
 
 cls = 'car';
-threshold = -2;
+threshold = -1.5435;
 is_save = 0;
 is_train = 0;
 result_dir = 'kitti_test_ap_227';
@@ -44,9 +44,16 @@ else
 end
 object = load(filename);
 data = object.data;
+centers = unique(data.idx_ap);
+centers(centers == -1) = [];
+
+% sort centers according to azimuth
+azimuth = data.azimuth(centers);
+[~, order] = sort(azimuth);
+centers = centers(order);
 
 figure;
-for i = 1:N
+for i = 1549:N
     img_idx = ids(i);
     disp(img_idx);
     
@@ -223,8 +230,10 @@ for i = 1:N
 %             else
 %                 rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);
 %             end
-            s = sprintf('%.2f', det(k,6));
-            text(bbox_pr(1), bbox_pr(2), s, 'FontSize', 8, 'BackgroundColor', 'c');
+            cid = det(k,5);
+%             cind = find(centers == cid);
+            s = sprintf('%d', cid);
+            text(bbox_pr(3), bbox_pr(4), s, 'FontSize', 8, 'BackgroundColor', 'c');
         end
     end
     

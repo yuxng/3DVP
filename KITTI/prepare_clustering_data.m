@@ -1,6 +1,6 @@
 function data = prepare_clustering_data
 
-is_train = 1;
+is_train = 0;
 
 % KITTI path
 opt = globals();
@@ -14,6 +14,11 @@ filename = sprintf('../Geometry/%s_kitti_mean.mat', cls);
 object = load(filename);
 cad = object.(cls);
 index = cad.grid == 1;
+
+% load original model
+filename = sprintf('../Geometry/%s_kitti.mat', cls);
+object = load(filename);
+cads = object.(cls);
 
 % load ids
 object = load('kitti_ids_new.mat');
@@ -39,6 +44,7 @@ truncation = [];
 occlusion = [];
 pattern = [];
 grid = [];
+grid_origin = [];
 translation = [];
 is_flip = [];
 cad_index = [];
@@ -81,7 +87,9 @@ for i = 1:numel(ids)
             truncation(count) = object.truncation;
             occlusion(count) = object.occlusion;
             pattern{count} = object.pattern;
-            grid(:,count) = object.grid(index);            
+            grid(:,count) = uint8(object.grid(index));
+            index_cad = cads(object.cad_index).grid == 1;
+            grid_origin{count} = uint8(object.grid_origin(index_cad));
             % transform to velodyne space
             X = [object.t'; 1];
             X = Pv2c\X;
@@ -108,6 +116,7 @@ data.truncation = truncation;
 data.occlusion = occlusion;
 data.pattern = pattern;
 data.grid = grid;
+data.grid_origin = grid_origin;
 data.translation = translation;
 data.is_flip = is_flip;
 data.cad_index = cad_index;

@@ -1,6 +1,6 @@
 function exemplar_display_result_kitti_bbox
 
-threshold = -2;
+threshold = -1.5435;
 is_save = 0;
 is_train = 0;
 
@@ -39,7 +39,7 @@ label_dir = fullfile(root_dir, [data_set '/label_' num2str(cam)]);
 
 figure;
 cmap = colormap(summer);
-for i = 1:N
+for i = 675:N
     img_idx = ids(i);
     disp(img_idx);
     
@@ -121,6 +121,10 @@ for i = 1:N
         if det(k,6) > threshold
             % get predicted bounding box
             bbox_pr = det(k,1:4);
+            bbox_pr(1) = max(1, bbox_pr(1));
+            bbox_pr(2) = max(1, bbox_pr(2));
+            bbox_pr(3) = min(size(I,2), bbox_pr(3));
+            bbox_pr(4) = min(size(I,1), bbox_pr(4));
             bbox_draw = [bbox_pr(1), bbox_pr(2), bbox_pr(3)-bbox_pr(1), bbox_pr(4)-bbox_pr(2)];
             if is_train
                 if flags_pr(k)
@@ -130,7 +134,7 @@ for i = 1:N
                 end
             else
                 index_color = 1 + floor((k-1) * size(cmap,1) / num);
-                rectangle('Position', bbox_draw, 'EdgeColor', cmap(index_color,:), 'LineWidth', 4);
+                rectangle('Position', bbox_draw, 'EdgeColor', cmap(index_color,:), 'LineWidth', 8);
             end
 %             s = sprintf('%.2f', det(k,6));
 %             text(bbox_pr(1), bbox_pr(2), s, 'FontSize', 4, 'BackgroundColor', 'c');

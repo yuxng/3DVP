@@ -65,7 +65,7 @@ cmap = colormap(summer);
 ind_plot = 1;
 mplot = 2;
 nplot = 1;
-for i = 1:N
+for i = [50, 121, 763, 1859] %1:N
     disp(i);
     img_idx = ids(i);
     
@@ -266,7 +266,10 @@ for i = 1:N
             if flags_gt(k) == 0
                 bbox = bbox_gt(k,1:4);
                 bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
-                rectangle('Position', bbox_draw, 'EdgeColor', 'b', 'LineWidth', 2);
+                % rectangle('Position', bbox_draw, 'EdgeColor', 'b', 'LineWidth', 2, 'LineStyle',':');
+                lw = 2;
+                rectangle('position', bbox_draw, 'linewidth', lw, 'edgecolor', 'w');
+                rectangle('position', bbox_draw, 'linewidth', lw, 'edgecolor', 'b', 'linestyle', ':');                  
             end
         end
     end    
@@ -283,51 +286,12 @@ for i = 1:N
     symin = inf;
     sxmax = -inf;
     symax = -inf;
-    for k = 1:numel(objects);
-        object = objects(k);
-        if strcmp(object.type, 'Car') == 1 && object.score >= threshold
-            % compute rotational matrix around yaw axis
-            R = [+cos(object.ry), 0, +sin(object.ry);
-                               0, 1,               0;
-                 -sin(object.ry), 0, +cos(object.ry)];
-
-            % 3D bounding box dimensions
-            l = object.l;
-            w = object.w;
-            h = object.h;
-
-            % 3D bounding box corners
-            x_corners = [l/2, l/2, -l/2, -l/2, l/2, l/2, -l/2, -l/2];
-            y_corners = [0,0,0,0,-h,-h,-h,-h];
-            z_corners = [w/2, -w/2, -w/2, w/2, w/2, -w/2, -w/2, w/2];
-
-            % rotate and translate 3D bounding box
-            corners_3D = R*[x_corners;y_corners;z_corners];
-            corners_3D(1,:) = corners_3D(1,:) + object.t(1);
-            corners_3D(2,:) = corners_3D(2,:) + object.t(2);
-            corners_3D(3,:) = corners_3D(3,:) + object.t(3);
-            
-            % transform to world coordinate system
-            corners_3D = Pv2c\[corners_3D; ones(1,size(corners_3D,2))];
-            
-            
-            plane_vertex = corners_3D(1:3, 5:8)';
-            patch('Faces', [1 2 3 4], 'Vertices', plane_vertex, 'EdgeColor', [0 1 0],...
-                'FaceColor', 'none', 'LineWidth', 2);
-            
-            
-            sxmin = min(sxmin, min(plane_vertex(:,1)));
-            symin = min(symin, min(plane_vertex(:,2)));
-            sxmax = max(sxmax, max(plane_vertex(:,1)));
-            symax = max(symax, max(plane_vertex(:,2)));
-        end
-    end
     
     % ground truth top view
     if is_train
-        objects = readLabels(label_dir,img_idx);
-        for k = 1:numel(objects)
-            object = objects(k);
+        objects_gt = readLabels(label_dir,img_idx);
+        for k = 1:numel(objects_gt)
+            object = objects_gt(k);
             if strcmp(object.type, 'Car') == 1
                 % compute rotational matrix around yaw axis
                 R = [+cos(object.ry), 0, +sin(object.ry);
@@ -365,9 +329,50 @@ for i = 1:N
                 symax = max(symax, max(plane_vertex(:,2)));
             end
         end
-    end    
+    end     
     
+    for k = 1:numel(objects);
+        object = objects(k);
+        if strcmp(object.type, 'Car') == 1 && object.score >= threshold
+            % compute rotational matrix around yaw axis
+            R = [+cos(object.ry), 0, +sin(object.ry);
+                               0, 1,               0;
+                 -sin(object.ry), 0, +cos(object.ry)];
 
+            % 3D bounding box dimensions
+            l = object.l;
+            w = object.w;
+            h = object.h;
+
+            % 3D bounding box corners
+            x_corners = [l/2, l/2, -l/2, -l/2, l/2, l/2, -l/2, -l/2];
+            y_corners = [0,0,0,0,-h,-h,-h,-h];
+            z_corners = [w/2, -w/2, -w/2, w/2, w/2, -w/2, -w/2, w/2];
+
+            % rotate and translate 3D bounding box
+            corners_3D = R*[x_corners;y_corners;z_corners];
+            corners_3D(1,:) = corners_3D(1,:) + object.t(1);
+            corners_3D(2,:) = corners_3D(2,:) + object.t(2);
+            corners_3D(3,:) = corners_3D(3,:) + object.t(3);
+            
+            % transform to world coordinate system
+            corners_3D = Pv2c\[corners_3D; ones(1,size(corners_3D,2))];
+            
+            
+            plane_vertex = corners_3D(1:3, 5:8)';
+            plane_vertex(:,3) = plane_vertex(:,3) + 1; 
+            patch('Faces', [1 2 3 4], 'Vertices', plane_vertex, 'EdgeColor', [0 1 0],...
+                'FaceColor', 'none', 'LineWidth', 2);
+            
+            
+            sxmin = min(sxmin, min(plane_vertex(:,1)));
+            symin = min(symin, min(plane_vertex(:,2)));
+            sxmax = max(sxmax, max(plane_vertex(:,1)));
+            symax = max(symax, max(plane_vertex(:,2)));
+        end
+    end
+    
+      
     % draw the camera
     draw_camera(C);
 
@@ -394,7 +399,7 @@ for i = 1:N
         ind_plot = 1;
         if is_save
             if is_train
-                filename = fullfile('result_images_train', sprintf('%06d.png', img_idx));
+                filename = fullfile('../', sprintf('%06d_occ.png', img_idx));
             else
                 filename = fullfile('result_images_test', sprintf('%06d.png', img_idx));
             end
@@ -409,7 +414,7 @@ function im = create_occlusion_image(pattern)
 
 % 2D occlusion mask
 im = 255*ones(size(pattern,1), size(pattern,2), 3);
-color = [255 0 0];
+color = [0 0 255];
 for j = 1:3
     tmp = im(:,:,j);
     tmp(pattern == 2) = color(j);

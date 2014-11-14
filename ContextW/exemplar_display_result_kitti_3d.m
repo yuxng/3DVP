@@ -1,10 +1,10 @@
 function exemplar_display_result_kitti_3d
 
-is_train = 1;
+is_train = 0;
 is_save = 0;
 
 addpath(genpath('../KITTI'));
-threshold = -2;
+threshold = -1.5435;
 cls = 'car';
 
 if is_train
@@ -224,7 +224,7 @@ for i = 1:N
             else
                 dispColor = 255*cmap(index_color,:);
             end
-            scale = round(max(size(I))/400);            
+            scale = round(max(size(I))/300);            
             [gx, gy] = gradient(double(P));
             g = gx.^2 + gy.^2;
             g = conv2(g, ones(scale), 'same');
@@ -300,7 +300,7 @@ for i = 1:N
 %         zlabel('z');
 
         % draw the camera
-        draw_camera(C);
+%         draw_camera(C);
 
         % draw the ground plane
         h = 1.73;
@@ -396,7 +396,11 @@ for i = 1:N
     if ind_plot > mplot*nplot
         ind_plot = 1;
         if is_save
-            filename = fullfile('result_images_test', sprintf('%06d.png', img_idx));
+            if is_train
+                filename = fullfile('result_images_train', sprintf('%06d.png', img_idx));
+            else
+                filename = fullfile('result_images_test', sprintf('%06d.png', img_idx));
+            end
             saveas(hf, filename);
         else
             pause;
@@ -408,7 +412,7 @@ function im = create_occlusion_image(pattern)
 
 % 2D occlusion mask
 im = 255*ones(size(pattern,1), size(pattern,2), 3);
-color = [255 0 0];
+color = [0 0 255];
 for j = 1:3
     tmp = im(:,:,j);
     tmp(pattern == 2) = color(j);
