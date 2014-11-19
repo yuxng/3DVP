@@ -4,7 +4,7 @@
 object = load('data_kitti.mat');
 data = object.data;
 
-idx = data.idx_ap_few;
+idx = data.idx_ap;
 cids = unique(idx);
 cids(cids == -1) = [];
 num = numel(cids);
@@ -13,6 +13,8 @@ num = numel(cids);
 cluster_sizes = zeros(num, 1);
 width_mean = zeros(num, 1);
 height_mean = zeros(num, 1);
+occ_per = zeros(num, 1);
+trunc_per = zeros(num, 1);
 
 for i = 1:num
     cid = cids(i);
@@ -24,4 +26,15 @@ for i = 1:num
     h = bbox(4,:) - bbox(2,:);
     width_mean(i) = mean(w);
     height_mean(i) = mean(h);
+    
+    occ_per(i) = data.occ_per(cid);
+    trunc_per(i) = data.truncation(cid);
 end
+
+num_occ = numel(find(occ_per > 0));
+num_trunc = numel(find(trunc_per > 0));
+num_visible = num - num_occ - num_trunc;
+
+fprintf('%d 3DVPs visible\n', num_visible);
+fprintf('%d 3DVPs occluded\n', num_occ);
+fprintf('%d 3DVPs truncated\n', num_trunc);

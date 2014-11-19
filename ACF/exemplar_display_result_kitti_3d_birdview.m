@@ -66,7 +66,7 @@ cmap = colormap(summer);
 ind_plot = 1;
 mplot = 2;
 nplot = 1;
-for i = [50, 121, 763, 1859] %1:N
+for i = 1:N
     disp(i);
     img_idx = ids(i);
     
@@ -399,7 +399,7 @@ for i = [50, 121, 763, 1859] %1:N
         ind_plot = 1;
         if is_save
             if is_train
-                filename = fullfile('../', sprintf('%06d_nms.png', img_idx));
+                filename = fullfile('result_images_train', sprintf('%06d_nms.png', img_idx));
             else
                 filename = fullfile('result_images_test', sprintf('%06d.png', img_idx));
             end

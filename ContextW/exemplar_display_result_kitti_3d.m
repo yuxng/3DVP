@@ -1,7 +1,7 @@
 function exemplar_display_result_kitti_3d
 
 is_train = 0;
-is_save = 0;
+is_save = 1;
 
 addpath(genpath('../KITTI'));
 threshold = -1.5435;
@@ -328,7 +328,7 @@ for i = 1:N
 
         axis tight;
         % title('3D Estimation');
-        view(250, 20);
+        view(250, 8);
         hold off;
     end
     if is_train
@@ -401,7 +401,7 @@ for i = 1:N
             else
                 filename = fullfile('result_images_test', sprintf('%06d.png', img_idx));
             end
-            saveas(hf, filename);
+            hgexport(hf, filename, hgexport('factorystyle'), 'Format', 'png');
         else
             pause;
         end

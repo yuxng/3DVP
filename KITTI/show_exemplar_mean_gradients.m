@@ -2,7 +2,7 @@ function show_exemplar_mean_gradients
 
 opt = globals;
 is_train = 0;
-is_save = 1;
+is_save = 0;
 
 % load data
 if is_train
@@ -32,8 +32,8 @@ centers = centers(order);
 
 hf = figure(1);
 ind_plot = 1;
-mplot = 1;
-nplot = 3;
+mplot = 6;
+nplot = 12;
 for i = 1:N
     % show center
     ind = centers(i);
