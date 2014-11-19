@@ -1,5 +1,5 @@
 % compute recall and precision
-function [recall, precision, ap, threshold] = compute_recall_precision_3drr(index_test)
+function [recall, precision, fppi, ap, threshold] = compute_recall_precision_3drr(index_test)
 
 cls = 'car';
 root_path = '/home/yuxiang/Projects/ObjectInteraction';
@@ -88,6 +88,7 @@ threshold = unique(sort(energy));
 n = numel(threshold);
 recall = zeros(n,1);
 precision = zeros(n,1);
+fppi = zeros(n,1);
 for i = 1:n
     % compute precision
     num_positive = numel(find(energy >= threshold(i)));
@@ -97,6 +98,7 @@ for i = 1:n
     else
         precision(i) = 0;
     end
+    fppi(i) = (num_positive - num_correct) / M;
     
     % compute recall
     correct_recall = correct;
