@@ -1,7 +1,7 @@
 function exemplar_display_result_kitti_bbox
 
 cls = 'car';
-threshold = -10;
+threshold = -1.5435;
 is_save = 0;
 threshold_overlap = 0.6;
 is_train = 0;
@@ -49,7 +49,7 @@ data = object.data;
 
 figure;
 cmap = colormap(summer);
-for i = 506:N
+for i = [23, 236, 255] %1859:N
     img_idx = ids(i);
     disp(img_idx);
     
@@ -127,30 +127,30 @@ for i = 506:N
             % get predicted bounding box
             bbox_pr = det(k,1:4);
             bbox_draw = [bbox_pr(1), bbox_pr(2), bbox_pr(3)-bbox_pr(1), bbox_pr(4)-bbox_pr(2)];
-            if is_train
-                if flags_pr(k)
-                    rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);
-                else
-                    rectangle('Position', bbox_draw, 'EdgeColor', 'r', 'LineWidth', 2);
-                end
-            else
+%             if is_train
+%                 if flags_pr(k)
+%                     rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);
+%                 else
+%                     rectangle('Position', bbox_draw, 'EdgeColor', 'r', 'LineWidth', 2);
+%                 end
+%             else
                 index_color = 1 + floor((k-1) * size(cmap,1) / num);
                 rectangle('Position', bbox_draw, 'EdgeColor', cmap(index_color,:), 'LineWidth', 4);
-            end
+%             end
 %             s = sprintf('%.2f', det(k,6));
 %             text(bbox_pr(1), bbox_pr(2), s, 'FontSize', 4, 'BackgroundColor', 'c');
         end
     end
     
-    if is_train
-        for k = 1:n
-            if flags_gt(k) == 0
-                bbox = bbox_gt(k,1:4);
-                bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
-                rectangle('Position', bbox_draw, 'EdgeColor', 'y', 'LineWidth', 2);
-            end
-        end
-    end
+%     if is_train
+%         for k = 1:n
+%             if flags_gt(k) == 0
+%                 bbox = bbox_gt(k,1:4);
+%                 bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
+%                 rectangle('Position', bbox_draw, 'EdgeColor', 'y', 'LineWidth', 2);
+%             end
+%         end
+%     end
     hold off;
     
     if is_save

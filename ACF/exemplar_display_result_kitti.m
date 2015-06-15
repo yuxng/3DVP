@@ -1,15 +1,15 @@
 function exemplar_display_result_kitti
 
 cls = 'car';
-threshold = -10;
+threshold = -20;
 is_save = 0;
 threshold_overlap = 0.6;
-is_train = 0;
-result_dir = 'kitti_test_acf_3d_167_flip';
-name = '3d_ap_167_combined';
-% is_train = 1;
-% result_dir = 'kitti_train_ap_125';
-% name = '3d_aps_125_combined';
+% is_train = 0;
+% result_dir = 'kitti_test_acf_3d_167_flip';
+% name = '3d_ap_167_combined';
+is_train = 1;
+result_dir = 'kitti_train_ap_125';
+name = '3d_aps_125_combined';
 
 % read detection results
 filename = sprintf('%s/%s_%s_test.mat', result_dir, cls, name);
@@ -49,7 +49,7 @@ data = object.data;
 
 hf = figure(1);
 cmap = colormap(summer);
-for i = 1:N
+for i = 1859:N
     img_idx = ids(i);
     disp(img_idx);
     
@@ -97,7 +97,7 @@ for i = 1:N
             if isempty(bbox_gt) == 0
                 o = boxoverlap(bbox_gt, bbox_pr);
                 [maxo, index] = max(o);
-                if maxo >= 0.7 && flags_gt(index) == 0
+                if maxo >= 0.6 && flags_gt(index) == 0
                     flags_pr(j) = 1;
                     flags_gt(index) = 1;
                 end
@@ -201,7 +201,7 @@ for i = 1:N
             index_color = 1 + floor((k-1) * size(cmap,1) / num);
             if is_train
                 if flags_pr(k)
-                    dispColor = [0 255 0];
+                    dispColor = 255*cmap(index_color,:);
                 else
                     dispColor = [255 0 0];
                 end
@@ -237,20 +237,22 @@ for i = 1:N
 %             else
 %                 rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);
 %             end
-%             s = sprintf('%.2f', det(k,6));
-%             text(bbox_pr(1), bbox_pr(2), s, 'FontSize', 4, 'BackgroundColor', 'c');
+            cid = det(k,5);
+%             cind = find(centers == cid);
+            s = sprintf('%d', cid);
+%             text(bbox_pr(3), bbox_pr(4), s, 'FontSize', 8, 'BackgroundColor', 'c');
         end
     end
     
-    if is_train
-        for k = 1:n
-            if flags_gt(k) == 0
-                bbox = bbox_gt(k,1:4);
-                bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
-                rectangle('Position', bbox_draw, 'EdgeColor', 'y', 'LineWidth', 2);
-            end
-        end
-    end
+%     if is_train
+%         for k = 1:n
+%             if flags_gt(k) == 0
+%                 bbox = bbox_gt(k,1:4);
+%                 bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
+%                 rectangle('Position', bbox_draw, 'EdgeColor', 'y', 'LineWidth', 2);
+%             end
+%         end
+%     end
     hold off;
     
     if is_save

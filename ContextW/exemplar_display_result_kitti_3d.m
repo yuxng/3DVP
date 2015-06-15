@@ -1,7 +1,7 @@
 function exemplar_display_result_kitti_3d
 
 is_train = 0;
-is_save = 1;
+is_save = 0;
 
 addpath(genpath('../KITTI'));
 threshold = -1.5435;
@@ -61,7 +61,7 @@ cmap = colormap(summer);
 ind_plot = 1;
 mplot = 2;
 nplot = 2;
-for i = 1:N
+for i = 3779:N
     disp(i);
     img_idx = ids(i);
     
@@ -255,15 +255,15 @@ for i = 1:N
 %         end
 %     end
     
-    if is_train
-        for k = 1:n
-            if flags_gt(k) == 0
-                bbox = bbox_gt(k,1:4);
-                bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
-                rectangle('Position', bbox_draw, 'EdgeColor', 'y', 'LineWidth', 2);
-            end
-        end
-    end    
+%     if is_train
+%         for k = 1:n
+%             if flags_gt(k) == 0
+%                 bbox = bbox_gt(k,1:4);
+%                 bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
+%                 rectangle('Position', bbox_draw, 'EdgeColor', 'y', 'LineWidth', 2);
+%             end
+%         end
+%     end    
     
     hold off;
     ind_plot = ind_plot + 2;
@@ -412,7 +412,7 @@ function im = create_occlusion_image(pattern)
 
 % 2D occlusion mask
 im = 255*ones(size(pattern,1), size(pattern,2), 3);
-color = [0 0 255];
+color = [255 0 0];
 for j = 1:3
     tmp = im(:,:,j);
     tmp(pattern == 2) = color(j);

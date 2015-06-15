@@ -1,19 +1,22 @@
-function exemplar_display_result_kitti
+function exemplar_display_result_kitti_3d_separate
 
-cls = 'car';
-% threshold = -1.5435;
-threshold = -1.5435;
+is_train = 0;
 is_save = 0;
-% is_train = 0;
-% result_dir = 'kitti_test_ap_227';
-% name = '3d_ap_227_combined';
-is_train = 1;
-result_dir = 'kitti_train_ap_125';
+
+addpath(genpath('../KITTI'));
+threshold = -1.5435;
+cls = 'car';
+
+if is_train
+    result_dir = 'kitti_train_ap_125';
+else
+    result_dir = 'kitti_test_ap_227';
+end
 
 % read detection results
-filename = sprintf('%s/odets.mat', result_dir);
+filename = sprintf('%s/odets_3d.mat', result_dir);
 object = load(filename);
-dets = object.odets;
+dets_all = object.dets_3d;
 fprintf('load detection done\n');
 
 % read ids of validation images
@@ -25,8 +28,14 @@ else
 end
 N = numel(ids);
 
-% KITTI path
+% load PASCAL3D+ cad models
 exemplar_globals;
+filename = sprintf(path_cad, cls);
+object = load(filename);
+cads = object.(cls);
+cads([7, 8, 10]) = [];
+
+% KITTI path
 root_dir = KITTIroot;
 if is_train
     data_set = 'training';
@@ -35,7 +44,8 @@ else
 end
 cam = 2;
 image_dir = fullfile(root_dir, [data_set '/image_' num2str(cam)]);
-label_dir = fullfile(root_dir, [data_set '/label_' num2str(cam)]);
+label_dir = fullfile(root_dir,[data_set '/label_' num2str(cam)]);
+calib_dir = fullfile(root_dir,[data_set '/calib']);
 
 % load data
 if is_train
@@ -45,19 +55,11 @@ else
 end
 object = load(filename);
 data = object.data;
-centers = unique(data.idx_ap);
-centers(centers == -1) = [];
 
-% sort centers according to azimuth
-azimuth = data.azimuth(centers);
-[~, order] = sort(azimuth);
-centers = centers(order);
-
-hf = figure(1);
 cmap = colormap(summer);
-for i = 1859 %[23, 236, 255] %1859:N
+for i = [23, 236, 255] %1859 %3779:N
+    disp(i);
     img_idx = ids(i);
-    disp(img_idx);
     
     % read ground truth bounding box
     if is_train
@@ -70,66 +72,70 @@ for i = 1859 %[23, 236, 255] %1859:N
                 objects(clsinds(j)).x2 objects(clsinds(j)).y2];     
         end
         flags_gt = zeros(n, 1);
+    end    
+    
+    objects = dets_all{i};
+    num = numel(objects);
+    
+    % construct detections
+    dets = zeros(num, 6);    
+    for k = 1:num
+        dets(k,:) = [objects(k).x1 objects(k).y1 objects(k).x2 objects(k).y2 ...
+                objects(k).cid objects(k).score];            
     end
     
-    % get predicted bounding box
-    det = dets{i};
-    if isempty(det) == 1
-        fprintf('no detection for image %d\n', img_idx);
+    if max(dets(:,6)) < threshold
+        fprintf('maximum score %.2f is smaller than threshold\n', max(dets(:,6)));
         continue;
     end
-    if max(det(:,6)) < threshold
-        fprintf('maximum score %.2f is smaller than threshold\n', max(det(:,6)));
-        continue;
-    end
-    if isempty(det) == 0
-%         I = nms_new(det, threshold_overlap);
-%         det = det(I, :);
-        I = det(:,6) >= threshold;
-        det = det(I,:);
-        height = det(:,4) - det(:,2);
+    
+    if isempty(dets) == 0
+        I = dets(:,6) >= threshold;
+        dets = dets(I,:);
+        height = dets(:,4) - dets(:,2);
         [~, I] = sort(height);
-        det = det(I,:);        
-    end    
-    num = size(det, 1);
+        dets = dets(I,:);        
+    end
+    num = size(dets, 1); 
     
     % for each predicted bounding box
     if is_train
         flags_pr = zeros(num, 1);
         for j = 1:num
-            bbox_pr = det(j, 1:4);  
+            bbox_pr = dets(j, 1:4);  
 
             % compute box overlap
             if isempty(bbox_gt) == 0
                 o = boxoverlap(bbox_gt, bbox_pr);
                 [maxo, index] = max(o);
-                if maxo >= 0.7 && flags_gt(index) == 0
+                if maxo >= 0.6 && flags_gt(index) == 0
                     flags_pr(j) = 1;
                     flags_gt(index) = 1;
                 end
             end
         end
-    end
+    end    
     
-    file_img = sprintf('%s/%06d.png', image_dir, img_idx);
+    % load the velo_to_cam matrix
+    R0_rect = readCalibration(calib_dir, img_idx, 4);
+    tmp = R0_rect';
+    tmp = tmp(1:9);
+    tmp = reshape(tmp, 3, 3);
+    tmp = tmp';
+    Pv2c = readCalibration(calib_dir, img_idx, 5);
+    Pv2c = tmp * Pv2c;
+    Pv2c = [Pv2c; 0 0 0 1];
+    
+    % camera location in world
+    C = Pv2c\[0; 0; 0; 1];
+    C(4) = [];    
+    
+    % plot 2D detections
+    file_img = sprintf('%s/%06d.png',image_dir, img_idx);
     I = imread(file_img);
-    
-    % show all the detections
-%     figure(1);
-%     imshow(I);
-%     hold on;
-%     
-%     for k = 1:size(dets{i},1)
-%         bbox_pr = dets{i}(k,1:4);
-%         bbox_draw = [bbox_pr(1), bbox_pr(2), bbox_pr(3)-bbox_pr(1), bbox_pr(4)-bbox_pr(2)];
-%         rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);
-%     end
-%     hold off;
-
-    % add pattern
     for k = 1:num
-        if det(k,6) > threshold
-            bbox_pr = det(k,1:4);
+        if dets(k,6) > threshold
+            bbox_pr = dets(k,1:4);
             bbox = zeros(1,4);
             bbox(1) = max(1, floor(bbox_pr(1)));
             bbox(2) = max(1, floor(bbox_pr(2)));
@@ -140,7 +146,7 @@ for i = 1859 %[23, 236, 255] %1859:N
 
             % apply the 2D occlusion mask to the bounding box
             % check if truncated pattern
-            cid = det(k,5);
+            cid = dets(k,5);
             pattern = data.pattern{cid};                
             index = find(pattern == 1);
             if data.truncation(cid) > 0 && isempty(index) == 0
@@ -193,6 +199,15 @@ for i = 1859 %[23, 236, 255] %1859:N
             index_x = x:min(x+w-1, width);
             P(index_y, index_x) = pattern(1:numel(index_y), 1:numel(index_x));
             
+            % show occluded region
+%             im = create_occlusion_image(pattern);
+%             x = bbox(1);
+%             y = bbox(2);
+%             Isub = I(y:y+h-1, x:x+w-1, :);
+%             index = im == 255;
+%             im(index) = Isub(index);
+%             I(y:y+h-1, x:x+w-1, :) = uint8(0.1*Isub + 0.9*im);               
+            
             % show segments
             index_color = 1 + floor((k-1) * size(cmap,1) / num);
             if is_train
@@ -212,67 +227,110 @@ for i = 1859 %[23, 236, 255] %1859:N
             npix = numel(P);
             for b = 1:3
                 I((b-1)*npix+edgepix) = dispColor(b);
-            end            
-            
-            % show occluded region
-            im = create_occlusion_image(pattern);
-            x = bbox(1);
-            y = bbox(2);
-            Isub = I(y:y+h-1, x:x+w-1, :);
-            index = im == 255;
-            im(index) = Isub(index);
-            I(y:y+h-1, x:x+w-1, :) = uint8(0.1*Isub + 0.9*im);            
+            end                       
         end
-    end
+    end    
     
+    figure(1);
     imshow(I);
     hold on;
-    for k = 1:num
-        if det(k,6) > threshold
-            % get predicted bounding box
-            bbox_pr = det(k,1:4);
-%             bbox_draw = [bbox_pr(1), bbox_pr(2), bbox_pr(3)-bbox_pr(1), bbox_pr(4)-bbox_pr(2)];
-%             if is_train
-%                 if flags_pr(k)
-%                     rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);
-%                 else
-%                     rectangle('Position', bbox_draw, 'EdgeColor', 'r', 'LineWidth', 2);
-%                 end
-%             else
-%                 rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);
+
+%     if is_train
+%         for k = 1:num
+%             if dets(k,6) > threshold
+%                 % get predicted bounding box
+%                 bbox = dets(k,1:4);
+%                 bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
+%                 rectangle('Position', bbox_draw, 'EdgeColor', 'g', 'LineWidth', 2);            
+%                 text(bbox(1), bbox(2), num2str(k), 'FontSize', 16, 'BackgroundColor', 'r');
+%                 til = sprintf('%s, s%d=%.2f', til, k, objects(k).score);
+%                 s = sprintf('%.2f', dets(k,6));
+%                 bbox_pr = dets(k,1:4);
+%                 text(bbox_pr(1), bbox_pr(2), s, 'FontSize', 4, 'BackgroundColor', 'c');
 %             end
-            cid = det(k,5);
-%             cind = find(centers == cid);
-            s = sprintf('%d', cid);
-%             text(bbox_pr(3), bbox_pr(4), s, 'FontSize', 8, 'BackgroundColor', 'c');
-        end
-    end
+%         end
+%     end
     
-    if is_train
-        for k = 1:n
-            if flags_gt(k) == 0
-                bbox = bbox_gt(k,1:4);
-                bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
-                rectangle('Position', bbox_draw, 'EdgeColor', 'y', 'LineWidth', 2);
-            end
-        end
-    end
+%     if is_train
+%         for k = 1:n
+%             if flags_gt(k) == 0
+%                 bbox = bbox_gt(k,1:4);
+%                 bbox_draw = [bbox(1), bbox(2), bbox(3)-bbox(1), bbox(4)-bbox(2)];
+%                 rectangle('Position', bbox_draw, 'EdgeColor', 'y', 'LineWidth', 2);
+%             end
+%         end
+%     end    
+    
     hold off;
     
-    if is_save
-        filename = fullfile('result_images', sprintf('%06d.png', img_idx));
-        saveas(hf, filename);
-    else
-        pause;
-    end
-end
+    % plot 3D localization
+    Vpr = [];
+    Fpr = [];
+    for k = 1:numel(objects);
+        object = objects(k);
+        if strcmp(object.type, 'Car') == 1 && object.score >= threshold
+            % cad_index = find_closest_cad(cads, object);
+            % transfer cad model
+            cad_index = data.cad_index(objects(k).cid);
+            x3d = compute_3d_points(cads(cad_index).vertices, object);
+            face = cads(cad_index).faces;
+            tmp = face + size(Vpr,2);
+            Fpr = [Fpr; tmp];        
+            Vpr = [Vpr x3d];
+        end
+    end    
+    
+    figure(2);
+    if isempty(Vpr) == 0
+        Vpr = Pv2c\[Vpr; ones(1,size(Vpr,2))];
+        trimesh(Fpr, Vpr(1,:), Vpr(2,:), Vpr(3,:), 'EdgeColor', 'b');
+        hold on;
+        axis equal;
+%         xlabel('x');
+%         ylabel('y');
+%         zlabel('z');
 
+        % draw the camera
+%         draw_camera(C);
+
+        % draw the ground plane
+        h = 1.73;
+        
+        sxmin = min(min(Vpr(1,:)), C(1)) - 5;
+        symin = min(min(Vpr(2,:)), C(2)) - 5;
+        sxmax = max(max(Vpr(1,:)), C(1)) + 5;
+        symax = max(max(Vpr(2,:)), C(2)) + 5;
+        plane_vertex = zeros(4,3);
+        plane_vertex(1,:) = [sxmin symin -h];
+        plane_vertex(2,:) = [sxmax symin -h];
+        plane_vertex(3,:) = [sxmax symax -h];
+        plane_vertex(4,:) = [sxmin symax -h];        
+        
+%         sx = max(abs(Vpr(1,:))) / 2;
+%         sy = max(abs(Vpr(2,:))) / 2;
+%         c = [mean(Vpr(1:2,:), 2); 0]';
+%         plane_vertex = zeros(4,3);
+%         plane_vertex(1,:) = c + [-sx -sy -h];
+%         plane_vertex(2,:) = c + [sx -sy -h];
+%         plane_vertex(3,:) = c + [sx sy -h];
+%         plane_vertex(4,:) = c + [-sx sy -h];
+        
+        patch('Faces', [1 2 3 4], 'Vertices', plane_vertex, 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.5);
+
+        axis tight;
+        % title('3D Estimation');
+        view(250, 8);
+        hold off;
+    end
+    
+    pause;
+end
 
 function im = create_occlusion_image(pattern)
 
 % 2D occlusion mask
 im = 255*ones(size(pattern,1), size(pattern,2), 3);
-color = [0 0 255];
+color = [255 0 0];
 for j = 1:3
     tmp = im(:,:,j);
     tmp(pattern == 2) = color(j);
@@ -284,4 +342,4 @@ for j = 1:3
     tmp(pattern == 3) = color(j);
     im(:,:,j) = tmp;
 end
-im = uint8(im);  
+im = uint8(im); 

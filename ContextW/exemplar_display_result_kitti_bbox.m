@@ -39,7 +39,7 @@ label_dir = fullfile(root_dir, [data_set '/label_' num2str(cam)]);
 
 figure;
 cmap = colormap(summer);
-for i = 675:N
+for i = [23, 236, 255] %1549:N
     img_idx = ids(i);
     disp(img_idx);
     
