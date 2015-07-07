@@ -3,7 +3,7 @@ function show_cluster_centers
 opt = globals;
 
 % load data
-object = load('data_all.mat');
+object = load('data.mat');
 data = object.data;
 idx = data.idx_ap;
 
@@ -18,6 +18,7 @@ index = cad.grid == 1;
 centers = unique(idx);
 centers(centers == -1) = [];
 N = numel(centers);
+fprintf('%d clusters\n', N);
 
 % sort centers according to azimuth
 % azimuth = data.azimuth(centers);
