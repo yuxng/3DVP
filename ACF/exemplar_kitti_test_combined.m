@@ -1,13 +1,13 @@
 function exemplar_kitti_test_combined
 
-% matlabpool open;
+matlabpool open;
 
 cls = 'car';
 % is_train = 1;
 % result_dir = 'kitti_train_ap_125';
 % name = '3d_aps_125';
 
-is_train = 0;
+is_train = 1;
 result_dir = 'kitti_test_acf_3d_227_flip';
 name = '3d_ap_227';
 
@@ -44,7 +44,7 @@ filename = fullfile(SLMroot, 'ACF/kitti_ids_new.mat');
 object = load(filename);
 if is_train == 1
     % ids = object.ids_val;
-    ids = object.ids_train;
+    ids = sort([object.ids_train object.ids_val]);
 else
     ids = object.ids_test;
 end
@@ -54,7 +54,7 @@ filename = fullfile(result_dir, sprintf('%s_%s_combined_train.mat', cls, name));
 % run detector in each image
 N = numel(ids);
 boxes = cell(1, N);
-for id = 1:N
+parfor id = 1:N
     fprintf('%s %s: combined: %d/%d\n', cls, name, id, N);
     tic;
     file_img = sprintf('%s/%06d.png', image_dir, ids(id));
@@ -90,4 +90,4 @@ end
 dets = boxes;
 save(filename, 'dets', '-v7.3');
 
-% matlabpool close;
+matlabpool close;

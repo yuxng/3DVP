@@ -15,6 +15,23 @@ centers(centers == -1) = [];
 N = numel(centers);
 fprintf('%d clusters\n', N);
 
+% write the mapping from cluster center to azimuth and alpha
+filename = 'Voxel_exemplars/mapping.txt';
+fid = fopen(filename, 'w');
+for i = 1:N
+    azimuth = data.azimuth(centers(i));
+    alpha = azimuth + 90;
+    if alpha >= 360
+        alpha = alpha - 360;
+    end
+    alpha = alpha*pi/180;
+    if alpha > pi
+        alpha = alpha - 2*pi;
+    end
+    fprintf(fid, '%d %f %f\n', i, azimuth, alpha);
+end
+fclose(fid);
+
 % for each image
 for i = 1:numel(ids)
     id = ids(i);
