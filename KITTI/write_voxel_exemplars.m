@@ -1,11 +1,23 @@
 function write_voxel_exemplars
 
+is_train = 0;
+
 % load ids
 object = load('kitti_ids_new.mat');
-ids = object.ids_train;
+if is_train
+    ids = object.ids_train;
+    outdir = 'Voxel_exemplars';
+else
+    ids = sort([object.ids_train object.ids_val]);
+    outdir = 'Voxel_exemplars_all';
+end
 
 % load data
-object = load('data.mat');
+if is_train
+    object = load('data.mat');
+else
+    object = load('data_kitti.mat');
+end
 data = object.data;
 idx = data.idx_ap;
 
@@ -16,7 +28,7 @@ N = numel(centers);
 fprintf('%d clusters\n', N);
 
 % write the mapping from cluster center to azimuth and alpha
-filename = 'Voxel_exemplars/mapping.txt';
+filename = sprintf('%s/mapping.txt', outdir);
 fid = fopen(filename, 'w');
 for i = 1:N
     azimuth = data.azimuth(centers(i));
@@ -35,7 +47,7 @@ fclose(fid);
 % for each image
 for i = 1:numel(ids)
     id = ids(i);
-    filename = sprintf('Voxel_exemplars/%06d.txt', id);
+    filename = sprintf('%s/%06d.txt', outdir, id);
     fid = fopen(filename, 'w');
     
     % write object info to file
