@@ -1,6 +1,6 @@
 function write_voxel_exemplars
 
-is_train = 0;
+is_train = 1;
 
 % load ids
 object = load('kitti_ids_new.mat');
@@ -40,7 +40,10 @@ for i = 1:N
     if alpha > pi
         alpha = alpha - 2*pi;
     end
-    fprintf(fid, '%d %f %f\n', i, azimuth, alpha);
+    grid = data.grid(:, centers(i));
+    fprintf(fid, '%d %f %f ', i, azimuth, alpha);
+    fprintf(fid, '%d ', grid);
+    fprintf(fid, '\n');
 end
 fclose(fid);
 
@@ -66,7 +69,12 @@ for i = 1:numel(ids)
         % bounding box
         bbox = data.bbox(:,ind);
         
-        fprintf(fid, '%d %d %.2f %.2f %.2f %.2f\n', cluster_idx, is_flip, bbox(1), bbox(2), bbox(3), bbox(4));
+        % grid
+        grid = data.grid(:,ind);
+        
+        fprintf(fid, '%d %d %.2f %.2f %.2f %.2f ', cluster_idx, is_flip, bbox(1), bbox(2), bbox(3), bbox(4));
+        fprintf(fid, '%d ', grid);
+        fprintf(fid, '\n');
     end
     
     fclose(fid);
