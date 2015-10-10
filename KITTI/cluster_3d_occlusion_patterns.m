@@ -88,7 +88,7 @@ switch algorithm
         end        
     case 'pose'        
         % split the azimuth
-        vnum = 16;
+        vnum = 24;
         azimuth = data.azimuth(flag);
         num = numel(azimuth);
         idx_pose = zeros(num, 1);

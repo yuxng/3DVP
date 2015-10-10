@@ -7,11 +7,12 @@ ids_val = object.ids_val;
 ids_test = object.ids_test;
 
 % load detections
-object = load('car_3d_aps_125_combined_train.mat');
+object = load('kitti_train_ap_125/car_3d_aps_125_combined_train.mat');
 dets_train = object.dets;
-object = load('car_3d_aps_125_combined_test.mat');
+object = load('kitti_train_ap_125/car_3d_aps_125_combined_test.mat');
 dets_val = object.dets;
 
+count = 0;
 for i = 1:numel(ids_train)
     filename = sprintf('3DVP_125/training/%06d.txt', ids_train(i));
     disp(filename);
@@ -23,6 +24,8 @@ for i = 1:numel(ids_train)
     end
 
     fclose(fid);
+
+    count = count + size(det,1);
 end
 
 for i = 1:numel(ids_val)
@@ -36,4 +39,8 @@ for i = 1:numel(ids_val)
     end
 
     fclose(fid);
+
+    count = count + size(det,1);
 end
+
+fprintf('%d objects per image\n', count / (numel(ids_train) + numel(ids_val)));
