@@ -50,10 +50,14 @@ else
 
   % negative examples from kitti
   switch cls
-      case 'car'
-          str_pos = {'Car', 'Van', 'DontCare'};
-      otherwise
-          fprintf('undefined classes for negatives\n');
+    case 'car'
+        str_pos = {'Car', 'Van', 'DontCare'};
+    case 'pedestrian'
+        str_pos = {'Pedestrian', 'DontCare'};
+    case 'cyclist'
+        str_pos = {'Cyclist', 'DontCare'};          
+    otherwise
+        fprintf('undefined classes for negatives\n');
   end
   object = load('kitti_ids_new.mat');
   if is_train

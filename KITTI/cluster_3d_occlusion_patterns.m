@@ -88,7 +88,7 @@ switch algorithm
         end        
     case 'pose'        
         % split the azimuth
-        vnum = 24;
+        vnum = K;
         azimuth = data.azimuth(flag);
         num = numel(azimuth);
         idx_pose = zeros(num, 1);
@@ -103,9 +103,11 @@ switch algorithm
         index_all = find(flag == 1);
         for i = 1:vnum
             index = find(idx_pose == i);
-            ind = 1;
-            cid = index_all(index(ind));
-            idx(index_all(index)) = cid;
+            if isempty(index) == 0
+                ind = 1;
+                cid = index_all(index(ind));
+                idx(index_all(index)) = cid;
+            end
         end
     otherwise
         fprintf('algorithm %s not supported\n', algorithm);

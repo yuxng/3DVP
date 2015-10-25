@@ -281,8 +281,8 @@ int main(int argc, char** argv)
   glutCreateWindow("render_depth_images");
 
   /* filename of the off file */
-  sprintf(filename, "%s/%02d.off", argv[1], atoi(argv[2]));
-  sprintf(Filebase, "%s/%02d", argv[1], atoi(argv[2]));  
+  sprintf(filename, "%s/%s.off", argv[1], argv[2]);
+  sprintf(Filebase, "%s/%s", argv[1], argv[2]); 
 
   /* load off file */
   load_off_file(&Nvertice, &Vertices, &Nface, &Faces, filename);

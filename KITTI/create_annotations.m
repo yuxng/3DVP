@@ -8,12 +8,14 @@ pad_size = 1000;
 
 % load PASCAL3D+ cad models
 cls = 'car';
-filename = sprintf('../Geometry/%s_kitti.mat', cls);
+% filename = sprintf('../Geometry/%s_kitti.mat', cls);
+filename = sprintf('../Geometry/%s_sub.mat', cls);
 object = load(filename);
 cads = object.(cls);
 
 % load mean model
-filename = sprintf('../Geometry/%s_kitti_mean.mat', cls);
+% filename = sprintf('../Geometry/%s_kitti_mean.mat', cls);
+filename = sprintf('../Geometry/%s_sub_mean.mat', cls);
 object = load(filename);
 cad_mean = object.(cls);
 
@@ -308,7 +310,7 @@ parfor img_idx = 0:nimages-1
   
   % save annotation
   record.objects_flip = objects_flip;
-  filename = sprintf('Annotations/%06d.mat', img_idx);
+  filename = sprintf('Annotations_new/%06d.mat', img_idx);
   disp(filename);
   parsave(filename, record);
 end
