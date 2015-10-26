@@ -4,7 +4,7 @@ function exemplar_test_joint(cls, name, is_train, is_continue, is_pascal)
 model_name = sprintf('data/%s_%s_final.mat', cls, name);
 object = load(model_name);
 model = object.model;
-model.thresh = min(-1, model.thresh);
+model.thresh = min(-2, model.thresh);
 
 % KITTI path
 globals;
