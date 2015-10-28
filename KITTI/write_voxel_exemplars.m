@@ -1,6 +1,6 @@
 function write_voxel_exemplars
 
-is_train = 1;
+is_train = 0;
 
 % load ids
 object = load('kitti_ids_new.mat');
@@ -20,7 +20,7 @@ if is_train
 else
     object_car = load('data_kitti.mat');
     object_pedestrian = load('data_kitti_pedestrian.mat');
-    object_cyclist = load('data_kitti_cyclist.mat');    
+    object_cyclist = load('data_kitti_cyclist.mat');
 end
 
 cls = {'Car', 'Pedestrian', 'Cyclist'};
@@ -59,7 +59,7 @@ for k = 1:num_cls
         if alpha > pi
             alpha = alpha - 2*pi;
         end
-        fprintf(fid, '%d %f %f\n', i + count, azimuth, alpha);
+        fprintf(fid, '%d %s %f %f\n', i + count, cls{k}, azimuth, alpha);
     end
     count = count + N;
 end

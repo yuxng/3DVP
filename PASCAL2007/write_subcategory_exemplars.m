@@ -20,6 +20,15 @@ centers(centers == -1) = [];
 N = numel(centers);
 fprintf('%d clusters\n', N);
 
+% write the mapping from cluster center to class name
+filename = sprintf('%s/mapping.txt', outdir);
+fid = fopen(filename, 'w');
+for i = 1:N
+    cls = data.cls{centers(i)};
+    fprintf(fid, '%d %s\n', i, cls);
+end
+fclose(fid);
+
 % for each image
 for i = 1:numel(ids)
     id = ids{i};
