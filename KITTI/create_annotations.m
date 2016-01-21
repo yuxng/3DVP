@@ -8,16 +8,24 @@ pad_size = 1000;
 
 % load PASCAL3D+ cad models
 cls = 'car';
-% filename = sprintf('../Geometry/%s_kitti.mat', cls);
-filename = sprintf('../Geometry/%s_sub.mat', cls);
+filename = sprintf('../Geometry/%s_kitti.mat', cls);
+% filename = sprintf('../Geometry/%s_sub.mat', cls);
 object = load(filename);
 cads = object.(cls);
 
 % load mean model
-% filename = sprintf('../Geometry/%s_kitti_mean.mat', cls);
-filename = sprintf('../Geometry/%s_sub_mean.mat', cls);
+filename = sprintf('../Geometry/%s_kitti_mean.mat', cls);
+% filename = sprintf('../Geometry/%s_sub_mean.mat', cls);
 object = load(filename);
 cad_mean = object.(cls);
+
+filename = '../Geometry/pedestrian.mat';
+object = load(filename);
+cad_pedestrian = object.pedestrian;
+
+filename = '../Geometry/cyclist.mat';
+object = load(filename);
+cad_cyclist = object.cyclist;
 
 root_dir = opt.path_kitti_root;
 data_set = 'training';
@@ -70,25 +78,39 @@ parfor img_idx = 0:nimages-1
     if strcmp(object.type, 'Car') == 1
         cad_index = find_closest_cad(cads, object);
         x3d = compute_3d_points(cads(cad_index).vertices, object);
-        x2d = projectToImage(x3d, P);
         face = cads(cad_index).faces;
-        x2d = x2d';
         objects(obj_idx).cad_index = cad_index;
-        
+    elseif strcmp(object.type, 'Pedestrian') == 1
+        x3d = compute_3d_points(cad_pedestrian.vertices, object);
+        face = cad_pedestrian.faces;
+        objects(obj_idx).cad_index = 1;
+    elseif strcmp(object.type, 'Cyclist') == 1
+        x3d = compute_3d_points(cad_cyclist.vertices, object);
+        face = cad_cyclist.faces;
+        objects(obj_idx).cad_index = 1;
+    else
+        x3d = [];
+    end
+    
+    if isempty(x3d) == 0
+        x2d = projectToImage(x3d, P);    
+        x2d = x2d';
+
         flag = min(x2d(:,1)) < 0 & max(x2d(:,1)) > w;
         if flag == 1
             continue;
         end
-        
+
         x2d = x2d + pad_size;
         vertices = [x2d(face(:,1),2) x2d(face(:,1),1) ...
                     x2d(face(:,2),2) x2d(face(:,2),1) ...
                     x2d(face(:,3),2) x2d(face(:,3),1)];
 
         BWs{obj_idx} = mesh_test(vertices, h+2*pad_size, w+2*pad_size);
-        
+
         mask(BWs{obj_idx}) = obj_idx;
     end
+
   end
   mask = mask(pad_size+1:h+pad_size, pad_size+1:w+pad_size);
   mask = padarray(mask, [pad_size pad_size], -1);
@@ -138,18 +160,25 @@ parfor img_idx = 0:nimages-1
       objects(i).trunc_per = trunc;
       
       % 3D occlusion mask for mean shape
-      [visibility_grid, visibility_ind] = check_visibility(cad_mean, azimuth, elevation);
+      if strcmp(objects(i).type, 'Car') == 1
+          cad_mean_model = cad_mean;
+      elseif strcmp(objects(i).type, 'Pedestrian') == 1
+          cad_mean_model = cad_pedestrian;
+      elseif strcmp(objects(i).type, 'Cyclist') == 1
+          cad_mean_model = cad_cyclist;
+      end      
+      [visibility_grid, visibility_ind] = check_visibility(cad_mean_model, azimuth, elevation);
       
       % check the occlusion status of visible voxels
       index = find(visibility_ind == 1);
-      x3d = compute_3d_points(cad_mean.x3d(index,:), objects(i));
+      x3d = compute_3d_points(cad_mean_model.x3d(index,:), objects(i));
       x2d = projectToImage(x3d, P);
       x2d = x2d' + pad_size;
       occludee = find(index_object == i);
       for j = 1:numel(index)
           x = round(x2d(j,1));
           y = round(x2d(j,2));
-          ind = cad_mean.ind(index(j),:);
+          ind = cad_mean_model.ind(index(j),:);
           if x > pad_size && x <= size(mask,2)-pad_size && y > pad_size && y <= size(mask,1)-pad_size
               if mask(y,x) > 0 && mask(y,x) ~= i % occluded by other objects
                   occluder = find(index_object == mask(y,x));
@@ -164,8 +193,14 @@ parfor img_idx = 0:nimages-1
       objects(i).grid = visibility_grid;
       
       % 3D occlusion mask for original shape
-      cad_index = objects(i).cad_index;
-      cad = cads(cad_index);
+      if strcmp(objects(i).type, 'Car') == 1
+          cad_index = objects(i).cad_index;
+          cad = cads(cad_index);
+      elseif strcmp(objects(i).type, 'Pedestrian') == 1
+          cad = cad_pedestrian;
+      elseif strcmp(objects(i).type, 'Cyclist') == 1
+          cad = cad_cyclist;          
+      end
       [visibility_grid, visibility_ind] = check_visibility(cad, azimuth, elevation);
       
       % check the occlusion status of visible voxels
@@ -254,18 +289,25 @@ parfor img_idx = 0:nimages-1
       objects_flip(i).pattern = pattern(:,end:-1:1);
 
       % 3D occlusion mask for mean shape
-      [visibility_grid, visibility_ind] = check_visibility(cad_mean, azimuth, elevation);
+      if strcmp(objects(i).type, 'Car') == 1
+          cad_mean_model = cad_mean;
+      elseif strcmp(objects(i).type, 'Pedestrian') == 1
+          cad_mean_model = cad_pedestrian;
+      elseif strcmp(objects(i).type, 'Cyclist') == 1
+          cad_mean_model = cad_cyclist;
+      end           
+      [visibility_grid, visibility_ind] = check_visibility(cad_mean_model, azimuth, elevation);
       
       % check the occlusion status of visible voxels
       index = find(visibility_ind == 1);
-      x3d = compute_3d_points(cad_mean.x3d(index,:), objects_flip(i));
+      x3d = compute_3d_points(cad_mean_model.x3d(index,:), objects_flip(i));
       x2d = projectToImage(x3d, P);
       x2d = x2d' + pad_size;
       occludee = find(index_object == i);
       for j = 1:numel(index)
           x = round(x2d(j,1));
           y = round(x2d(j,2));
-          ind = cad_mean.ind(index(j),:);
+          ind = cad_mean_model.ind(index(j),:);
           if x > pad_size && x <= size(mask_flip,2)-pad_size && y > pad_size && y <= size(mask_flip,1)-pad_size
               if mask_flip(y,x) > 0 && mask_flip(y,x) ~= i % occluded by other objects
                   occluder = find(index_object == mask_flip(y,x));
@@ -280,8 +322,14 @@ parfor img_idx = 0:nimages-1
       objects_flip(i).grid = visibility_grid;
       
       % 3D occlusion mask for original shape
-      cad_index = objects_flip(i).cad_index;
-      cad = cads(cad_index);
+      if strcmp(objects(i).type, 'Car') == 1
+          cad_index = objects_flip(i).cad_index;
+          cad = cads(cad_index);
+      elseif strcmp(objects(i).type, 'Pedestrian') == 1
+          cad = cad_pedestrian;
+      elseif strcmp(objects(i).type, 'Cyclist') == 1
+          cad = cad_cyclist;          
+      end
       [visibility_grid, visibility_ind] = check_visibility(cad, azimuth, elevation);
       
       % check the occlusion status of visible voxels
@@ -310,7 +358,7 @@ parfor img_idx = 0:nimages-1
   
   % save annotation
   record.objects_flip = objects_flip;
-  filename = sprintf('Annotations_new/%06d.mat', img_idx);
+  filename = sprintf('Annotations/%06d.mat', img_idx);
   disp(filename);
   parsave(filename, record);
 end

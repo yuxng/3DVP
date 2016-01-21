@@ -1,4 +1,4 @@
-function idx = cluster_2d_occlusion_patterns(data, algorithm, K, pscale)
+function idx = cluster_2d_occlusion_patterns(data, algorithm, K)
 
 opt = globals;
 
@@ -18,11 +18,11 @@ flag = height > 25 & occlusion < 3 & truncation < 0.5;
 modelDs = compute_model_size(data.bbox(:,flag));
 
 % compute features
-if exist('feature.mat', 'file') ~= 0
-    fprintf('load features from file\n');
-    object = load('feature.mat');
-    X = object.X;
-else
+% if exist('feature.mat', 'file') ~= 0
+%     fprintf('load features from file\n');
+%     object = load('feature.mat');
+%     X = object.X;
+% else
     pChns = chnsCompute();
     index = find(flag == 1);
     X = [];
@@ -44,8 +44,8 @@ else
         X(:,i) = C(:);
     end
     fprintf('done\n');
-    save('feature.mat', 'X');
-end
+%     save('feature.mat', 'X');
+% end
 
 switch algorithm
     case 'kmeans'
@@ -67,40 +67,22 @@ switch algorithm
             idx(index_all(index)) = cid;
         end
     case 'ap'
-        fprintf('2d AP %f\n', pscale);
         % try to load similarity scores
-        if exist('similarity_2d.mat', 'file') ~= 0
-            fprintf('load similarity scores from file\n');
-            object = load('similarity_2d.mat');
-            scores = object.scores;
-        else
+%         if exist('similarity_2d.mat', 'file') ~= 0
+%             fprintf('load similarity scores from file\n');
+%             object = load('similarity_2d.mat');
+%             scores = object.scores;
+%         else
             fprintf('computing similarity scores...\n');
             scores = compute_similarity_2d(X);
-            save('similarity_2d.mat', 'scores', '-v7.3');
-            fprintf('save similarity scores\n');
-        end
-        
-        N = size(scores, 1);
-        M = N*N-N;
-        s = zeros(M,3); % Make ALL N^2-N similarities
-        j = 1;
-        for i = 1:N
-            for k = [1:i-1,i+1:N]
-                s(j,1) = i;
-                s(j,2) = k;
-                s(j,3) = scores(i,k);
-                j = j+1;
-            end
-        end       
-
-        p = min(s(:,3)) * pscale;
+%             save('similarity_2d.mat', 'scores', '-v7.3');
+%             fprintf('save similarity scores\n');
+%         end
 
         % clustering
         fprintf('Start AP clustering\n');
-        [idx_ap, netsim, dpsim, expref] = apclustermex(s, p);
-
+        idx_ap = apclusterK(scores, K);
         fprintf('Number of clusters: %d\n', length(unique(idx_ap)));
-        fprintf('Fitness (net similarity): %f\n', netsim);
         
         % construct idx
         num = numel(data.imgname);

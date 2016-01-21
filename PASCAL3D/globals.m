@@ -2,7 +2,7 @@ function opt = globals()
 
 path_pascal3d = '/net/acadia/workplace/yuxiang/Projects/PASCAL3D+_release1.1';
 if exist(path_pascal3d, 'dir') == 0
-    path_pascal3d = '/home/yuxiang/Projects/Pose_Dataset/PASCAL3D+_release1.1';
+    path_pascal3d = '/home/yuxiang/Projects/PASCAL3D+_release1.1';
 end
 if exist(path_pascal3d, 'dir') == 0
     path_pascal3d = '/scail/scratch/u/yuxiang/PASCAL3D+_release1.1';

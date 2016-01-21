@@ -4,12 +4,12 @@ cls = 'car';
 threshold = -20;
 is_save = 0;
 threshold_overlap = 0.6;
-% is_train = 0;
-% result_dir = 'kitti_test_acf_3d_167_flip';
-% name = '3d_ap_167_combined';
-is_train = 1;
-result_dir = 'kitti_train_ap_125';
-name = '3d_aps_125_combined';
+is_train = 0;
+result_dir = 'kitti_test_acf_3d_167_flip';
+name = '3d_ap_167_combined';
+% is_train = 1;
+% result_dir = 'kitti_train_ap_125';
+% name = '3d_aps_125_combined';
 
 % read detection results
 filename = sprintf('%s/%s_%s_test.mat', result_dir, cls, name);

@@ -60,7 +60,7 @@ for i = 1:numel(ids)
     
     for j = 1:numel(objects)
         object = objects(j);
-        if strcmp(object.type, 'Cyclist') == 1 % strcmp(object.type, 'Pedestrian') == 1
+        if strcmp(object.type, 'Pedestrian') == 1 % strcmp(object.type, 'Cyclist') == 1
             count = count + 1;
             id(count) = img_idx;
             imgname{count} = record.filename;
@@ -76,12 +76,14 @@ for i = 1:numel(ids)
             occ_per(count) = object.occ_per;
             truncation(count) = object.truncation;
             occlusion(count) = object.occlusion;
+            pattern{count} = object.pattern;
             % transform to velodyne space
             X = [object.t'; 1];
             X = Pv2c\X;
             X(4) = [];
             translation(:,count) = X;
             is_flip(count) = object.is_flip;
+            cad_index(count) = object.cad_index;
         end
     end
 end

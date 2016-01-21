@@ -1,5 +1,9 @@
 function idx = cluster_3d_occlusion_patterns(cls, data, algorithm, K, pscale)
 
+if nargin < 5
+    pscale = 1;
+end
+
 % select the clustering data        
 cls_ind = find(strcmp(cls, data.classes) == 1);
 flag = data.cls_ind == cls_ind & data.difficult == 0 & data.is_pascal == 1;
@@ -17,29 +21,17 @@ switch algorithm
 
         fprintf('computing similarity scores...\n');
         scores = compute_similarity(X);
-        fprintf('done\n');
         
-        N = size(scores, 1);
-        M = N*N-N;
-        s = zeros(M,3); % Make ALL N^2-N similarities
-        j = 1;
-        for i = 1:N
-            for k = [1:i-1,i+1:N]
-                s(j,1) = i;
-                s(j,2) = k;
-                s(j,3) = scores(i,k);
-                j = j+1;
-            end
-        end       
-
-        p = min(s(:,3)) * pscale;
+        for i = 1:size(scores,1)
+            scores(i,i) = 1;
+        end
+        
+        p = min(min(scores)) * pscale;
 
         % clustering
         fprintf('Start AP clustering\n');
-        [idx_ap, netsim, dpsim, expref] = apclustermex(s, p);
-
+        [idx_ap, netsim, dpsim, expref] = apclustermex(scores, p);
         fprintf('Number of clusters: %d\n', length(unique(idx_ap)));
-        fprintf('Fitness (net similarity): %f\n', netsim);
         
         % construct idx
         num = numel(data.imgname);
@@ -90,7 +82,7 @@ switch algorithm
         end
     case 'pose'
         % split the azimuth
-        vnum = 16;
+        vnum = K;
         azimuth = data.azimuth(flag);
         num = numel(azimuth);
         idx_pose = zeros(num, 1);
@@ -105,9 +97,11 @@ switch algorithm
         index_all = find(flag == 1);
         for i = 1:vnum
             index = find(idx_pose == i);
-            ind = 1;
-            cid = index_all(index(ind));
-            idx(index_all(index)) = cid;
+            if isempty(index) == 0
+                ind = 1;
+                cid = index_all(index(ind));
+                idx(index_all(index)) = cid;
+            end
         end
     otherwise
         fprintf('algorithm %s not supported\n', algorithm);

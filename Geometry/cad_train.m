@@ -28,7 +28,11 @@ switch cls
     case 'train'
         N = 4;
     case 'tvmonitor'
-        N = 4;           
+        N = 4;
+    case 'pedestrian'
+        N = 1;
+    case 'cyclist'
+        N = 1;                   
 end
 
 cad(N).vertices = [];
@@ -94,5 +98,11 @@ switch cls
         save('train.mat', 'train');        
     case 'tvmonitor'
         tvmonitor = cad;
-        save('tvmonitor.mat', 'tvmonitor');        
+        save('tvmonitor.mat', 'tvmonitor');
+    case 'pedestrian'
+        pedestrian = cad;
+        save('pedestrian.mat', 'pedestrian');
+    case 'cyclist'
+        cyclist = cad;
+        save('cyclist.mat', 'cyclist');
 end

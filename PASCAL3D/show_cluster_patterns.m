@@ -15,7 +15,7 @@ models_mean = cads.models_mean;
 % load data
 object = load('data.mat');
 data = object.data;
-idx = data.idx_ap;
+idx = data.idx;
 
 % cluster centers
 if nargin < 1
@@ -66,6 +66,7 @@ for i = 1:N
     ind_plot = mplot + 1;
     % show center
     grid = data.grid{ind};
+    cls_index = data.cls_ind(ind);
     cad = models_mean{cls_index};
     visibility_grid = zeros(size(cad.grid));
     visibility_grid(cad.grid == 1) = grid;
@@ -92,8 +93,8 @@ for i = 1:N
     subplot(nplot, mplot, ind_plot);
     ind_plot = ind_plot + 1;
     imshow(I1);
-    til = sprintf('w:%d, h:%d, %s', size(I1,2), size(I1,1), data.id{ind});
-    title(til);
+    % til = sprintf('w:%d, h:%d, %s', size(I1,2), size(I1,1), data.id{ind});
+    % title(til);
     
     % show several members
     member = find(idx == ind);
@@ -129,8 +130,8 @@ for i = 1:N
         subplot(nplot, mplot, ind_plot);
         ind_plot = ind_plot + 1;
         imshow(I1);
-        til = sprintf('w:%d, h:%d, %s', size(I1,2), size(I1,1), data.id{ind});
-        title(til);        
+        % til = sprintf('w:%d, h:%d, %s', size(I1,2), size(I1,1), data.id{ind});
+        % title(til);        
     end
     for j = ind_plot:nplot*mplot
         subplot(nplot, mplot, j);

@@ -9,6 +9,7 @@ fprintf('load CAD models from file\n');
 object = load('cads.mat');
 cads = object.cads;
 classes = cads.classes;
+models = cads.models;
 models_mean = cads.models_mean;
 
 % load ids
@@ -40,6 +41,7 @@ trunc_per = [];
 difficult = [];
 pattern = [];
 grid = [];
+grid_origin = [];
 is_flip = [];
 is_pascal = [];
 for i = 1:N
@@ -73,6 +75,8 @@ for i = 1:N
             difficult(count) = object.difficult;
             pattern{count} = object.pattern;
             grid{count} = object.grid(models_mean{cls_index}.grid == 1);
+            index_cad = models{cls_index}(object.cad_index).grid == 1;
+            grid_origin{count} = uint8(object.grid_origin(index_cad));            
             is_flip(count) = object.is_flip;
             if isfield(record, 'cls') == 1
                 is_pascal(count) = 0;
@@ -98,5 +102,6 @@ data.trunc_per = trunc_per;
 data.difficult = difficult;
 data.pattern = pattern;
 data.grid = grid;
+data.grid_origin = grid_origin;
 data.is_flip = is_flip;
 data.is_pascal = is_pascal;

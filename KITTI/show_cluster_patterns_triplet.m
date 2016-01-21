@@ -1,6 +1,6 @@
 function show_cluster_patterns_triplet(cid)
 
-is_save = 1;
+is_save = 0;
 
 opt = globals;
 
