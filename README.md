@@ -22,3 +22,9 @@ If you find SubCNN useful in your research, please consider citing:
         year = {2015}
     }
 
+### File Organization
+1. Geometry: scripts to voxelize 3D CAD models
+
+The main function is cad_train.m.
+
+
