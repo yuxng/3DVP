@@ -26,4 +26,15 @@ If you find SubCNN useful in your research, please consider citing:
 1. Geometry: scripts to voxelize 3D CAD models. 
 The main function is cad_train.m.
 
+2. KITTI: scripts to discover 3DVPs from the KITTI detection benchmark.
+    ```Shell
+    # create 3D voxel exemplars
+    create_annotations.m
+
+    # prepare clustering data for 3DVPs
+    prepare_clustering_data.m
+
+    # clustering to discover 3DVPs
+    cluster_3d_occlusion_patterns.m
+    ```
 
