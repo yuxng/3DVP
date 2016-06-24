@@ -1,6 +1,6 @@
 function write_2d_exemplars
 
-is_train = 1;
+is_train = 0;
 
 % load ids
 object = load('kitti_ids_new.mat');
