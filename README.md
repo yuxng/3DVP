@@ -24,9 +24,12 @@ If you find SubCNN useful in your research, please consider citing:
 
 ### File Organization
 1. Geometry: scripts to voxelize 3D CAD models. 
-The main function is cad_train.m.
+   ```Shell
+   # voxelize 3D CAD models
+   cad_train.m
+   ```
 
-2. KITTI: scripts to discover 3DVPs from the KITTI detection benchmark.
+2. KITTI/PASCAL3D: scripts to discover 3DVPs from the KITTI/PASCAL3D+ detection benchmark.
     ```Shell
     # create 3D voxel exemplars
     create_annotations.m
@@ -37,4 +40,17 @@ The main function is cad_train.m.
     # clustering to discover 3DVPs
     cluster_3d_occlusion_patterns.m
     ```
+
+3. ACF: ACF detectors for 3DVPs
+   ```Shell
+   # training and testing ACF detectors for 3DVPs
+   exemplar_dpm_train_and_test_batch_aps.m
+   ```
+
+4. ContextW: occlusion reasoing with 3DVPs
+   ```Shell
+   # greedy occlusion reasoning with 3DVPs
+   greedy_occlusion_reasoning.m
+   ```
+
 
